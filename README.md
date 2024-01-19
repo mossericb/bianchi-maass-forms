@@ -1,2 +1,2 @@
 # bianchi-maass-forms
-Code for computing Bianchi-Maass cusp forms for non-Euclidean imaginary quadratic rings of integers.
+Code for computing Bianchi-Maass cusp forms for class number 1 rings of integers, including the non-Euclidean rings.
