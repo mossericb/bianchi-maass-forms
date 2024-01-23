@@ -3,6 +3,8 @@ This program is part of my PhD thesis work.
 
 It computes Bianchi-Maass cusp forms for class number 1 rings of integers, including the non-Euclidean rings (the fields Q(sqrt(-d)) for d = 1, 2, 3, 7, 11, 19, 43, 67, 163).
 
+Please excuse the cobwebs; I'm in the stage of converging on the final version of the program and dumping large commented blocks, unused methods, etc. 
+
 This contains methods for locating probable eigenvalues, running heuristic checks on the results, evaluating, and plotting the resulting Bianchi-Maass forms. Functionality for verifying various conjectures such as Ramanujan-Petersson and Sato-Tate is coming soon.
 
 Searching to find Bianchi-Maass cusp forms is a large computation that needs to be run across many cores to complete in a reasonable amount of time. 
