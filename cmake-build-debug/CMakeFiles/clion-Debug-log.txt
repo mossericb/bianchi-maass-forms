@@ -1,4 +1,4 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -DCMAKE_C_COMPILER=/opt/homebrew/Cellar/llvm/17.0.2/bin/clang -DCMAKE_CXX_COMPILER=/opt/homebrew/Cellar/llvm/17.0.2/bin/clang++ -DCMAKE_BUILD_TYPE=Debug -G Ninja -S /Users/ericmoss/CLionProjects/Bianchi-Maass_Forms -B /Users/ericmoss/CLionProjects/Bianchi-Maass_Forms/cmake-build-debug
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -DCMAKE_C_COMPILER=/opt/homebrew/Cellar/llvm/17.0.2/bin/clang -DCMAKE_CXX_COMPILER=/opt/homebrew/Cellar/llvm/17.0.2/bin/clang++ -G Ninja -S /Users/ericmoss/CLionProjects/bianchi-maass-forms -B /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug
 -- The C compiler identification is Clang 17.0.2
 -- The CXX compiler identification is Clang 17.0.2
 -- Detecting C compiler ABI info
@@ -21,4 +21,4 @@
 -- CMAKE_C_FLAGS=""
 -- Configuring done
 -- Generating done
--- Build files have been written to: /Users/ericmoss/CLionProjects/Bianchi-Maass_Forms/cmake-build-debug
+-- Build files have been written to: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug

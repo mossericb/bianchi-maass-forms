@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 
     int d = 19;
     char symClass = 'C';
-    int D = 4;
+    int D = 7;
 
     CoefficientComputer* c1 = new CoefficientComputer(d, D, symClass);
     c1->checkSingleEigenvalue2(6.0537);
