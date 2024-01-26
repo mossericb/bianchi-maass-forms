@@ -80,8 +80,8 @@ matrixR1Y1(0,0), matrixR1Y2(0,0), matrixR2Y1(0,0), matrixR2Y2(0,0) {
     YGrid.push_back(0.04);
     std::reverse(YGrid.begin(), YGrid.end());
 
-    K = new KBesselApproximator(0);
-    T = new TrigApproximator();
+    K = new KBesselApproximator(53);
+    //T = new TrigApproximator();
 
     std::cout << std::fixed << std::setprecision(16);
     std::cout << "A: " << A << std::endl;
@@ -162,7 +162,7 @@ void CoefficientComputer::computeY0() {
     //startN is where BesselK starts to be exponential
     //startN = r/(2*pi/A*localY) = r*A/(2*pi*localY)
     //maxN is a random guess, will adjust later
-    //K.updateRAndPrecompute(r);
+    //K.setRAndPrecompute(r);
 
     double startN = r;
     double maxN = 100;
@@ -1153,7 +1153,7 @@ void CoefficientComputer::recursiveSearchForEigenvalues(double localLeftR, doubl
 
     if (auto search = rToConditionMap.find(localLeftR); search == rToConditionMap.end()) {
         std::vector<double> R1ConditionNumbers;
-        K->updateR(localLeftR);
+        K->setRAndClearPrecompute(localLeftR);
 
         Y1 = YGrid[0];
         watch(Y1);
@@ -1180,7 +1180,7 @@ void CoefficientComputer::recursiveSearchForEigenvalues(double localLeftR, doubl
 
     if (auto search = rToConditionMap.find(localRightR); search == rToConditionMap.end()) {
         std::vector<double> R2ConditionNumbers;
-        K->updateR(localRightR);
+        K->setRAndClearPrecompute(localRightR);
 
         Y1 = YGrid[0];
         watch(Y1);
@@ -1313,11 +1313,11 @@ int CoefficientComputer::countSignChanges(const std::vector<double> &v1, const s
     conditionY1 = 0;
     conditionY2 = 0;
 
-    K->updateR(newR);
+    K->setRAndClearPrecompute(newR);
 
     double maxKappaArg = 2*pi/A*M0*maxYStar;
     double minKappaArg = 2*pi/A*1*Y1;
-    K->updateRAndPrecompute(newR, minKappaArg, maxKappaArg);
+    K->setRAndPrecompute(newR, minKappaArg, maxKappaArg);
 
     Eigen::Matrix<double, Eigen::Dynamic, 1> coefficientsFromY1, coefficientsFromY2, zeros1, zeros2;
     coefficientsFromY1.resize(indexTransversal.size());
@@ -1407,7 +1407,7 @@ double CoefficientComputer::kappaApprox(const double &x) {
 }
 
 double CoefficientComputer::kappaExact(const double &x) {
-    return K->computeKBessel(x);
+    return K->exactKBessel(x);
 }
 
 CoefficientComputer::~CoefficientComputer() {
@@ -1426,7 +1426,7 @@ bool CoefficientComputer::areDifferentSign(const double &a, const double &b) {
 void CoefficientComputer::computeM0() {
     //The goal is to find the point M0 where
     // \epsilon*kappa(max(t,1)) - kappa(2*pi/A*M0*Y0) == 0
-    K->updateR(rightR);
+    K->setRAndClearPrecompute(rightR);
     double minM0 = std::max(rightR, 1.0)/(2*pi/A*Y0);
     double maxM0 = 100;
 
@@ -1610,7 +1610,7 @@ void CoefficientComputer::computeY1Y2() {
     /*//Search for Y2 first
     double proportion = 0.01;
 
-    K->updateR(localLeftR);
+    K->setRAndClearPrecompute(localLeftR);
     auto maxLeft = K->maximize();
     std::cout << "left maximized at (" << maxLeft[0] << ", " << maxLeft[1] << ")" << std::endl;
 
@@ -1772,11 +1772,11 @@ void CoefficientComputer::refreshKBesselPrecompute(short matrixID) {
     } else {
         tempR = rightR;
     }
-    K->updateR(tempR);
+    K->setRAndClearPrecompute(tempR);
 
     double maxKappaArg = 2*pi/A*M0*maxYStar;
     double minKappaArg = 2*pi/A*1*Y1;
-    K->updateRAndPrecompute(tempR, minKappaArg, maxKappaArg);
+    K->setRAndPrecompute(tempR, minKappaArg, maxKappaArg);
 }
 
 int CoefficientComputer::solveComputeZerosVectorsCountSignChanges() {
@@ -1832,7 +1832,7 @@ int CoefficientComputer::solveComputeZerosVectorsCountSignChanges() {
 }
 
 void CoefficientComputer::checkSingleEigenvalue(double r) {
-    K->updateR(r);
+    K->setRAndClearPrecompute(r);
     leftR = r;
     rightR = r;
 
@@ -2046,7 +2046,7 @@ void CoefficientComputer::secantSearch(double startR1, double startR2) {
     std::cout << std::setprecision(16) << "r: " << r1;
     this->leftR = r1;
     this->rightR = r1;
-    K->updateR(r1);
+    K->setRAndClearPrecompute(r1);
     computeM0();
 
 
@@ -2069,10 +2069,10 @@ void CoefficientComputer::secantSearch(double startR1, double startR2) {
 
         if (j == 0) {
             std::cout << "teehee" << std::endl;
-            K->updateRAndPrecompute(r1, 2*pi/A*1*Y, 2*pi/A*M0*maxYStar);
+            K->setRAndPrecompute(r1, 2 * pi / A * 1 * Y, 2 * pi / A * M0 * maxYStar);
             std::cout << "teehee" << std::endl;
         } else {
-            K->extendPrecomputedRange(2*pi/A*M0*maxYStar);
+            K->extendPrecomputedRange(0, 2 * pi / A * M0 * maxYStar);
         }
 
         auto row = pointwiseGenerateMatrixRow(m, Y, points);
@@ -2098,7 +2098,7 @@ void CoefficientComputer::secantSearch(double startR1, double startR2) {
     std::cout << std::setprecision(16) << "r: " << r2;
     this->leftR = r2;
     this->rightR = r2;
-    K->updateR(r2);
+    K->setRAndClearPrecompute(r2);
     computeM0();
 
     Y = 0.9*r2/(2*pi/A*M0);
@@ -2117,9 +2117,9 @@ void CoefficientComputer::secantSearch(double startR1, double startR2) {
         auto points = pointwisePointsAndPullbacks(m, Y);
 
         if (j == 0) {
-            K->updateRAndPrecompute(r2, 2*pi/A*1*Y, 2*pi/A*M0*maxYStar);
+            K->setRAndPrecompute(r2, 2 * pi / A * 1 * Y, 2 * pi / A * M0 * maxYStar);
         } else {
-            K->extendPrecomputedRange(2*pi/A*M0*maxYStar);
+            K->extendPrecomputedRange(0, 2 * pi / A * M0 * maxYStar);
         }
 
         auto row = pointwiseGenerateMatrixRow(m, Y, points);
@@ -2139,7 +2139,7 @@ void CoefficientComputer::secantSearch(double startR1, double startR2) {
         std::cout << std::setprecision(16) << "r: " << nextR;
         this->leftR = nextR;
         this->rightR = nextR;
-        K->updateR(nextR);
+        K->setRAndClearPrecompute(nextR);
         computeM0();
 
         Y = 0.9*r2/(2*pi/A*M0);
@@ -2159,9 +2159,9 @@ void CoefficientComputer::secantSearch(double startR1, double startR2) {
             //      if (lowest Y)
             if (j == 0) {
                 //          precompute K-bessel function
-                K->updateRAndPrecompute(nextR, 2*pi/A*1*Y, 2*pi/A*M0*maxYStar);
+                K->setRAndPrecompute(nextR, 2 * pi / A * 1 * Y, 2 * pi / A * M0 * maxYStar);
             } else {
-                K->extendPrecomputedRange(2*pi/A * M0 * maxYStar);
+                K->extendPrecomputedRange(0, 2 * pi / A * M0 * maxYStar);
             }
             //      matrix.row = generateRow(points)
             auto row = pointwiseGenerateMatrixRow(m, Y, points);
@@ -2349,16 +2349,20 @@ std::vector<TestPointOrbitData> CoefficientComputer::getPointPullbackOrbit(const
     maxYStar = 0;
 
     //These formulas provide bounds to guarantee that the DFT result is valid
-    int Q0 = 0;
-    int Q1 = std::ceil((MY + abs(m.getComplex().real()))/2.0);
+    double absRealM = abs(m.getComplex().real());
+    double absImagM = abs(m.getComplex().imag());
+    double Q0double = 0;
+    double Q1double = (MY + absRealM)/2.0;
     if (EricNT::mod(-d,4) == 1) {
-        int Q0option1 = std::ceil(MY + abs(m.getComplex().real()));
-        int Q0option2 = std::ceil((MY + abs(m.getComplex().imag()))/(2.0*A));
-        Q0 = std::max(Q0option1, Q0option2);
+        double Q0doubleOption1 = MY + absRealM;
+        double Q0doubleOption2 = (MY + absImagM)/(2.0*A);
+        Q0double = std::max(Q0doubleOption1, Q0doubleOption2);
     } else {
-        Q0 = std::ceil((MY + abs(m.getComplex().imag()))/(2*A));
+        Q0double = (MY + absImagM)/(2.0*A);
     }
 
+    int Q0 = std::ceil(Q0double);
+    int Q1 = std::ceil(Q1double);
 
     //Tweak Q0 and Q1 to be exactly what we need for exploiting symmetry
     if (EricNT::mod(-d, 4) == 1 && d != 3) {
@@ -2599,8 +2603,10 @@ void CoefficientComputer::populateMatrix2(double Y) {
 
     for (int i = 0; i < indexTransversal.size(); i++) {
         Index m = indexTransversal[i];
+        watch(m);
         testPointOrbits = getPointPullbackOrbit(m, Y);
-        #pragma omp parallel for default(none) shared(matrix2, indexTransversal, i, m)
+        K->extendPrecomputedRange(2*pi/A*1*Y1, 2*pi/A*M0*maxYStar);
+#pragma omp parallel for default(none) shared(matrix2, indexTransversal, i, m)
         for (int j = 0; j < indexTransversal.size(); j++) {
 
             Index n = indexTransversal[j];
@@ -2689,7 +2695,7 @@ double CoefficientComputer::computeEntry2(const Index &m, const Index &n) {
 }
 
 void CoefficientComputer::checkSingleEigenvalue2(double r) {
-    K->updateR(r);
+    K->setRAndClearPrecompute(r);
     leftR = r;
     rightR = r;
 
@@ -2732,11 +2738,10 @@ void CoefficientComputer::checkSingleEigenvalue2(double r) {
 
     Y1 = 0.065;
     Y2 = Y1;
-    Index largestM = Index(std::ceil(MY), std::ceil(MY/abs(theta.imag())), d);
     computeMY();
+    //Index largestM = Index(std::ceil(MY), std::ceil(MY/abs(theta.imag())), d);
     computeIndexData();
-    getPointPullbackOrbit(largestM, Y1);
-    refreshKBesselPrecompute(Y1R1);
+    K->setRAndPrecompute(r, 2*pi/A*1*Y1, 2*pi/A*M0*1/Y1);
     //populateMatrix(Y1R1);
     populateMatrix2(Y1);
     solveMatrixAndComputeCoefficientMap2();

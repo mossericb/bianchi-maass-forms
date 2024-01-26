@@ -24,6 +24,7 @@ find_library(MPFI_LIBRARY mpfi REQUIRED)
 find_library(MPI_LIBRARY mpi REQUIRED)
 find_library(PARI_LIBRARY pari REQUIRED)
 find_library(FFTW_LIBRARY fftw3 REQUIRED)
+find_library(ARCHTKBESSEL_LIBRARY ArchtKBessel REQUIRED)
 #find_library(ARCHT_LIBRARY ArchtKBessel REQUIRED)
 
 #variable_watch(ARCHT_LIBRARY)
@@ -60,7 +61,8 @@ add_executable(${PROJECT_NAME}
         Plotter.cpp]]
         tinycolormap.hpp
         TrigApproximator.cpp
-        TrigApproximator.h)
+        TrigApproximator.h
+        )
 
 target_link_libraries(${PROJECT_NAME} ${FLINT_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${ARB_LIBRARY})
@@ -70,6 +72,7 @@ target_link_libraries(${PROJECT_NAME} ${MPFI_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${MPI_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${FFTW_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${PARI_LIBRARY})
+target_link_libraries(${PROJECT_NAME} ${ARCHTKBESSEL_LIBRARY})
 
 target_link_libraries(${PROJECT_NAME} ${OpenMP})
 #target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
@@ -77,8 +80,17 @@ target_link_libraries(${PROJECT_NAME} ${Boost})
 
 cmake_print_variables(FFTW_LIBRARY)
 cmake_print_variables(OpenMP)
+cmake_print_variables(ARCHTKBESSEL_LIBRARY)
 
 #target_link_libraries(${PROJECT_NAME} ${ARCHT_LIBRARY})
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mno-omit-leaf-frame-pointer")
+
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+
 
 cmake_print_variables(CMAKE_CXX_FLAGS)
 cmake_print_variables(CMAKE_C_FLAGS)

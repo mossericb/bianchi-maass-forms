@@ -17,6 +17,9 @@
 //Path to a library.
 ARB_LIBRARY:FILEPATH=/opt/homebrew/lib/libarb.dylib
 
+//Path to a library.
+ARCHTKBESSEL_LIBRARY:FILEPATH=/usr/local/lib/libArchtKBessel.a
+
 //Value Computed by CMake
 Bianchi-Maass_Forms_BINARY_DIR:STATIC=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug
 
@@ -45,8 +48,8 @@ CMAKE_BUILD_TYPE:STRING=Debug
 //Enable colored diagnostics throughout.
 CMAKE_COLOR_DIAGNOSTICS:BOOL=ON
 
-//CXX compiler
-CMAKE_CXX_COMPILER:STRING=/opt/homebrew/Cellar/llvm/17.0.2/bin/clang++
+//No help, variable specified on the command line.
+CMAKE_CXX_COMPILER:UNINITIALIZED=/opt/homebrew/Cellar/llvm/17.0.2/bin/clang++
 
 //LLVM archiver
 CMAKE_CXX_COMPILER_AR:FILEPATH=/opt/homebrew/Cellar/llvm/17.0.2/bin/llvm-ar
@@ -69,8 +72,8 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 //Flags used by the CXX compiler during RELWITHDEBINFO builds.
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
-//C compiler
-CMAKE_C_COMPILER:STRING=/opt/homebrew/Cellar/llvm/17.0.2/bin/clang
+//No help, variable specified on the command line.
+CMAKE_C_COMPILER:UNINITIALIZED=/opt/homebrew/Cellar/llvm/17.0.2/bin/clang
 
 //LLVM archiver
 CMAKE_C_COMPILER_AR:FILEPATH=/opt/homebrew/Cellar/llvm/17.0.2/bin/llvm-ar
@@ -275,6 +278,15 @@ OpenMP_omp_LIBRARY:FILEPATH=/opt/homebrew/Cellar/llvm/17.0.2/lib/libomp.dylib
 
 //Path to a library.
 PARI_LIBRARY:FILEPATH=/opt/homebrew/lib/libpari.dylib
+
+//Value Computed by CMake
+bianchi-maass-forms_BINARY_DIR:STATIC=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug
+
+//Value Computed by CMake
+bianchi-maass-forms_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+bianchi-maass-forms_SOURCE_DIR:STATIC=/Users/ericmoss/CLionProjects/bianchi-maass-forms
 
 //The directory containing a CMake configuration file for boost_headers.
 boost_headers_DIR:PATH=/opt/homebrew/lib/cmake/boost_headers-1.83.0

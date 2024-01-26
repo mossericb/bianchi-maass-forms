@@ -176,7 +176,7 @@ bool Quaternion::reduceModInversion(int d) {
         }
 
     } else {
-        //throw(std::invalid_argument("not implemented for this d"));
+        throw(std::invalid_argument("not implemented for this d"));
     }
 }
 
