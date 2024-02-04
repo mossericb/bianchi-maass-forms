@@ -4,30 +4,31 @@
 
 #include <stdexcept>
 
-#include "EricNT.h"
+#include "Auxilliary.h"
 //#include <math.h>
-//#include "arb.h"
+#include "arb.h"
 //#include "pari/pari.h"
 //#include "flint/flint.h"
-//#include "CoefficientComputer.h"
+//#include "BianchiMaassComputer.h"
 
 
-int EricNT::mod(int x, int modulus) {
+int Auxilliary::mod(int x, int modulus) {
     int answer = x % modulus;
-    if (answer < 0)
+    if (answer < 0) {
         return answer + abs(modulus);
-    else
+    } else {
         return answer;
+    }
 }
 
-int EricNT::next(long double x) {
+int Auxilliary::next(long double x) {
     int answer = floor(x) + 1;
     return answer;
 }
 
-/*void EricNT::computeTheta(acb_t theta, int d, int bits) {
+/*void Auxilliary::computeTheta(acb_t theta, int d, int bits) {
     acb_init(theta);
-    if (EricNT::mod(-d,4) == 1) {
+    if (Auxilliary::mod(-d,4) == 1) {
         //theta = 1/2 + I*sqrt(d)/2
         arb_t real, imag;
         arb_init(real);
@@ -43,7 +44,7 @@ int EricNT::next(long double x) {
 
         arb_clear(real);
         arb_clear(imag);
-    } else if (EricNT::mod(-d,4) == 2 || EricNT::mod(-d,4) == 3) {
+    } else if (Auxilliary::mod(-d,4) == 2 || Auxilliary::mod(-d,4) == 3) {
         //theta = I*sqrt(d)
         arb_t real, imag;
         arb_init(real);
@@ -72,7 +73,7 @@ int EricNT::next(long double x) {
  * If x overlaps with an endpoint, we try to deal with it in a natural way, but there is no guarantee
  * that answer is a ball totally within [-scale, scale].
  *//*
-void EricNT::intervalReduce(arb_struct *answer, const arb_struct *x, const arb_struct *scale, const int bits) {
+void Auxilliary::intervalReduce(arb_struct *answer, const arb_struct *x, const arb_struct *scale, const int bits) {
     arb_t localCopyOfX;
     arb_init(localCopyOfX);
     arb_set(localCopyOfX,x);
@@ -121,7 +122,7 @@ void EricNT::intervalReduce(arb_struct *answer, const arb_struct *x, const arb_s
  * Project toReduce onto v to get the scalar projection arb_t s
  * final answer is toReduce - 2ceil((s-1)/2)*v
  *//*
-void EricNT::vectorReduce(acb_struct *answer, const acb_struct *v, const acb_t toReduce, int bits) {
+void Auxilliary::vectorReduce(acb_struct *answer, const acb_struct *v, const acb_t toReduce, int bits) {
     acb_t copyOfToReduce;
     acb_init(copyOfToReduce);
     acb_set(copyOfToReduce, toReduce);
@@ -176,7 +177,7 @@ void EricNT::vectorReduce(acb_struct *answer, const acb_struct *v, const acb_t t
     acb_clear(copyOfV);
 }
 
-void EricNT::acbPlusArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
+void Auxilliary::acbPlusArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
     arb_t zero;
     arb_init(zero);
 
@@ -200,7 +201,7 @@ void EricNT::acbPlusArb(acb_struct *answer, const acb_struct *z, const arb_struc
     acb_clear(copyOfZ);
 }
 
-void EricNT::acbTimesArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
+void Auxilliary::acbTimesArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
     arb_t zero;
     arb_init(zero);
 
@@ -224,7 +225,7 @@ void EricNT::acbTimesArb(acb_struct *answer, const acb_struct *z, const arb_stru
     acb_clear(copyOfZ);
 }
 
-void EricNT::acbDivArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
+void Auxilliary::acbDivArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
     arb_t zero;
     arb_init(zero);
 
@@ -248,7 +249,7 @@ void EricNT::acbDivArb(acb_struct *answer, const acb_struct *z, const arb_struct
     acb_clear(copyOfZ);
 }
 
-void EricNT::acbDivArb(acb_struct *answer, const acb_struct *z, int x, int bits) {
+void Auxilliary::acbDivArb(acb_struct *answer, const acb_struct *z, int x, int bits) {
     acb_t complexEmbedding;
     acb_init(complexEmbedding);
 
@@ -263,7 +264,7 @@ void EricNT::acbDivArb(acb_struct *answer, const acb_struct *z, int x, int bits)
     acb_clear(copyOfZ);
 }
 
-void EricNT::traceProduct(acb_struct *answer, const acb_struct *z, const acb_struct *w, int bits) {
+void Auxilliary::traceProduct(acb_struct *answer, const acb_struct *z, const acb_struct *w, int bits) {
     acb_t copyOfZ, copyOfW;
     acb_init(copyOfZ);
     acb_init(copyOfW);
@@ -279,7 +280,7 @@ void EricNT::traceProduct(acb_struct *answer, const acb_struct *z, const acb_str
     acb_clear(copyOfZ);
 }*/
 
-double EricNT::imagTheta(int d) {
+double Auxilliary::imagTheta(int d) {
     if (mod(-d, 4) == 1) {
         return sqrt(1.0*d)/2;
     } else {
@@ -287,7 +288,26 @@ double EricNT::imagTheta(int d) {
     }
 }
 
-/*double EricNT::computeVolumeOfFD(int d) {
+double Auxilliary::multiPrecisionSummation(const std::vector<double> &numbers) {
+    arb_t sum;
+    arb_t temp;
+    arb_init(sum);
+    arb_init(temp);
+
+    for (double number : numbers) {
+        arb_set_d(temp, number);
+        arb_add(sum, sum, temp, 500);
+    }
+    double answer = std::stod(arb_get_str(sum, 60, ARB_STR_NO_RADIUS));
+    arb_clear(sum);
+    arb_clear(temp);
+    flint_cleanup();
+    return answer;
+}
+
+
+
+/*double Auxilliary::computeVolumeOfFD(int d) {
     pari_init(1000000,2);
     std::string arg = "L = lfuncreate(x^2+";
     arg.append(std::to_string(d));
@@ -298,9 +318,9 @@ double EricNT::imagTheta(int d) {
     char* out = GENtostr(res);
     pari_close();
     double zeta = std::stod(std::string(out));
-    return pow(abs(d), 3.0/2)*zeta/(4*pow(EricNT::pi, 2));
+    return pow(abs(d), 3.0/2)*zeta/(4*pow(Auxilliary::pi, 2));
 }*/
 
-//double EricNT::pi = std::numbers::pi_v<double>;
+//double Auxilliary::pi = std::numbers::pi_v<double>;
 
 

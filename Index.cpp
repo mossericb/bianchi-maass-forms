@@ -6,38 +6,13 @@
 #include <complex>
 #include <cmath>
 #include <algorithm>
-#include "EricNT.h"
+#include "Auxilliary.h"
 
 using namespace std;
 
-Index::Index(int a, int b, int d) {
+Index::Index(int a, int b) {
     this->a = a;
     this->b = b;
-    this->d = d;
-
-    std::complex<double> theta;
-    //Initialize std::complex<double> theta
-    if (EricNT::mod(-d,4) == 1) {
-        theta = {1.0/2, sqrt(d)/2};
-    } else if (EricNT:: mod(-d, 4) == 0) {
-        throw(std::invalid_argument("d should be squarefree"));
-    } else {
-        theta = {0, sqrt(d)};
-    }
-
-    //Initialize std::complex<double> complex
-    complex = std::complex<double> {(double)b,0};
-    complex *= theta;
-    complex += std::complex<double> {(double)a, 0};
-
-    //Initialize double abs
-    abs = std::abs(complex);
-
-    //Initialize double angle
-    angle = atan2(complex.imag(), complex.real());
-    if (angle < 0) {
-        angle += 2 * 3.141592653589793238462643383279502884197;
-    }
 }
 
 std::ostream &operator<<(std::ostream &strm, const Index &index) {
@@ -46,37 +21,26 @@ std::ostream &operator<<(std::ostream &strm, const Index &index) {
     return strm << std::move(out).str();
 }
 
-Index Index::rotate() const {
+Index Index::rotate(int d) const {
     if (d == 1) {
-        return {-b, a, d};
+        return {-b, a};
     } else if (d == 3) {
-        return {-b, a + b, d};
+        return {-b, a + b};
     } else {
-        return {-a, -b, d};
+        return {-a, -b};
     }
 }
 
-Index Index::conj() const {
-    if (EricNT::mod(-d,4) == 1) {
-        return {a + b, -b, d};
+Index Index::conj(int d) const {
+    if (Auxilliary::mod(-d, 4) == 1) {
+        return {a + b, -b};
     } else {
-        return {a, -b, d};
-    }
-}
-
-
-bool operator<(const Index &index1, const Index &index2) {
-    if (index1.abs < index2.abs) {
-        return true;
-    } else if (index1.abs == index2.abs && index1.angle < index2.angle) {
-        return true;
-    } else {
-        return false;
+        return {a, -b};
     }
 }
 
 bool operator==(const Index &index1, const Index &index2) {
-    return (index1.a == index2.a) && (index1.b == index2.b) && (index1.d == index2.d);
+    return (index1.a == index2.a) && (index1.b == index2.b);
 }
 
 bool operator!=(const Index &index1, const Index &index2) {
@@ -84,7 +48,17 @@ bool operator!=(const Index &index1, const Index &index2) {
 }
 
 Index operator-(const Index& lhs, const Index& rhs) {
-    return Index(lhs.a - rhs.a, lhs.b - rhs.b, lhs.d);
+    return Index(lhs.a - rhs.a, lhs.b - rhs.b);
+}
+
+bool operator<(const Index& index1, const Index& index2) {
+    if (index1.a < index2.a) {
+        return true;
+    } else if (index1.a == index2.a && index1.b < index2.b) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 string Index::to_string() const {
@@ -92,15 +66,29 @@ string Index::to_string() const {
     return message;
 }
 
-const complex<double> &Index::getComplex() const {
-    return complex;
+std::complex<double> Index::getComplex(int d) const {
+    std::complex<double> theta;
+    //Initialize std::complex<double> theta
+    if (Auxilliary::mod(-d, 4) == 1) {
+        theta = {1.0/2, sqrt(d)/2};
+    } else if (Auxilliary:: mod(-d, 4) == 0) {
+        throw(std::invalid_argument("d should be squarefree"));
+    } else {
+        theta = {0, sqrt(d)};
+    }
+    return (double)a + ((double)b)*theta;
 }
 
-double Index::getAbs() const {
-    return abs;
+double Index::getAbs(int d) const {
+    return abs(this->getComplex(d));
 }
 
-double Index::getAngle() const {
+double Index::getAngle(int d) const {
+    std::complex<double> complex = this->getComplex(d);
+    double angle = atan2(complex.imag(), complex.real());
+    if (angle < 0) {
+        angle += 6.28318530717958647692528676655900576839;
+    }
     return angle;
 }
 
@@ -110,10 +98,6 @@ int Index::getA() const {
 
 int Index::getB() const {
     return b;
-}
-
-int Index::getD() const {
-    return d;
 }
 
 

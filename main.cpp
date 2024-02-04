@@ -1,26 +1,30 @@
 /*TODO
-     * For each m in indexTransversal, compute Q, then save a map that maps m to Q, and then have another map
-     * that stores the test points for a particular Q.
-     * There are lots of repeat values of Q, no sense in double-computing them.
+     * Add Weyl law spacing to search method
      *
-     * Compute the matrix one column at a time so that I can compute the test points once and use them all, then
-     * throw them away and I haven't wasted anything.
+     * Continue making pointwise checking work!
+     *
+     * Make reals-only arb code mpfr
+     *
+     * Implement "search for well conditioned value of Y" in pointwise methods
+     * Don't need it right now, would be nice to have eventually.
+     *
+     * Implement a way to not store the M0 and MY indices separately (lots of duplicates). Sometimes I need only
+     * indices up to M0, sometimes up to MY. Carefully figure these out and address over-precomputing.
+     *
+     * Get rid of unordered_map's for orbit retrieval
+     *
+     * Make include guards have the right project name.
      *
      * Optimize reduction for d=3
      *
-     * Goal for this version
-     *
-     * Implement double-precision K-bessel evaluator with interpolation
-     * Instead of secant method search, do a binary search. This should rely less on high precision.
-     *
-     * Stop double computing at beginning of a new interval.
-     * Are my bounds of MY and M0 correct? Too large? I don't know.
-     * Lagrange interpolation of the trisection step! To speed up interval bisection.
+     * Make QuadraticIntegers class that contains all the data inherent to the ring
+     * -theta, A, Y0, indices
+     * -methods that require d?
      * */
 
 #include <iostream>
-#include "CoefficientComputer.h"
 #include "ArchtKBessel.h"
+#include "BianchiMaassPointwise.h"
 #include <chrono>
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl << std::flush
@@ -66,7 +70,7 @@ int main(int argc, char *argv[]) {
     watch(duration);
 
     KBesselApproximator K = KBesselApproximator(53);
-    K.setRAndClearPrecompute(10);
+    K.setRAndClear(10);
     start = std::chrono::high_resolution_clock::now();
 
     for (int i = 0; i < pow(10,4); i++) {
@@ -83,14 +87,15 @@ int main(int argc, char *argv[]) {
 
     int d = 19;
     char symClass = 'C';
-    int D = 8;
+    int D = 12;
 
-    CoefficientComputer* c1 = new CoefficientComputer(d, D, symClass);
-    c1->checkSingleEigenvalue2(6.0537);
+    BianchiMaassPointwise bmp = BianchiMaassPointwise(d, D, symClass);
+
+    bmp.checkSingleEigenvalue(6.0537);
 
     /*for (int D = 2; D <= 16; D++) {
         std::cout << "D = " << D << std::endl;
-        CoefficientComputer* c1 = new CoefficientComputer(d, D, symClass, 6.05377197265625);
+        BianchiMaassComputer* c1 = new BianchiMaassComputer(d, D, symClass, 6.05377197265625);
         c1->secantSearch(leftEndpoint, rightEndpoint);
         delete c1;
     }*/

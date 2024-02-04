@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <complex>
-#include "EricNT.h"
+#include "Auxilliary.h"
 #include "SL2C.h"
 #include <vector>
 

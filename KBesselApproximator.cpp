@@ -75,7 +75,7 @@ double KBesselApproximator::approxKBessel(const double& x) {
 }
 
 void KBesselApproximator::setRAndPrecompute(double newR, double precomputeLowerBound, double precomputeUpperBound) {
-    setRAndClearPrecompute(r);
+    setRAndClear(r);
 
     finePrecomputedValues.clear();
     coarsePrecomputedValues.clear();
@@ -86,61 +86,12 @@ void KBesselApproximator::setRAndPrecompute(double newR, double precomputeLowerB
     fineSplines.clear();
     coarseSplines.clear();
 
-    /*if (x < r) {
-        //use fine cheby
-        int index = std::floor(r/x);
-        index = fineChebyshevApproximators.size() - index;
-        return fineChebyshevApproximators[index](x);
-    } else {
-        //use coarse cheby
-        int index = std::floor(x-r);
-        return coarseChebyshevApproximators[index](x);
-    }*/
-
-    /*
-    auto kBesselFunction = [this](double x) {
-        return this->exactKBessel(x);
-    };*/
-
-    /*
-    if (precomputeLowerBound < r) {
-        int lastFineIndex = fineChebyshevIndex(precomputeLowerBound);
-        for (int i = 0; i <= lastFineIndex; i++) {
-            double leftEndpoint = r/(i + 1.5);
-            double rightEndpoint = r/(i + 0.5);
-
-            double tol = std::numeric_limits<double>::epsilon();
-
-            boost::math::chebyshev_transform<double> chebyshevTransformer([&](double x)
-                                                                          { return kBesselFunction(x); }, leftEndpoint, rightEndpoint, tol);
-
-            fineChebyshevApproximators.push_back(chebyshevTransformer);
-        }
-    }*/
-
-    /*
-    if (precomputeUpperBound >= r) {
-        int lastCoarseIndex = coarseChebyshevIndex(precomputeUpperBound);
-        for (int i = 0; i <= lastCoarseIndex; i++) {
-            double leftEndpoint = std::pow(i + std::sqrt(r),2);
-            double rightEndpoint = std::pow(i + 1 + std::sqrt(r),2);
-
-            double tol = std::numeric_limits<double>::epsilon();
-
-            boost::math::chebyshev_transform<double> chebyshevTransformer([&](double x)
-                                                                          { return kBesselFunction(x); }, leftEndpoint, rightEndpoint, tol);
-
-            coarseChebyshevApproximators.push_back(chebyshevTransformer);
-        }
-    }*/
-
-
     if (precomputeLowerBound < r) {
         //Guaranteed to initialize the interval [precomputeLowerBound, r]
         precomputedRegionLeftBound = precomputeLowerBound;
         std::vector<std::vector<double>> precomputes;
 
-        int intervalCount = std::ceil((r - precomputeLowerBound)/fineIntervalWidth);
+        int intervalCount = std::ceil((r - precomputeLowerBound) / fineIntervalWidth);
 
         precomputes.resize(intervalCount);
         for (int i = 0; i < intervalCount; i++) {
@@ -150,7 +101,7 @@ void KBesselApproximator::setRAndPrecompute(double newR, double precomputeLowerB
 #pragma omp parallel for collapse(2) default(none) shared(precomputes, precomputeLowerBound)
         for (int i = 0; i < precomputes.size(); i++) {
             for (int j = 0; j < fineSplineKnotCount; j++) {
-                double x = precomputeLowerBound + i*fineIntervalWidth + j*fineSplineSpacing;
+                double x = precomputeLowerBound + i * fineIntervalWidth + j * fineSplineSpacing;
                 double y = exactKBessel(x);
                 precomputes[i][j] = y;
             }
@@ -161,7 +112,8 @@ void KBesselApproximator::setRAndPrecompute(double newR, double precomputeLowerB
         for (int i = 0; i < precomputes.size(); i++) {
             boost::math::interpolators::cardinal_cubic_b_spline<double> spline(precomputes[i].begin(),
                                                                                precomputes[i].end(),
-                                                                               precomputeLowerBound + i*fineIntervalWidth,
+                                                                               precomputeLowerBound +
+                                                                               i * fineIntervalWidth,
                                                                                fineSplineSpacing);
 
             fineSplines[i] = spline;
@@ -178,8 +130,8 @@ void KBesselApproximator::setRAndPrecompute(double newR, double precomputeLowerB
         //Goes up to r + coarseIntervalWidth*intervalCount
         std::vector<std::vector<double>> precomputes;
 
-        int intervalCount = std::ceil((precomputeUpperBound - r)/coarseIntervalWidth);
-        precomputedRegionRightBound = r + coarseIntervalWidth*intervalCount;
+        int intervalCount = std::ceil((precomputeUpperBound - r) / coarseIntervalWidth);
+        precomputedRegionRightBound = r + coarseIntervalWidth * intervalCount;
 
         precomputes.resize(intervalCount);
         for (int i = 0; i < intervalCount; i++) {
@@ -189,7 +141,7 @@ void KBesselApproximator::setRAndPrecompute(double newR, double precomputeLowerB
 #pragma omp parallel for collapse(2) default(none) shared(precomputes)
         for (int i = 0; i < precomputes.size(); i++) {
             for (int j = 0; j < coarseSplineKnotCount; j++) {
-                double x = r + i*coarseIntervalWidth + j*coarseSplineSpacing;
+                double x = r + i * coarseIntervalWidth + j * coarseSplineSpacing;
                 double y = exactKBessel(x);
                 precomputes[i][j] = y;
             }
@@ -200,160 +152,18 @@ void KBesselApproximator::setRAndPrecompute(double newR, double precomputeLowerB
         for (int i = 0; i < precomputes.size(); i++) {
             boost::math::interpolators::cardinal_cubic_b_spline<double> spline(precomputes[i].begin(),
                                                                                precomputes[i].end(),
-                                                                               r + i*coarseIntervalWidth,
+                                                                               r + i * coarseIntervalWidth,
                                                                                coarseSplineSpacing);
 
             coarseSplines[i] = spline;
         }
 
     } else {
-        precomputedRegionRightBound = precomputeLowerBound + fineIntervalWidth*fineSplines.size();
-    }
-    return;
-    /*if (r <= precomputeUpperBound) {
-        int numCoarsePrecomputePoints = std::floor((precomputeUpperBound - r)/coarseSplineSpacing) + 1;
-        coarseSplinePrecompute.resize(numCoarsePrecomputePoints);
-#pragma omp parallel for default(none) shared(numCoarsePrecomputePoints)
-        for (int i = 0; i < numCoarsePrecomputePoints; i++) {
-            double x = r + i * coarseSplineSpacing;
-            double y = exactKBessel(x);
-            coarseSplinePrecompute[i] = y;
-        }
-
-        coarseSpline = boost::math::interpolators::cardinal_cubic_b_spline<double> (coarseSplinePrecompute.begin(),
-                                                                                  coarseSplinePrecompute.end(),
-                                                                                  r,
-                                                                                  coarseSplineSpacing);
-    }*/
-
-    bool errorIsSatisfactory = true;
-
-    double maxErrorSoFar = 0;
-    for (int i = 0; i < 100000; i++) {
-        double x = precomputeLowerBound + i*(r-precomputeLowerBound)/100000.0;
-        double exact = exactKBessel(x);
-        double approx = approxKBessel(x);
-        double error = abs((approx - exact)/exact);
-        if (error > maxErrorSoFar && exact != 0) {
-            maxErrorSoFar = error;
-            watch(maxErrorSoFar);
-            std::cout << x << ", " << exact << std::endl;
-        }
-    }
-
-    maxErrorSoFar = 0;
-    for (int i = 0; i < 100000; i++) {
-        double x = r + i*(precomputeUpperBound - r)/100000.0;
-        double exact = exactKBessel(x);
-        double approx = approxKBessel(x);
-        double error = abs((approx - exact)/exact);
-        if (error > maxErrorSoFar && exact != 0) {
-            maxErrorSoFar = error;
-            watch(maxErrorSoFar);
-            std::cout << x << ", " << exact << std::endl;
-        }
-    }
-
-    return;
-
-
-
-
-
-    for (int D = fineD; ; D--) {
-        bool errorIsSatisfactory = true;
-        fineSpacing = pow(2,D);
-        fineD = D;
-        finePrecomputedValues.clear();
-        int numberOfFinePrecomputeValues = std::floor((r - precomputeLowerBound)/fineSpacing) + 1;
-        finePrecomputedValues.resize(numberOfFinePrecomputeValues);
-
-#pragma omp parallel for default(none) shared(fineSpacing, numberOfFinePrecomputeValues, precomputeLowerBound)
-        for (int i = 0; i < numberOfFinePrecomputeValues; i++) {
-            double x = precomputeLowerBound + i * fineSpacing;
-            finePrecomputedValues[i] = applyChebyshev(x);
-        }
-
-        //Check at 10 random points to see if the error is satisfactory
-        for (int i = 0; i < 10; i++) {
-            double x = randab(precomputedRegionLeftBound, r);
-            double exact = exactKBessel(x);
-            double approx = approxKBessel(x);
-            double error  = abs((exact - approx)/exact);
-            if (error > MAX_ERROR) {
-                errorIsSatisfactory = false;
-                break;
-            }
-        }
-        if (!errorIsSatisfactory) {
-            continue;
-        }
-        //Now we check 100 more times
-        for (int i = 0; i < 100; i++) {
-            double x = randab(precomputedRegionLeftBound, r);
-            double exact = exactKBessel(x);
-            double approx = approxKBessel(x);
-            double error  = abs((exact - approx)/exact);
-            if (error > MAX_ERROR) {
-                errorIsSatisfactory = false;
-                break;
-            }
-        }
-        if (!errorIsSatisfactory) {
-            continue;
-        } else {
-            break;
-        }
-    }
-
-    for (int D = coarseD; ; D--) {
-        bool errorIsSatisfactory = true;
-        coarseSpacing = pow(2,D);
-        coarseD = D;
-        coarsePrecomputedValues.clear();
-        int numberOfCoarsePrecomputeValues = std::floor((precomputedRegionRightBound - r)/coarseSpacing) + 1;
-        coarsePrecomputedValues.resize(numberOfCoarsePrecomputeValues);
-
-#pragma omp parallel for default(none) shared(coarseSpacing, numberOfCoarsePrecomputeValues, r)
-        for (int i = 0; i < numberOfCoarsePrecomputeValues; i++) {
-            double x = r + i * coarseSpacing;
-            coarsePrecomputedValues[i] = applyChebyshev(x);
-        }
-
-        //Check at 10 random points to see if the error is satisfactory
-        for (int i = 0; i < 10; i++) {
-            double x = randab(r, precomputedRegionRightBound);
-            double exact = exactKBessel(x);
-            double approx = approxKBessel(x);
-            double error  = abs(exact - approx);
-            if (error > MAX_ERROR) {
-                errorIsSatisfactory = false;
-                break;
-            }
-        }
-        if (!errorIsSatisfactory) {
-            continue;
-        }
-        //Now we check 100 more times
-        for (int i = 0; i < 100; i++) {
-            double x = randab(r, precomputedRegionRightBound);
-            double exact = exactKBessel(x);
-            double approx = approxKBessel(x);
-            double error  = abs(exact - approx);
-            if (error > MAX_ERROR) {
-                errorIsSatisfactory = false;
-                break;
-            }
-        }
-        if (!errorIsSatisfactory) {
-            continue;
-        } else {
-            break;
-        }
+        precomputedRegionRightBound = precomputeLowerBound + fineIntervalWidth * fineSplines.size();
     }
 }
 
-void KBesselApproximator::setRAndClearPrecompute(double newR) {
+void KBesselApproximator::setRAndClear(double newR) {
     this->r = newR;
     for (int i = 0; i < threads; i++) {
         arb_set_d(&arbR[i],r);

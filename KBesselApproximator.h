@@ -16,14 +16,15 @@
 
 class KBesselApproximator {
 public:
-    KBesselApproximator(int bitsOfPrecision);
+    KBesselApproximator(int bitsOfPrecision = 53);
     ~KBesselApproximator();
 
     void setRAndPrecompute(double r, double precomputeLowerBound, double precomputeUpperBound);
     void extendPrecomputedRange(double newLowerBound, double newUpperBound);
-    void setRAndClearPrecompute(double newR);
+    void setRAndClear(double newR);
     double approxKBessel(const double& x);
     double exactKBessel(const double& x);
+    double getR() { return this->r; }
     void printTiming();
     std::vector<double> maximize();
 

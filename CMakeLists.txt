@@ -41,14 +41,12 @@ endif()
 
 add_executable(${PROJECT_NAME}
         main.cpp
-        CoefficientComputer.cpp
-        CoefficientComputer.h
         Index.cpp
         Index.h
         Quaternion.cpp
         Quaternion.h
-        EricNT.cpp
-        EricNT.h
+        Auxilliary.cpp
+        Auxilliary.h
         KBesselApproximator.cpp
         KBesselApproximator.h
         SL2C.cpp
@@ -60,9 +58,12 @@ add_executable(${PROJECT_NAME}
         Plotter.h
         Plotter.cpp]]
         tinycolormap.hpp
-        TrigApproximator.cpp
-        TrigApproximator.h
-        )
+        BianchiMaassPointwise.cpp
+        BianchiMaassPointwise.h
+        BianchiMaassSearch.cpp
+        BianchiMaassSearch.h
+        ImaginaryQuadraticIntegers.cpp
+        ImaginaryQuadraticIntegers.h)
 
 target_link_libraries(${PROJECT_NAME} ${FLINT_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${ARB_LIBRARY})
@@ -83,14 +84,11 @@ cmake_print_variables(OpenMP)
 cmake_print_variables(ARCHTKBESSEL_LIBRARY)
 
 #target_link_libraries(${PROJECT_NAME} ${ARCHT_LIBRARY})
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mno-omit-leaf-frame-pointer")
-
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
-
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mno-omit-leaf-frame-pointer")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 cmake_print_variables(CMAKE_CXX_FLAGS)
 cmake_print_variables(CMAKE_C_FLAGS)

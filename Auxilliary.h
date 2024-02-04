@@ -2,17 +2,14 @@
 // Created by Eric Moss on 6/27/23.
 //
 
-#ifndef EUCLIDEAN_BIANCHI_MAASS_FORMS_ERICNT_H
-#define EUCLIDEAN_BIANCHI_MAASS_FORMS_ERICNT_H
+#ifndef EUCLIDEAN_BIANCHI_MAASS_FORMS_AUXILLIARYMETHODS_H
+#define EUCLIDEAN_BIANCHI_MAASS_FORMS_AUXILLIARYMETHODS_H
 
 #include <iostream>
+#include <vector>
+#include "Index.h"
 
-//#include "flint/flint.h"
-//#include "arb.h"
-//#include "acb.h"
-#include <complex>
-
-class EricNT {
+class Auxilliary {
 public:
     static int mod(int x, int modulus);
     static int next(long double x);
@@ -27,8 +24,9 @@ public:
     //static double computeVolumeOfFD(int d);
 
     static double imagTheta(int d);
+    static double multiPrecisionSummation(const std::vector<double>& numbers);
     //static double pi;
 };
 
 
-#endif //EUCLIDEAN_BIANCHI_MAASS_FORMS_ERICNT_H
+#endif //EUCLIDEAN_BIANCHI_MAASS_FORMS_AUXILLIARYMETHODS_H

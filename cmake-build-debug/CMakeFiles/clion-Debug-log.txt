@@ -2,7 +2,7 @@
 -- FFTW_LIBRARY="/opt/homebrew/lib/libfftw3.dylib"
 -- OpenMP=""
 -- ARCHTKBESSEL_LIBRARY="/usr/local/lib/libArchtKBessel.a"
--- CMAKE_CXX_FLAGS=" -fopenmp=libomp -Ofast"
+-- CMAKE_CXX_FLAGS=" -fopenmp=libomp -O3"
 -- CMAKE_C_FLAGS=""
 -- Configuring done
 -- Generating done

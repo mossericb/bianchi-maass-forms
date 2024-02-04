@@ -137,7 +137,7 @@ FunctionToEvaluate::indexPoints(const std::vector<std::vector<Point>> &domainPoi
 
     std::vector<std::complex<double>> latticePoints;
     for (auto itr : indices) {
-        latticePoints.push_back(itr.getComplex());
+        latticePoints.push_back(itr.getComplex(0));
     }
 
     for (auto itr1 : domainPoints) {
