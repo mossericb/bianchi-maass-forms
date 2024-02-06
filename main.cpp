@@ -36,62 +36,13 @@ int main(int argc, char *argv[]) {
     double leftEndpoint = std::stod(argv[1]);
     double rightEndpoint = std::stod(argv[2]);
 
-    /*auto start = std::chrono::high_resolution_clock::now();
-
-    ArchtKBessel A = ArchtKBessel(53);
-    A.setR(9.554);
-    double y = A.evaluate(5.6);
-    std::cout << std::setprecision(16);
-    auto end = std::chrono::high_resolution_clock::now();
-
-    auto duration = end - start;
-    watch(y);
-    watch(duration);
-
-    start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < pow(10,4); i++) {
-        double x = 0.01 + i * 50.0/pow(10,4);
-        double y = A.evaluate(x);
-    }
-    end = std::chrono::high_resolution_clock::now();
-
-    duration = end - start;
-    watch(duration);
-
-    A.setR(10);
-    start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < pow(10,4); i++) {
-        double x = 0.01 + i * 50.0/pow(10,4);
-        double y = A.evaluate(x);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    duration = end - start;
-    watch(duration);
-
-    KBesselApproximator K = KBesselApproximator(53);
-    K.setRAndClear(10);
-    start = std::chrono::high_resolution_clock::now();
-
-    for (int i = 0; i < pow(10,4); i++) {
-        double x = 0.01 + i * 50.0/pow(10,4);
-        double y = K.computeKBessel(x);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    duration = end - start;
-    watch(duration);
-
-    double x = 7.51;
-    watch(A.evaluate(x));
-    watch(K.exactKBessel(x));*/
-
     int d = 19;
     char symClass = 'C';
-    int D = 12;
+    int D = 15;
 
     BianchiMaassPointwise bmp = BianchiMaassPointwise(d, D, symClass);
 
-    bmp.checkSingleEigenvalue(6.0537);
+    bmp.checkSingleEigenvalue(6.0537, 0.065);
 
     /*for (int D = 2; D <= 16; D++) {
         std::cout << "D = " << D << std::endl;

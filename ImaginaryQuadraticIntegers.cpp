@@ -8,7 +8,6 @@
 ImaginaryQuadraticIntegers::ImaginaryQuadraticIntegers(int d) {
     this->d = d;
 
-    std::complex<double> theta = {0,0};
     if (Auxilliary::mod(-d, 4) == 1) {
         //theta = 1/2 + I*sqrt(d)/2
         theta = std::complex<double> {1.0/2, sqrt(d)/2};

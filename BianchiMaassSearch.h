@@ -91,12 +91,13 @@ private:
      * Private members used in SEARCH calculations.
      ***************************************************/
 
-    enum MatrixID { Y1, Y2 };
+    enum MatrixID { Y1Matrix, Y2Matrix };
 
-    map<Index, vector<TestPointOrbitData>> searchMToY1TestPointOrbits;
-    map<Index, vector<TestPointOrbitData>> searchMToY2TestPointOrbits;
+    map<Index, vector<TestPointOrbitData>> mToY1TestPointOrbits;
+    map<Index, vector<TestPointOrbitData>> mToY2TestPointOrbits;
 
-    int searchTestPointCount;
+    int testPointCountY1;
+    int testPointCountY2;
 
     vector<MatrixXd> searchMatrices;
     vector<Eigen::Matrix<double, Eigen::Dynamic, 1>> searchMatrixSolutions;
@@ -105,21 +106,24 @@ private:
 
     int searchPossibleSignChanges;
 
-    KBesselApproximator searchK;
+    KBesselApproximator K;
 
     int searchIndexOfNormalization;
 
-    double searchM0;
+    double M0;
+    double MY1;
+    double MY2;
 
-    vector<Index> searchIndicesM0;
-    vector<Index> searchIndexTransversal;
-    unordered_map<Index, vector<tuple<Index, int>>> searchIndexOrbitData;
-    unordered_map<Index, vector<tuple<Index, int>>> searchIndexOrbitDataModMinusOne;
+    vector<Index> indicesM0;
+    vector<Index> indexTransversal;
+    map<Index, vector<tuple<Index, int>>> indexOrbitData;
+    map<Index, vector<tuple<Index, int>>> indexOrbitDataModMinusOne;
 
-    double searchY1;
-    double searchY2;
+    double Y1;
+    double Y2;
 
-    double searchMaxYStar;
+    double maxY1Star;
+    double maxY2Star;
 
     /***************************************************
      * Private methods used in SEARCH calculations.

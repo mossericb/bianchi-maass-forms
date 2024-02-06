@@ -603,7 +603,7 @@ void BianchiMaassPointwise::populateMatrix() {
         Index m = indexTransversal[i];
         watch(m);
 
-        testPointOrbits = getPointPullbackOrbits(m, Y, 0);
+        testPointOrbits = getPointPullbackOrbits(m, Y, MY);
         double maxYStar = 0;
         for (const auto& orbit : testPointOrbits) {
             double Y = orbit.representativePullback.getJ();
@@ -918,6 +918,15 @@ void BianchiMaassPointwise::computeIndexData() {
 
 double BianchiMaassPointwise::rand01() {
     return std::rand()/ (RAND_MAX + 1.0);
+}
+
+double BianchiMaassPointwise::traceProduct(const complex<double> &z, const complex<double> &w) {
+    auto answer = z*w + conj(z)*conj(w);
+    return answer.real();
+}
+
+bool BianchiMaassPointwise::areDifferentSign(const double &a, const double &b) {
+    return (a > 0 && b < 0) || (a < 0 && b > 0);
 }
 
 

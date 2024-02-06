@@ -51,70 +51,70 @@ build cmake_object_order_depends_target_Bianchi-Maass_Forms: phony || CMakeFiles
 
 build CMakeFiles/Bianchi-Maass_Forms.dir/main.cpp.o: CXX_COMPILER__Bianchi-Maass_Forms_Debug /Users/ericmoss/CLionProjects/bianchi-maass-forms/main.cpp || cmake_object_order_depends_target_Bianchi-Maass_Forms
   DEP_FILE = CMakeFiles/Bianchi-Maass_Forms.dir/main.cpp.o.d
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
   INCLUDES = -I/usr/local/include -I/usr/local/lib -I/opt/homebrew/include -I/opt/homebrew/lib -I/opt/homebrew/Cellar/libomp/16.0.6/lib -I/opt/homebrew/Cellar/libomp/16.0.6/include -I/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   OBJECT_FILE_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
 
 build CMakeFiles/Bianchi-Maass_Forms.dir/Index.cpp.o: CXX_COMPILER__Bianchi-Maass_Forms_Debug /Users/ericmoss/CLionProjects/bianchi-maass-forms/Index.cpp || cmake_object_order_depends_target_Bianchi-Maass_Forms
   DEP_FILE = CMakeFiles/Bianchi-Maass_Forms.dir/Index.cpp.o.d
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
   INCLUDES = -I/usr/local/include -I/usr/local/lib -I/opt/homebrew/include -I/opt/homebrew/lib -I/opt/homebrew/Cellar/libomp/16.0.6/lib -I/opt/homebrew/Cellar/libomp/16.0.6/include -I/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   OBJECT_FILE_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
 
 build CMakeFiles/Bianchi-Maass_Forms.dir/Quaternion.cpp.o: CXX_COMPILER__Bianchi-Maass_Forms_Debug /Users/ericmoss/CLionProjects/bianchi-maass-forms/Quaternion.cpp || cmake_object_order_depends_target_Bianchi-Maass_Forms
   DEP_FILE = CMakeFiles/Bianchi-Maass_Forms.dir/Quaternion.cpp.o.d
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
   INCLUDES = -I/usr/local/include -I/usr/local/lib -I/opt/homebrew/include -I/opt/homebrew/lib -I/opt/homebrew/Cellar/libomp/16.0.6/lib -I/opt/homebrew/Cellar/libomp/16.0.6/include -I/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   OBJECT_FILE_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
 
 build CMakeFiles/Bianchi-Maass_Forms.dir/Auxilliary.cpp.o: CXX_COMPILER__Bianchi-Maass_Forms_Debug /Users/ericmoss/CLionProjects/bianchi-maass-forms/Auxilliary.cpp || cmake_object_order_depends_target_Bianchi-Maass_Forms
   DEP_FILE = CMakeFiles/Bianchi-Maass_Forms.dir/Auxilliary.cpp.o.d
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
   INCLUDES = -I/usr/local/include -I/usr/local/lib -I/opt/homebrew/include -I/opt/homebrew/lib -I/opt/homebrew/Cellar/libomp/16.0.6/lib -I/opt/homebrew/Cellar/libomp/16.0.6/include -I/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   OBJECT_FILE_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
 
 build CMakeFiles/Bianchi-Maass_Forms.dir/KBesselApproximator.cpp.o: CXX_COMPILER__Bianchi-Maass_Forms_Debug /Users/ericmoss/CLionProjects/bianchi-maass-forms/KBesselApproximator.cpp || cmake_object_order_depends_target_Bianchi-Maass_Forms
   DEP_FILE = CMakeFiles/Bianchi-Maass_Forms.dir/KBesselApproximator.cpp.o.d
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
   INCLUDES = -I/usr/local/include -I/usr/local/lib -I/opt/homebrew/include -I/opt/homebrew/lib -I/opt/homebrew/Cellar/libomp/16.0.6/lib -I/opt/homebrew/Cellar/libomp/16.0.6/include -I/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   OBJECT_FILE_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
 
 build CMakeFiles/Bianchi-Maass_Forms.dir/SL2C.cpp.o: CXX_COMPILER__Bianchi-Maass_Forms_Debug /Users/ericmoss/CLionProjects/bianchi-maass-forms/SL2C.cpp || cmake_object_order_depends_target_Bianchi-Maass_Forms
   DEP_FILE = CMakeFiles/Bianchi-Maass_Forms.dir/SL2C.cpp.o.d
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
   INCLUDES = -I/usr/local/include -I/usr/local/lib -I/opt/homebrew/include -I/opt/homebrew/lib -I/opt/homebrew/Cellar/libomp/16.0.6/lib -I/opt/homebrew/Cellar/libomp/16.0.6/include -I/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   OBJECT_FILE_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
 
 build CMakeFiles/Bianchi-Maass_Forms.dir/FunctionToEvaluate.cpp.o: CXX_COMPILER__Bianchi-Maass_Forms_Debug /Users/ericmoss/CLionProjects/bianchi-maass-forms/FunctionToEvaluate.cpp || cmake_object_order_depends_target_Bianchi-Maass_Forms
   DEP_FILE = CMakeFiles/Bianchi-Maass_Forms.dir/FunctionToEvaluate.cpp.o.d
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
   INCLUDES = -I/usr/local/include -I/usr/local/lib -I/opt/homebrew/include -I/opt/homebrew/lib -I/opt/homebrew/Cellar/libomp/16.0.6/lib -I/opt/homebrew/Cellar/libomp/16.0.6/include -I/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   OBJECT_FILE_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
 
 build CMakeFiles/Bianchi-Maass_Forms.dir/BianchiMaassPointwise.cpp.o: CXX_COMPILER__Bianchi-Maass_Forms_Debug /Users/ericmoss/CLionProjects/bianchi-maass-forms/BianchiMaassPointwise.cpp || cmake_object_order_depends_target_Bianchi-Maass_Forms
   DEP_FILE = CMakeFiles/Bianchi-Maass_Forms.dir/BianchiMaassPointwise.cpp.o.d
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
   INCLUDES = -I/usr/local/include -I/usr/local/lib -I/opt/homebrew/include -I/opt/homebrew/lib -I/opt/homebrew/Cellar/libomp/16.0.6/lib -I/opt/homebrew/Cellar/libomp/16.0.6/include -I/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   OBJECT_FILE_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
 
 build CMakeFiles/Bianchi-Maass_Forms.dir/BianchiMaassSearch.cpp.o: CXX_COMPILER__Bianchi-Maass_Forms_Debug /Users/ericmoss/CLionProjects/bianchi-maass-forms/BianchiMaassSearch.cpp || cmake_object_order_depends_target_Bianchi-Maass_Forms
   DEP_FILE = CMakeFiles/Bianchi-Maass_Forms.dir/BianchiMaassSearch.cpp.o.d
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
   INCLUDES = -I/usr/local/include -I/usr/local/lib -I/opt/homebrew/include -I/opt/homebrew/lib -I/opt/homebrew/Cellar/libomp/16.0.6/lib -I/opt/homebrew/Cellar/libomp/16.0.6/include -I/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   OBJECT_FILE_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
 
 build CMakeFiles/Bianchi-Maass_Forms.dir/ImaginaryQuadraticIntegers.cpp.o: CXX_COMPILER__Bianchi-Maass_Forms_Debug /Users/ericmoss/CLionProjects/bianchi-maass-forms/ImaginaryQuadraticIntegers.cpp || cmake_object_order_depends_target_Bianchi-Maass_Forms
   DEP_FILE = CMakeFiles/Bianchi-Maass_Forms.dir/ImaginaryQuadraticIntegers.cpp.o.d
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fcolor-diagnostics -std=gnu++20
   INCLUDES = -I/usr/local/include -I/usr/local/lib -I/opt/homebrew/include -I/opt/homebrew/lib -I/opt/homebrew/Cellar/libomp/16.0.6/lib -I/opt/homebrew/Cellar/libomp/16.0.6/include -I/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   OBJECT_FILE_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
@@ -128,7 +128,7 @@ build CMakeFiles/Bianchi-Maass_Forms.dir/ImaginaryQuadraticIntegers.cpp.o: CXX_C
 # Link the executable Bianchi-Maass_Forms
 
 build Bianchi-Maass_Forms: CXX_EXECUTABLE_LINKER__Bianchi-Maass_Forms_Debug CMakeFiles/Bianchi-Maass_Forms.dir/main.cpp.o CMakeFiles/Bianchi-Maass_Forms.dir/Index.cpp.o CMakeFiles/Bianchi-Maass_Forms.dir/Quaternion.cpp.o CMakeFiles/Bianchi-Maass_Forms.dir/Auxilliary.cpp.o CMakeFiles/Bianchi-Maass_Forms.dir/KBesselApproximator.cpp.o CMakeFiles/Bianchi-Maass_Forms.dir/SL2C.cpp.o CMakeFiles/Bianchi-Maass_Forms.dir/FunctionToEvaluate.cpp.o CMakeFiles/Bianchi-Maass_Forms.dir/BianchiMaassPointwise.cpp.o CMakeFiles/Bianchi-Maass_Forms.dir/BianchiMaassSearch.cpp.o CMakeFiles/Bianchi-Maass_Forms.dir/ImaginaryQuadraticIntegers.cpp.o | /opt/homebrew/lib/libflint.dylib /opt/homebrew/lib/libarb.dylib /opt/homebrew/lib/libmpfr.dylib /opt/homebrew/lib/libgmp.dylib /opt/homebrew/lib/libmpfi.dylib /opt/homebrew/lib/libmpi.dylib /opt/homebrew/lib/libfftw3.dylib /opt/homebrew/lib/libpari.dylib /usr/local/lib/libArchtKBessel.a
-  FLAGS = -fopenmp=libomp -O3 -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk
+  FLAGS = -fopenmp=libomp -O0 -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -g -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk
   LINK_LIBRARIES = /opt/homebrew/lib/libflint.dylib  /opt/homebrew/lib/libarb.dylib  /opt/homebrew/lib/libmpfr.dylib  /opt/homebrew/lib/libgmp.dylib  /opt/homebrew/lib/libmpfi.dylib  /opt/homebrew/lib/libmpi.dylib  /opt/homebrew/lib/libfftw3.dylib  /opt/homebrew/lib/libpari.dylib  /usr/local/lib/libArchtKBessel.a
   OBJECT_DIR = CMakeFiles/Bianchi-Maass_Forms.dir
   POST_BUILD = :

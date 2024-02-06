@@ -78,7 +78,7 @@ private:
     int coarseChebyshevIndex(const double& x);
     int fineChebyshevIndex(const double& x);
 
-    double fineSplineSpacing = pow(2,-17);
+    double fineSplineSpacing = pow(2,-19);
     double coarseSplineSpacing = pow(2,-12);
     int fineSplineKnotCount = 100;
     int coarseSplineKnotCount = 100;
@@ -93,6 +93,8 @@ private:
 
     std::vector<double> fineSplineEndpoints;
     std::vector<double> coarseSplineEndpoints;
+
+    void runTest();
 
 };
 

@@ -87,7 +87,9 @@ void BianchiMaassSearch::searchForEigenvalues(const double leftR, const double r
     if (leftR >= rightR) {
         throw(std::invalid_argument("leftR should be less than rightR"));
     }
-    recursiveSearchForEigenvalues(leftR, rightR);
+    vector<double> leftG = {};
+    vector<double> rightG = {};
+    recursiveSearchForEigenvalues(leftR, rightR, leftG, rightG);
 }
 
 
@@ -176,6 +178,7 @@ double BianchiMaassSearch::computeMYGeneral(const double M0, const double Y) {
 vector<TestPointOrbitData>
 BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const double MY) {
     vector<TestPointOrbitData> answer;
+    double maxYStar = 0;
 
     //These formulas provide bounds to guarantee that the DFT result is valid
     double absRealM = abs(m.getComplex(d).real());
@@ -245,7 +248,7 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
         Q0 += 1;
         Q1 += 1;
     }
-    pointwiseTestPointCount = 2 * Q0 * 2 * Q1;
+
 
     char nonsquareUnitSign = (symClass == 'D' || symClass == 'G') ? 1 : -1;
     char reflectionSign = (symClass == 'D' || symClass == 'C') ? 1 : -1;
@@ -419,6 +422,14 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
         }
     }
 
+    if (Y == MY1) {
+        testPointCountY1 = 2 * Q0 * 2 * Q1;
+        maxY1Star = maxYStar;
+    } else {
+        testPointCountY2 = 2 * Q0 * 2 * Q1;
+        maxY2Star = maxYStar;
+    }
+
     return answer;
 }
 
@@ -458,29 +469,30 @@ void BianchiMaassSearch::recursiveSearchForEigenvalues(const double leftR, const
         return;
     }
 
-    //Replace this with something that selects Y1 and Y2 more carefully, dependent on r and Y0, etc.
-    searchY1 = 0.065;
-    searchY2 = 0.07;
+    //Replace this with something that selects Y1Matrix and Y2Matrix more carefully, dependent on r and Y0, etc.
+    Y1 = 0.065;
+    Y2 = 0.07;
 
     if (leftG.empty() || rightG.empty()) {
         if (leftG.empty() && rightG.empty()) {
-            searchLeftR = leftR;
-            searchRightR = rightR;
-            searchK.setRAndClear(rightR);
+            K.setRAndClear(rightR);
             //compute all the indices and points etc
-            searchM0 = computeM0General(rightR);
-            searchMY = computeMYGeneral(searchM0, searchY1); //Y1 is the smaller one, produces larger MY
+            M0 = computeM0General(rightR);
+            MY1 = computeMYGeneral(M0, Y1); //Y1Matrix is the smaller one, produces larger MY
+            MY2 = computeMYGeneral(M0, Y2);
             computeIndexData();
             computeTestPointData();
         }
 
         if (leftG.empty()) {
-            searchK.setRAndClear(leftR);
+            K.setRAndClear(leftR);
+            //K precomputation is called in the getGVector() function
             leftG = getGVector();
         }
 
         if (rightG.empty()) {
-            searchK.setRAndClear(rightR);
+            K.setRAndClear(rightR);
+            //K precomputation is called in the getGVector() function
             rightG = getGVector();
         }
     }
@@ -510,18 +522,18 @@ void BianchiMaassSearch::recursiveSearchForEigenvalues(const double leftR, const
 }
 
 void BianchiMaassSearch::computeIndexData() {
-    searchIndicesM0.clear();
-    searchIndexTransversal.clear();
-    searchIndexOrbitData.clear();
-    searchIndexOrbitDataModMinusOne.clear();
+    indicesM0.clear();
+    indexTransversal.clear();
+    indexOrbitData.clear();
+    indexOrbitDataModMinusOne.clear();
 
     // Computed bounds using Lagrange multipliers
     // aub = ceil(maxN * thetaModulus / sqrtl(pow(thetaModulus, 2) - pow(thetaReal, 2)));
-    int aUpperBound = ceil(searchM0 * abs(theta)/ sqrt(pow(abs(theta),2) - pow(theta.real(),2)));
+    int aUpperBound = ceil(M0 * abs(theta)/ sqrt(pow(abs(theta),2) - pow(theta.real(),2)));
     int aLowerBound = -aUpperBound;
 
     //bub = ceil(maxN / sqrtl(pow(thetaModulus, 2) - pow(thetaReal, 2)));
-    int bUpperBound = ceil(searchM0 /sqrt(pow(abs(theta),2) - pow(theta.real(),2)));
+    int bUpperBound = ceil(M0 /sqrt(pow(abs(theta),2) - pow(theta.real(),2)));
     int bLowerBound = -bUpperBound;
 
     for (int a = aLowerBound; a <= aUpperBound; a++) {
@@ -530,8 +542,8 @@ void BianchiMaassSearch::computeIndexData() {
                 continue;
             }
             Index index = Index(a, b);
-            if (index.getAbs(d) <= searchM0) {
-                searchIndicesM0.push_back(index);
+            if (index.getAbs(d) <= M0) {
+                indicesM0.push_back(index);
             }
         }
     }
@@ -548,10 +560,10 @@ void BianchiMaassSearch::computeIndexData() {
     };
 
     /*Sort the indices by absolute value then by angle with positive real axis.*/
-    std::sort(searchIndicesM0.begin(), searchIndicesM0.end(), indexComparator);
+    std::sort(indicesM0.begin(), indicesM0.end(), indexComparator);
 
     vector<Index> tempIndices;
-    copy(searchIndicesM0.begin(), searchIndicesM0.end(), back_inserter(tempIndices));
+    copy(indicesM0.begin(), indicesM0.end(), back_inserter(tempIndices));
 
     int rotationCoeff = symClass == 'D' || symClass == 'G' ? 1 : -1;
     int conjCoeff = symClass == 'D' || symClass == 'C' ? 1 : -1;
@@ -598,10 +610,10 @@ void BianchiMaassSearch::computeIndexData() {
 
         }
         /*Save our starting index to the transversal.*/
-        searchIndexTransversal.push_back(index);
+        indexTransversal.push_back(index);
 
         /*Save the orbit data.*/
-        searchIndexOrbitData[index] = orbit;
+        indexOrbitData[index] = orbit;
 
         /*Compute the orbit mod +-1*/
         vector<tuple<Index,int>> orbitModMinusOne;
@@ -617,7 +629,7 @@ void BianchiMaassSearch::computeIndexData() {
                 orbitModMinusOne.push_back(classModMinusOne);
             }
         }
-        searchIndexOrbitDataModMinusOne[index] = orbitModMinusOne;
+        indexOrbitDataModMinusOne[index] = orbitModMinusOne;
 
         /*Delete the indicesM0 in the orbit from the copied list of indicesM0.*/
         for (auto itr1 : orbit) {
@@ -634,8 +646,8 @@ void BianchiMaassSearch::computeIndexData() {
     }
 
     /*Save the index of n = 1 + 0*I. Should be 0, but just to check.*/
-    for (int itr = 0; itr < searchIndexTransversal.size(); itr++) {
-        if (searchIndexTransversal[itr].getComplex(d) == complex<double> {1, 0}) {
+    for (int itr = 0; itr < indexTransversal.size(); itr++) {
+        if (indexTransversal[itr].getComplex(d) == complex<double> {1, 0}) {
             searchIndexOfNormalization = itr;
             break;
         }
@@ -643,54 +655,19 @@ void BianchiMaassSearch::computeIndexData() {
 }
 
 
-void BianchiMaassSearch::computeTestPointData() {
-    searchMToY1TestPointOrbits.clear();
-    searchMToY2TestPointOrbits.clear();
-    searchMaxYStar = 0;
-
-    int size = searchIndexTransversal.size();
-    vector<vector<TestPointOrbitData>> Y1Results;
-    vector<vector<TestPointOrbitData>> Y2Results;
-
-    Y1Results.resize(size);
-    Y2Results.resize(size);
-#pragma omp parallel for default(none) shared(searchMToY1TestPointOrbits, searchMToY2TestPointOrbits, searchY1, searchY2, Y1Results, Y2Results, size)
-    for (int i = 0; i < size; i++) {
-        Index m = searchIndexTransversal[i];
-        Y1Results[i] = getPointPullbackOrbits(m, searchY1, 0);
-        Y2Results[i] = getPointPullbackOrbits(m, searchY2, 0);
-    }
-
-    for (int i = 0; i < size; i++) {
-        Index m = searchIndexTransversal[i];
-        searchMToY1TestPointOrbits[m] = Y1Results[i];
-        searchMToY2TestPointOrbits[m] = Y2Results[i];
-    }
-
-    //Extract largest height of a pullback for KBessel precompute
-    for (const auto& itr1 : searchMToY1TestPointOrbits) {
-        for (const auto& itr2 : itr1.second) {
-            double Y = itr2.representativePullback.getJ();
-            if (Y > searchMaxYStar) {
-                searchMaxYStar = Y;
-            }
-        }
-    }
-}
-
 
 void BianchiMaassSearch::populateMatrix(MatrixID matrixId) {
 
-    int size = searchIndexTransversal.size();
+    int size = indexTransversal.size();
     searchMatrices[matrixId].resize(size, size);
 
     for (int i = 0; i < size; i++) {
-        Index m = searchIndexTransversal[i];
+        Index m = indexTransversal[i];
 
 #pragma omp parallel for default(none) shared(i, m, size, matrixId)
         for (int j = 0; j < size; j++) {
 
-            Index n = searchIndexTransversal[j];
+            Index n = indexTransversal[j];
             double entry = computeEntry(m, n, matrixId);
 
             searchMatrices[matrixId](i,j) = entry;
@@ -699,22 +676,22 @@ void BianchiMaassSearch::populateMatrix(MatrixID matrixId) {
 }
 
 void BianchiMaassSearch::solveMatrix(MatrixID matrixId) {
-    int size = searchIndexTransversal.size();
+    int size = indexTransversal.size();
 
     searchMatrixG[matrixId].resize(size);
     searchMatrixSolutions[matrixId].resize(size - 1);
     searchMatrixB[matrixId].resize(size - 1);
 
-    MatrixXd A;
-    A.resize(size - 1, size - 1);
+    MatrixXd B;
+    B.resize(size - 1, size - 1);
 
     //Finding kernel of M is the original problem.
-    //Solving Ax=b is the system after moving a column over and deleting a row.
+    //Solving Bx=b is the system after moving a column over and deleting a row.
     auto M = searchMatrices[matrixId];
     auto b = searchMatrixB[matrixId];
     auto x = searchMatrixSolutions[matrixId];
     //set b to negative of the indexOfNormalization column
-    //set tempA to be matrixA deleting row and column indexOfNormalization
+    //set B to be M deleting row and column indexOfNormalization
     for (int row = 0; row < size; row++) {
         for (int column = 0; column < size; column++) {
             if (column == searchIndexOfNormalization && row != searchIndexOfNormalization) {
@@ -728,7 +705,7 @@ void BianchiMaassSearch::solveMatrix(MatrixID matrixId) {
                 //add it to tempA somehow
                 int modifiedRow = (row > searchIndexOfNormalization) ? row - 1 : row;
                 int modifiedColumn = (column > searchIndexOfNormalization) ? column - 1 : column;
-                A(modifiedRow, modifiedColumn) = M(row, column);
+                B(modifiedRow, modifiedColumn) = M(row, column);
             }
         }
     }
@@ -738,7 +715,7 @@ void BianchiMaassSearch::solveMatrix(MatrixID matrixId) {
     b = -b;
 
     //solve the equation Ax=b for x
-    x = A.colPivHouseholderQr().solve(b);
+    x = B.colPivHouseholderQr().solve(b);
 
     //Now we need to turn x into xPrime by adding the normalization back in.
     Eigen::Matrix<double, Eigen::Dynamic, 1> xPrime;
@@ -758,26 +735,26 @@ void BianchiMaassSearch::solveMatrix(MatrixID matrixId) {
 }
 
 vector<double> BianchiMaassSearch::getGVector() {
-    int size = searchIndexTransversal.size();
+    int size = indexTransversal.size();
     vector<double> gVector;
     gVector.resize(2*size);
 
-    searchK.extendPrecomputedRange(2 * pi / A * 1 * searchY1, 2 * pi / A * searchM0 * searchMaxYStar);
+    K.extendPrecomputedRange(2 * pi / A * 1 * Y1, 2 * pi / A * M0 * maxY1Star);
 
-    populateMatrix(MatrixID::Y1);
-    populateMatrix(MatrixID::Y2);
+    populateMatrix(MatrixID::Y1Matrix);
+    populateMatrix(MatrixID::Y2Matrix);
 
     //solve both matrices
     //apply each matrix to the solution of the other
-    solveMatrix(MatrixID::Y1);
-    solveMatrix(MatrixID::Y2);
+    solveMatrix(MatrixID::Y1Matrix);
+    solveMatrix(MatrixID::Y2Matrix);
 
     //concatenate the output vectors (coherently!)
     for (int i = 0; i < size; i++) {
-        gVector.push_back(searchMatrixG[MatrixID::Y1](i));
+        gVector.push_back(searchMatrixG[MatrixID::Y1Matrix](i));
     }
     for (int i = 0; i < size; i++) {
-        gVector.push_back(searchMatrixG[MatrixID::Y2](i));
+        gVector.push_back(searchMatrixG[MatrixID::Y2Matrix](i));
     }
 
     return gVector;
@@ -787,11 +764,14 @@ double
 BianchiMaassSearch::computeEntry(const Index &m, const Index &n, MatrixID matrixId) {
     double answer = 0;
 
+    int pointCount = 0;
     vector<TestPointOrbitData> testPointOrbits;
-    if (matrixId == MatrixID::Y1) {
-        testPointOrbits = searchMToY1TestPointOrbits[m];
+    if (matrixId == MatrixID::Y1Matrix) {
+        testPointOrbits = mToY1TestPointOrbits[m];
+        pointCount = testPointCountY1;
     } else {
-        testPointOrbits = searchMToY2TestPointOrbits[m];
+        testPointOrbits = mToY2TestPointOrbits[m];
+        pointCount = testPointCountY2;
     }
 
     if (symClass == 'D' || symClass == 'G' || d == 1) {
@@ -803,10 +783,10 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, MatrixID matrix
 
             //toAdd =  ystar * kappa(2*pi/A*|n|*ystar) * e(symClass, n, x^*) * exp(-pi*I/A * <I*m,x>)
             double yStar = pullback.getJ();
-            double term = yStar * searchK.approxKBessel(2 * pi / A * n.getAbs(d) * yStar);
+            double term = yStar * K.approxKBessel(2 * pi / A * n.getAbs(d) * yStar);
 
             double indexTerm = 0;
-            for (const auto& tup : searchIndexOrbitDataModMinusOne[n]) {
+            for (const auto& tup : indexOrbitDataModMinusOne[n]) {
                 Index l = get<0>(tup);
                 complex<double> xStar = pullback.getComplex();
                 double ellTerm = get<1>(tup); //This is a_l/a_n
@@ -826,7 +806,7 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, MatrixID matrix
             terms.push_back(term);
         }
         answer = Auxilliary::multiPrecisionSummation(terms);
-        answer *= -4.0 / searchTestPointCount;
+        answer *= -4.0 / pointCount;
     } else {
         vector<double> terms;
         for (const auto& testPointOrbit : testPointOrbits) {
@@ -834,10 +814,10 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, MatrixID matrix
             auto pullback = testPointOrbit.representativePullback;
 
             double yStar = pullback.getJ();
-            double term = yStar * searchK.approxKBessel(2 * pi / A * n.getAbs(d) * yStar);
+            double term = yStar * K.approxKBessel(2 * pi / A * n.getAbs(d) * yStar);
 
             double indexTerm = 0;
-            for (const auto& tup : searchIndexOrbitDataModMinusOne[n]) {
+            for (const auto& tup : indexOrbitDataModMinusOne[n]) {
                 Index l = get<0>(tup);
                 complex<double> xStar = pullback.getComplex();
                 double ellTerm = get<1>(tup); //This is a_l/a_n
@@ -857,168 +837,22 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, MatrixID matrix
             terms.push_back(term);
         }
         answer = Auxilliary::multiPrecisionSummation(terms);
-        answer *= +4.0 / searchTestPointCount;
+        answer *= +4.0 / pointCount;
     }
 
     //Add on the kronecker delta term
     if (m == n) {
         //deltaTerm = Y * kappa(2*pi/A*|m|*Y)
         double deltaTerm;
-        if (matrixId == MatrixID::Y1) {
-            deltaTerm = searchY1 * searchK.exactKBessel(2 * pi / A * m.getAbs(d) * searchY1);
+        if (matrixId == MatrixID::Y1Matrix) {
+            deltaTerm = Y1 * K.exactKBessel(2 * pi / A * m.getAbs(d) * Y1);
         } else {
-            deltaTerm = searchY2 * searchK.exactKBessel(2 * pi / A * m.getAbs(d) * searchY2);
+            deltaTerm = Y2 * K.exactKBessel(2 * pi / A * m.getAbs(d) * Y2);
         }
 
         answer += deltaTerm;
     }
     return answer;
-}
-
-void BianchiMaassSearch::secantSearch(double startR1, double startR2) {
-
-    double r1 = startR1;
-    cout << setprecision(16) << "r: " << r1;
-    this->leftR = r1;
-    this->rightR = r1;
-    K->setRAndClear(r1);
-    computeM0();
-
-
-    double Y = 0.9*r1/(2*pi/A*M0);
-    watch(Y);
-    Y1 = Y;
-    Y2 = Y;
-
-    computeMY();
-    watch(MY);
-    pointwiseComputeIndexData();
-    watch(indexTransversal.size());
-
-    Eigen::MatrixXd matrix;
-    matrix.resize(indexTransversal.size(), indexTransversal.size());
-
-    for (int j = 0; j < indexTransversal.size(); j++) {
-        Index m = indexTransversal[j];
-        auto points = pointwisePointsAndPullbacks(m, Y);
-
-        if (j == 0) {
-            cout << "teehee" << endl;
-            K->setRAndPrecompute(r1, 2 * pi / A * 1 * Y, 2 * pi / A * M0 * maxYStar);
-            cout << "teehee" << endl;
-        } else {
-            K->extendPrecomputedRange(0, 2 * pi / A * M0 * maxYStar);
-        }
-
-        auto row = pointwiseGenerateMatrixRow(m, Y, points);
-        for (int k = 0; k < indexTransversal.size(); k++) {
-            matrix(j,k) = row[k];
-        }
-    }
-
-    matrices[Y1R1] = matrix;
-    pointwiseSolveMatrix();
-    for (auto itr : coefficientMaps[Y1R1]) {
-        outputFile << setprecision(16) << itr.first << ", " << itr.second << "\n";
-    }
-    double cost1 = heckeCheck(Y1R1);
-    cout << setprecision(16) << " cost: " << cost1 << endl;
-
-    //
-    //
-    //
-    //
-
-    double r2 = startR2;
-    cout << setprecision(16) << "r: " << r2;
-    this->leftR = r2;
-    this->rightR = r2;
-    K->setRAndClear(r2);
-    computeM0();
-
-    Y = 0.9*r2/(2*pi/A*M0);
-    watch(Y);
-    Y1 = Y;
-    Y2 = Y;
-
-    computeMY();
-    pointwiseComputeIndexData();
-
-    matrix.resize(indexTransversal.size(), indexTransversal.size());
-
-
-    for (int j = 0; j < indexTransversal.size(); j++) {
-        Index m = indexTransversal[j];
-        auto points = pointwisePointsAndPullbacks(m, Y);
-
-        if (j == 0) {
-            K->setRAndPrecompute(r2, 2 * pi / A * 1 * Y, 2 * pi / A * M0 * maxYStar);
-        } else {
-            K->extendPrecomputedRange(0, 2 * pi / A * M0 * maxYStar);
-        }
-
-        auto row = pointwiseGenerateMatrixRow(m, Y, points);
-        for (int k = 0; k < indexTransversal.size(); k++) {
-            matrix(j,k) = row[k];
-        }
-    }
-    matrices[Y1R1] = matrix;
-    pointwiseSolveMatrix();
-    double cost2 = heckeCheck(Y1R1);
-    cout << setprecision(16) << " cost: " << cost2 << endl;
-
-    double stop = pow(10,-16);
-    int count = 2;
-    while (abs(r1 - r2) > stop) {
-        double nextR = findZeroOfLinearInterpolation(r1, cost1, r2, cost2);
-        cout << setprecision(16) << "r: " << nextR;
-        this->leftR = nextR;
-        this->rightR = nextR;
-        K->setRAndClear(nextR);
-        computeM0();
-
-        Y = 0.9*r2/(2*pi/A*M0);
-        watch(Y);
-        Y1 = Y;
-        Y2 = Y;
-
-        computeMY();
-        pointwiseComputeIndexData();
-
-        matrix.resize(indexTransversal.size(), indexTransversal.size());
-
-        //  for m in indexTransversal:
-        for (int j = 0; j < indexTransversal.size(); j++) {
-            Index m = indexTransversal[j];
-            auto points = pointwisePointsAndPullbacks(m, Y);
-            //      if (lowest Y)
-            if (j == 0) {
-                //          precompute K-bessel function
-                K->setRAndPrecompute(nextR, 2 * pi / A * 1 * Y, 2 * pi / A * M0 * maxYStar);
-            } else {
-                K->extendPrecomputedRange(0, 2 * pi / A * M0 * maxYStar);
-            }
-            //      matrix.row = generateRow(points)
-            auto row = pointwiseGenerateMatrixRow(m, Y, points);
-            for (int k = 0; k < indexTransversal.size(); k++) {
-                matrix(j,k) = row[k];
-            }
-        }
-        matrices[Y1R1] = matrix;
-        pointwiseSolveMatrix();
-        double nextCost = heckeCheck(Y1R1);
-        cout << setprecision(16) << " cost: " << nextCost << endl;
-        /////
-        r1 = r2;
-        cost1 = cost2;
-
-        r2 = nextR;
-        cost2 = nextCost;
-        count++;
-        if (count > 20) {
-            break;
-        }
-    }
 }
 
 
@@ -1058,4 +892,13 @@ bool BianchiMaassSearch::signChangeVectorIsIncreasing(vector<int> &v) {
 
 double BianchiMaassSearch::findZeroOfLinearInterpolation(double x0, double y0, double x1, double y1) {
     return -y0 * (x1 - x0)/(y1 - y0) + x0;
+}
+
+void BianchiMaassSearch::computeTestPointData() {
+    mToY1TestPointOrbits.clear();
+    mToY2TestPointOrbits.clear();
+    for (const auto& m : indexTransversal) {
+        mToY1TestPointOrbits[m] = getPointPullbackOrbits(m, Y1, MY1);
+        mToY2TestPointOrbits[m] = getPointPullbackOrbits(m, Y2, MY2);
+    }
 }
