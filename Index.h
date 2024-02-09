@@ -9,7 +9,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
-#include "Auxilliary.h"
+#include "Auxiliary.h"
 
 class Index {
 public:

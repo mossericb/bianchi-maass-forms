@@ -47,6 +47,10 @@ KBesselApproximator::KBesselApproximator(int bitsOfPrecision) {
 
 double KBesselApproximator::approxKBessel(const double& x) {
     if (x < precomputedRegionLeftBound || x > precomputedRegionRightBound) {
+        watch(x);
+        watch(r);
+        watch(precomputedRegionLeftBound);
+        watch(precomputedRegionRightBound);
         throw std::invalid_argument("KBessel approximation out of bounds");
     }
 

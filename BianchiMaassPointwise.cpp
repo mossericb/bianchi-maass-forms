@@ -217,7 +217,7 @@ double BianchiMaassPointwise::evaluate(const double r, const Quaternion& z, cons
 
         terms.push_back(term);
     }
-    double answer = Auxilliary::multiPrecisionSummation(terms);
+    double answer = Aux.multiPrecisionSummation(terms);
     return answer;
 }
 
@@ -349,7 +349,7 @@ BianchiMaassPointwise::getPointPullbackOrbits(const Index &m, const double Y, co
     double absImagM = abs(m.getComplex(d).imag());
     double Q0double = 0;
     double Q1double = (MY + absRealM)/2.0;
-    if (Auxilliary::mod(-d, 4) == 1) {
+    if (Auxiliary::mod(-d, 4) == 1) {
         double Q0doubleOption1 = MY + absRealM;
         double Q0doubleOption2 = (MY + absImagM)/(2.0*A);
         Q0double = max(Q0doubleOption1, Q0doubleOption2);
@@ -361,9 +361,9 @@ BianchiMaassPointwise::getPointPullbackOrbits(const Index &m, const double Y, co
     int Q1 = ceil(Q1double);
 
     //Tweak Q0 and Q1 to be exactly what we need for exploiting symmetry
-    if (Auxilliary::mod(-d, 4) == 1 && d != 3) {
+    if (Auxiliary::mod(-d, 4) == 1 && d != 3) {
         //If -d = 1 mod 4 then we need Q0/Q1 to be an even integer for the map x -> -bar(x) to be defined on test points
-        if (Auxilliary::mod(Q0, Q1) == 0 && Auxilliary::mod(Q0 / Q1, 2) == 0) {
+        if (Auxiliary::mod(Q0, Q1) == 0 && Auxiliary::mod(Q0 / Q1, 2) == 0) {
             // Q0/Q1 is an even integer
             // there is nothing to do!
         } else {
@@ -380,13 +380,13 @@ BianchiMaassPointwise::getPointPullbackOrbits(const Index &m, const double Y, co
             } else {
                 //It is true that 2k < Q0/Q1 < 2(k+1) and k > 0
                 int firstOptionQ0 = ceil(Q1 * 2 * (k+1));
-                while (!Auxilliary::mod(firstOptionQ0, 2 * (k + 1) == 0)) {
+                while (!Auxiliary::mod(firstOptionQ0, 2 * (k + 1) == 0)) {
                     firstOptionQ0++;
                 }
                 int firstOptionQ1 = firstOptionQ0/(2*(k+1));
 
                 int secondOptionQ0 = ceil(Q1 * 2 * k);
-                while (!Auxilliary::mod(secondOptionQ0, 2 * k == 0)) {
+                while (!Auxiliary::mod(secondOptionQ0, 2 * k == 0)) {
                     secondOptionQ0++;
                 }
                 int secondOptionQ1 = secondOptionQ0/(2 * k);
@@ -419,7 +419,7 @@ BianchiMaassPointwise::getPointPullbackOrbits(const Index &m, const double Y, co
 
     //Now generate the representatives
     //then generate the orbits
-    if (Auxilliary::mod(-d, 4) == 1 && d != 3) {
+    if (Auxiliary::mod(-d, 4) == 1 && d != 3) {
         //iterate to make orbit representatives
         for (int l1 = 1; l1 <= Q1; l1++) {
             int lowerBound = ceil(0.5 - Q0*(l1-0.5)/(2.0*Q1));
@@ -659,7 +659,7 @@ double BianchiMaassPointwise::computeEntry(const Index &m, const Index &n) {
 
             terms.push_back(term);
         }
-        answer = Auxilliary::multiPrecisionSummation(terms);
+        answer = Aux.multiPrecisionSummation(terms);
         answer *= -4.0 / testPointCount;
     } else {
         vector<double> terms;
@@ -690,7 +690,7 @@ double BianchiMaassPointwise::computeEntry(const Index &m, const Index &n) {
 
             terms.push_back(term);
         }
-        answer = Auxilliary::multiPrecisionSummation(terms);
+        answer = Aux.multiPrecisionSummation(terms);
         answer *= +4.0 / testPointCount;
     }
 

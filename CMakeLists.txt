@@ -45,8 +45,8 @@ add_executable(${PROJECT_NAME}
         Index.h
         Quaternion.cpp
         Quaternion.h
-        Auxilliary.cpp
-        Auxilliary.h
+        Auxiliary.cpp
+        Auxiliary.h
         KBesselApproximator.cpp
         KBesselApproximator.h
         SL2C.cpp

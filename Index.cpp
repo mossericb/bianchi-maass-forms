@@ -6,7 +6,7 @@
 #include <complex>
 #include <cmath>
 #include <algorithm>
-#include "Auxilliary.h"
+#include "Auxiliary.h"
 
 using namespace std;
 
@@ -32,7 +32,7 @@ Index Index::rotate(int d) const {
 }
 
 Index Index::conj(int d) const {
-    if (Auxilliary::mod(-d, 4) == 1) {
+    if (Auxiliary::mod(-d, 4) == 1) {
         return {a + b, -b};
     } else {
         return {a, -b};
@@ -69,9 +69,9 @@ string Index::to_string() const {
 std::complex<double> Index::getComplex(int d) const {
     std::complex<double> theta;
     //Initialize std::complex<double> theta
-    if (Auxilliary::mod(-d, 4) == 1) {
+    if (Auxiliary::mod(-d, 4) == 1) {
         theta = {1.0/2, sqrt(d)/2};
-    } else if (Auxilliary:: mod(-d, 4) == 0) {
+    } else if (Auxiliary:: mod(-d, 4) == 0) {
         throw(std::invalid_argument("d should be squarefree"));
     } else {
         theta = {0, sqrt(d)};

@@ -25,6 +25,7 @@
 #include <iostream>
 #include "ArchtKBessel.h"
 #include "BianchiMaassPointwise.h"
+#include "BianchiMaassSearch.h"
 #include <chrono>
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl << std::flush
@@ -38,11 +39,13 @@ int main(int argc, char *argv[]) {
 
     int d = 19;
     char symClass = 'C';
-    int D = 15;
+    int D = 4;
 
-    BianchiMaassPointwise bmp = BianchiMaassPointwise(d, D, symClass);
+    BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
+    bms.searchForEigenvalues(6, 7);
 
-    bmp.checkSingleEigenvalue(6.0537, 0.065);
+    //BianchiMaassPointwise bmp = BianchiMaassPointwise(d, D, symClass);
+    //bmp.checkSingleEigenvalue(6.011020660400391 ,0.065);
 
     /*for (int D = 2; D <= 16; D++) {
         std::cout << "D = " << D << std::endl;

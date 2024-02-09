@@ -4,15 +4,42 @@
 
 #include <stdexcept>
 
-#include "Auxilliary.h"
+#include "Auxiliary.h"
 //#include <math.h>
 #include "arb.h"
 //#include "pari/pari.h"
 //#include "flint/flint.h"
 //#include "BianchiMaassComputer.h"
+#include "omp.h"
+
+Auxiliary::Auxiliary() {
+
+#pragma omp parallel default(none)
+    {
+        #pragma omp single
+        threads = omp_get_num_threads();
+    }
+
+    temps.resize(threads);
+    sums.resize(threads);
+
+    for (int i = 0; i < threads; i++) {
+        arb_init(&temps[i]);
+        arb_init(&sums[i]);
+    }
+}
+
+Auxiliary::~Auxiliary() {
+    for (int i = 0; i < threads; i++) {
+        arb_clear(&temps[i]);
+        arb_clear(&sums[i]);
+    }
+    flint_cleanup();
+}
 
 
-int Auxilliary::mod(int x, int modulus) {
+
+int Auxiliary::mod(int x, int modulus) {
     int answer = x % modulus;
     if (answer < 0) {
         return answer + abs(modulus);
@@ -21,14 +48,14 @@ int Auxilliary::mod(int x, int modulus) {
     }
 }
 
-int Auxilliary::next(long double x) {
+int Auxiliary::next(long double x) {
     int answer = floor(x) + 1;
     return answer;
 }
 
-/*void Auxilliary::computeTheta(acb_t theta, int d, int bits) {
+/*void Auxiliary::computeTheta(acb_t theta, int d, int bits) {
     acb_init(theta);
-    if (Auxilliary::mod(-d,4) == 1) {
+    if (Auxiliary::mod(-d,4) == 1) {
         //theta = 1/2 + I*sqrt(d)/2
         arb_t real, imag;
         arb_init(real);
@@ -44,7 +71,7 @@ int Auxilliary::next(long double x) {
 
         arb_clear(real);
         arb_clear(imag);
-    } else if (Auxilliary::mod(-d,4) == 2 || Auxilliary::mod(-d,4) == 3) {
+    } else if (Auxiliary::mod(-d,4) == 2 || Auxiliary::mod(-d,4) == 3) {
         //theta = I*sqrt(d)
         arb_t real, imag;
         arb_init(real);
@@ -73,7 +100,7 @@ int Auxilliary::next(long double x) {
  * If x overlaps with an endpoint, we try to deal with it in a natural way, but there is no guarantee
  * that answer is a ball totally within [-scale, scale].
  *//*
-void Auxilliary::intervalReduce(arb_struct *answer, const arb_struct *x, const arb_struct *scale, const int bits) {
+void Auxiliary::intervalReduce(arb_struct *answer, const arb_struct *x, const arb_struct *scale, const int bits) {
     arb_t localCopyOfX;
     arb_init(localCopyOfX);
     arb_set(localCopyOfX,x);
@@ -122,7 +149,7 @@ void Auxilliary::intervalReduce(arb_struct *answer, const arb_struct *x, const a
  * Project toReduce onto v to get the scalar projection arb_t s
  * final answer is toReduce - 2ceil((s-1)/2)*v
  *//*
-void Auxilliary::vectorReduce(acb_struct *answer, const acb_struct *v, const acb_t toReduce, int bits) {
+void Auxiliary::vectorReduce(acb_struct *answer, const acb_struct *v, const acb_t toReduce, int bits) {
     acb_t copyOfToReduce;
     acb_init(copyOfToReduce);
     acb_set(copyOfToReduce, toReduce);
@@ -177,7 +204,7 @@ void Auxilliary::vectorReduce(acb_struct *answer, const acb_struct *v, const acb
     acb_clear(copyOfV);
 }
 
-void Auxilliary::acbPlusArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
+void Auxiliary::acbPlusArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
     arb_t zero;
     arb_init(zero);
 
@@ -201,7 +228,7 @@ void Auxilliary::acbPlusArb(acb_struct *answer, const acb_struct *z, const arb_s
     acb_clear(copyOfZ);
 }
 
-void Auxilliary::acbTimesArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
+void Auxiliary::acbTimesArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
     arb_t zero;
     arb_init(zero);
 
@@ -225,7 +252,7 @@ void Auxilliary::acbTimesArb(acb_struct *answer, const acb_struct *z, const arb_
     acb_clear(copyOfZ);
 }
 
-void Auxilliary::acbDivArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
+void Auxiliary::acbDivArb(acb_struct *answer, const acb_struct *z, const arb_struct *x, int bits) {
     arb_t zero;
     arb_init(zero);
 
@@ -249,7 +276,7 @@ void Auxilliary::acbDivArb(acb_struct *answer, const acb_struct *z, const arb_st
     acb_clear(copyOfZ);
 }
 
-void Auxilliary::acbDivArb(acb_struct *answer, const acb_struct *z, int x, int bits) {
+void Auxiliary::acbDivArb(acb_struct *answer, const acb_struct *z, int x, int bits) {
     acb_t complexEmbedding;
     acb_init(complexEmbedding);
 
@@ -264,7 +291,7 @@ void Auxilliary::acbDivArb(acb_struct *answer, const acb_struct *z, int x, int b
     acb_clear(copyOfZ);
 }
 
-void Auxilliary::traceProduct(acb_struct *answer, const acb_struct *z, const acb_struct *w, int bits) {
+void Auxiliary::traceProduct(acb_struct *answer, const acb_struct *z, const acb_struct *w, int bits) {
     acb_t copyOfZ, copyOfW;
     acb_init(copyOfZ);
     acb_init(copyOfW);
@@ -280,7 +307,7 @@ void Auxilliary::traceProduct(acb_struct *answer, const acb_struct *z, const acb
     acb_clear(copyOfZ);
 }*/
 
-double Auxilliary::imagTheta(int d) {
+double Auxiliary::imagTheta(int d) {
     if (mod(-d, 4) == 1) {
         return sqrt(1.0*d)/2;
     } else {
@@ -288,26 +315,23 @@ double Auxilliary::imagTheta(int d) {
     }
 }
 
-double Auxilliary::multiPrecisionSummation(const std::vector<double> &numbers) {
-    arb_t sum;
-    arb_t temp;
-    arb_init(sum);
-    arb_init(temp);
+double Auxiliary::multiPrecisionSummation(const std::vector<double> &numbers) {
+    int thisThread = omp_get_thread_num();
 
+    arb_zero(&sums[thisThread]);
     for (double number : numbers) {
-        arb_set_d(temp, number);
-        arb_add(sum, sum, temp, 500);
+        arb_set_d(&temps[thisThread], number);
+        arb_add(&sums[thisThread], &sums[thisThread], &temps[thisThread], 500);
     }
-    double answer = std::stod(arb_get_str(sum, 60, ARB_STR_NO_RADIUS));
-    arb_clear(sum);
-    arb_clear(temp);
-    flint_cleanup();
+    double answer = std::stod(arb_get_str(&sums[thisThread], 60, ARB_STR_NO_RADIUS));
     return answer;
 }
 
 
 
-/*double Auxilliary::computeVolumeOfFD(int d) {
+
+
+/*double Auxiliary::computeVolumeOfFD(int d) {
     pari_init(1000000,2);
     std::string arg = "L = lfuncreate(x^2+";
     arg.append(std::to_string(d));
@@ -318,9 +342,9 @@ double Auxilliary::multiPrecisionSummation(const std::vector<double> &numbers) {
     char* out = GENtostr(res);
     pari_close();
     double zeta = std::stod(std::string(out));
-    return pow(abs(d), 3.0/2)*zeta/(4*pow(Auxilliary::pi, 2));
+    return pow(abs(d), 3.0/2)*zeta/(4*pow(Auxiliary::pi, 2));
 }*/
 
-//double Auxilliary::pi = std::numbers::pi_v<double>;
+//double Auxiliary::pi = std::numbers::pi_v<double>;
 
 

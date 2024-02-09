@@ -3,15 +3,15 @@
 //
 
 #include "ImaginaryQuadraticIntegers.h"
-#include "Auxilliary.h"
+#include "Auxiliary.h"
 
 ImaginaryQuadraticIntegers::ImaginaryQuadraticIntegers(int d) {
     this->d = d;
 
-    if (Auxilliary::mod(-d, 4) == 1) {
+    if (Auxiliary::mod(-d, 4) == 1) {
         //theta = 1/2 + I*sqrt(d)/2
         theta = std::complex<double> {1.0/2, sqrt(d)/2};
-    } else if (Auxilliary::mod(-d, 4) == 0) {
+    } else if (Auxiliary::mod(-d, 4) == 0) {
         throw std::invalid_argument("d is incorrect");
     } else {
         //theta = I*sqrt(d)

@@ -12,7 +12,7 @@
 
 #include "Index.h"
 #include "Quaternion.h"
-#include "Auxilliary.h"
+#include "Auxiliary.h"
 #include "KBesselApproximator.h"
 #include "ImaginaryQuadraticIntegers.h"
 
@@ -27,11 +27,14 @@ using std::complex, Eigen::MatrixXd;
 //IO
 using std::ofstream, std::string;
 
+#ifndef BIANCHI_MAASS_FORMS_TESTPOINTORBITDATA
+#define BIANCHI_MAASS_FORMS_TESTPOINTORBITDATA
 struct TestPointOrbitData {
     complex<double> representativeComplex;
     Quaternion representativePullback;
     vector<tuple<complex<double>, char>> properTranslatesModSign;
 };
+#endif
 
 class BianchiMaassSearch {
 public:
@@ -91,22 +94,23 @@ private:
      * Private members used in SEARCH calculations.
      ***************************************************/
 
-    enum MatrixID { Y1Matrix, Y2Matrix };
+    enum MatrixID { Y1MATRIX, Y2MATRIX };
 
     map<Index, vector<TestPointOrbitData>> mToY1TestPointOrbits;
     map<Index, vector<TestPointOrbitData>> mToY2TestPointOrbits;
-
-    int testPointCountY1;
-    int testPointCountY2;
+    map<Index, int> mToPointCountY1;
+    map<Index, int> mToPointCountY2;
 
     vector<MatrixXd> searchMatrices;
     vector<Eigen::Matrix<double, Eigen::Dynamic, 1>> searchMatrixSolutions;
     vector<Eigen::Matrix<double, Eigen::Dynamic, 1>> searchMatrixG;
     vector<Eigen::Matrix<double, Eigen::Dynamic, 1>> searchMatrixB;
+    vector<double> searchMatrixConditionNumbers;
 
     int searchPossibleSignChanges;
 
     KBesselApproximator K;
+    Auxiliary Aux;
 
     int searchIndexOfNormalization;
 
@@ -122,8 +126,7 @@ private:
     double Y1;
     double Y2;
 
-    double maxY1Star;
-    double maxY2Star;
+    double maxYStar;
 
     /***************************************************
      * Private methods used in SEARCH calculations.
@@ -132,6 +135,8 @@ private:
     void recursiveSearchForEigenvalues(const double leftR, const double rightR,
                                        vector<double>& leftG,
                                        vector<double>& rightG);
+
+    void conditionedSearchForEigenvalues(const double leftR, const double rightR);
     void computeIndexData();
     void computeTestPointData();
     void populateMatrix(MatrixID matrixId);
@@ -146,6 +151,9 @@ private:
     bool signChangeVectorIsIncreasing(vector<int> &v);
 
     double findZeroOfLinearInterpolation(double x0, double y0, double x1, double y1);
+
+    double heckeCheck();
+    bool sufficientSignChanges(const vector<double>& v1, const vector<double>& v2);
 };
 
 

@@ -8,9 +8,13 @@
 #include <iostream>
 #include <vector>
 #include "Index.h"
+#include "arb.h"
 
-class Auxilliary {
+class Auxiliary {
 public:
+    Auxiliary();
+    ~Auxiliary();
+
     static int mod(int x, int modulus);
     static int next(long double x);
     /*static void computeTheta(acb_t theta, int d, int bits);
@@ -24,8 +28,13 @@ public:
     //static double computeVolumeOfFD(int d);
 
     static double imagTheta(int d);
-    static double multiPrecisionSummation(const std::vector<double>& numbers);
+    double multiPrecisionSummation(const std::vector<double>& numbers);
     //static double pi;
+
+private:
+    std::vector<arb_struct> temps;
+    std::vector<arb_struct> sums;
+    int threads = 0;
 };
 
 

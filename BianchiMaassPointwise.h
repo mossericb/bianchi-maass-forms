@@ -16,7 +16,7 @@
 
 #include "Index.h"
 #include "Quaternion.h"
-#include "Auxilliary.h"
+#include "Auxiliary.h"
 #include "KBesselApproximator.h"
 #include "ImaginaryQuadraticIntegers.h"
 
@@ -31,11 +31,14 @@ using std::complex, Eigen::MatrixXd;
 //IO
 using std::ofstream, std::string;
 
+#ifndef BIANCHI_MAASS_FORMS_TESTPOINTORBITDATA
+#define BIANCHI_MAASS_FORMS_TESTPOINTORBITDATA
 struct TestPointOrbitData {
     complex<double> representativeComplex;
     Quaternion representativePullback;
     vector<tuple<complex<double>, char>> properTranslatesModSign;
 };
+#endif
 
 class BianchiMaassPointwise {
 public:
@@ -99,6 +102,7 @@ private:
     map<Index, double> coefficientMap;
 
     KBesselApproximator K;
+    Auxiliary Aux;
 
     double maxYStar;
 
