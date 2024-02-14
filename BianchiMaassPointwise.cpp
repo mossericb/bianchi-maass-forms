@@ -11,6 +11,7 @@
 #include <random>
 #include <chrono>
 #include <eigen3/Eigen/SVD>
+#include "KBesselExact.h"
 //#include "Plotter.h"
 //#include "PlotWindow.h"
 //#include "FunctionToEvaluate.h"
@@ -190,6 +191,8 @@ double BianchiMaassPointwise::evaluate(const double r, const Quaternion& z, cons
         solveMatrix();
     }
 
+    KBesselExact tempK = KBesselExact(r);
+
     vector<double> terms;
     for (auto itr : indexOrbitDataModMinusOne) {
         auto n = itr.first;
@@ -198,7 +201,7 @@ double BianchiMaassPointwise::evaluate(const double r, const Quaternion& z, cons
         double term = a_n*z.getJ();
 
         //kappa(2*pi/A*|n|*y)
-        term *= K.exactKBessel(2 * pi / A * n.getAbs(d) * z.getJ());
+        term *= tempK.exactKBessel(2 * pi / A * n.getAbs(d) * z.getJ());
 
         double cs = 0;
         if (symClass == 'D' || symClass == 'G' || d == 1) {
@@ -281,8 +284,7 @@ void BianchiMaassPointwise::clearData() {
  * @param r Spectral parameter
  */
 double BianchiMaassPointwise::computeM0General(const double r) {
-    KBesselApproximator tempK = KBesselApproximator(53);
-    tempK.setRAndClear(r);
+    KBesselExact tempK = KBesselExact(r);
 
     //Method: use binary search to find M0 such that
     //K(2*pi/A * M0 * Y0) = 10^-D * K(max(r,1))
@@ -697,7 +699,7 @@ double BianchiMaassPointwise::computeEntry(const Index &m, const Index &n) {
     //Add on the kronecker delta term
     if (m == n) {
         //deltaTerm = Y * kappa(2*pi/A*|m|*Y)
-        double deltaTerm = Y * K.exactKBessel(2 * pi / A * m.getAbs(d) * Y);
+        double deltaTerm = Y * K.approxKBessel(2 * pi / A * m.getAbs(d) * Y);
 
         answer += deltaTerm;
     }

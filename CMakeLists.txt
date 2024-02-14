@@ -63,7 +63,7 @@ add_executable(${PROJECT_NAME}
         BianchiMaassSearch.cpp
         BianchiMaassSearch.h
         ImaginaryQuadraticIntegers.cpp
-        ImaginaryQuadraticIntegers.h)
+        ImaginaryQuadraticIntegers.h KBesselExact.cpp KBesselExact.h)
 
 target_link_libraries(${PROJECT_NAME} ${FLINT_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${ARB_LIBRARY})

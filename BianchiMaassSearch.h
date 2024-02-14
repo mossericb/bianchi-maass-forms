@@ -8,6 +8,7 @@
 #include <tuple>
 #include <functional>
 #include <fstream>
+#include <utility>
 #include <omp.h>
 
 #include "Index.h"
@@ -19,7 +20,7 @@
 #include <eigen3/Eigen/Dense>
 
 //Containers
-using std::vector, std::unordered_map, std::tuple, std::map;
+using std::vector, std::unordered_map, std::tuple, std::map, std::pair;
 
 //Math
 using std::complex, Eigen::MatrixXd;
@@ -27,14 +28,7 @@ using std::complex, Eigen::MatrixXd;
 //IO
 using std::ofstream, std::string;
 
-#ifndef BIANCHI_MAASS_FORMS_TESTPOINTORBITDATA
-#define BIANCHI_MAASS_FORMS_TESTPOINTORBITDATA
-struct TestPointOrbitData {
-    complex<double> representativeComplex;
-    Quaternion representativePullback;
-    vector<tuple<complex<double>, char>> properTranslatesModSign;
-};
-#endif
+
 
 class BianchiMaassSearch {
 public:
@@ -94,55 +88,37 @@ private:
      * Private members used in SEARCH calculations.
      ***************************************************/
 
-    enum MatrixID { Y1MATRIX, Y2MATRIX };
+    bool computeAllConditionNumbers;
+    double conditionGoal;
+    double argminY1;
+    double argminY2;
 
-    map<Index, vector<TestPointOrbitData>> mToY1TestPointOrbits;
-    map<Index, vector<TestPointOrbitData>> mToY2TestPointOrbits;
-    map<Index, int> mToPointCountY1;
-    map<Index, int> mToPointCountY2;
-
-    vector<MatrixXd> searchMatrices;
-    vector<Eigen::Matrix<double, Eigen::Dynamic, 1>> searchMatrixSolutions;
-    vector<Eigen::Matrix<double, Eigen::Dynamic, 1>> searchMatrixG;
-    vector<Eigen::Matrix<double, Eigen::Dynamic, 1>> searchMatrixB;
-    vector<double> searchMatrixConditionNumbers;
-
-    int searchPossibleSignChanges;
-
-    KBesselApproximator K;
     Auxiliary Aux;
-
-    int searchIndexOfNormalization;
-
-    double M0;
-    double MY1;
-    double MY2;
-
-    vector<Index> indicesM0;
-    vector<Index> indexTransversal;
-    map<Index, vector<tuple<Index, int>>> indexOrbitData;
-    map<Index, vector<tuple<Index, int>>> indexOrbitDataModMinusOne;
-
-    double Y1;
-    double Y2;
-
-    double maxYStar;
-
     /***************************************************
      * Private methods used in SEARCH calculations.
      ***************************************************/
 
-    void recursiveSearchForEigenvalues(const double leftR, const double rightR,
+    int findMaxFileNumber(const std::string& directory);
+    void createOutputDirectory(const std::string& directory);
+    /*void recursiveSearchForEigenvalues(const double leftR, const double rightR,
                                        vector<double>& leftG,
                                        vector<double>& rightG);
-
-    void conditionedSearchForEigenvalues(const double leftR, const double rightR);
+    */
+    vector<pair<double, double>> conditionedSearchForEigenvalues(const double leftR, const double rightR);
     void computeIndexData();
     void computeTestPointData();
-    void populateMatrix(MatrixID matrixId);
-    void solveMatrix(MatrixID matrixId);
+    vector<double> computeAndGetGVector();
+    MatrixXd produceMatrix(const vector<Index> &indexTransversal,
+                           map<Index, vector<TestPointOrbitData>> &mToTestPointData,
+                           map<Index, vector<pair<Index, int>>> &ntoIndexOrbitData,
+                           const double Y,
+                           KBesselApproximator &K);
+    pair<MatrixXd, double> solveMatrix(const MatrixXd &matrix, const vector<Index> &indexTransversal,
+                         const int indexOfNormalization);
     vector<double> getGVector();
-    double computeEntry(const Index& m, const Index& n, MatrixID matrixId);
+    double computeEntry(const Index &m, const Index &n, KBesselApproximator &K,
+                        const vector<TestPointOrbitData> &mTestPointOrbits, const double Y,
+                        const vector<pair<Index, int>> &nIndexOrbitDataModSign);
 
     void secantSearch(double r1, double r2);
 
@@ -152,8 +128,10 @@ private:
 
     double findZeroOfLinearInterpolation(double x0, double y0, double x1, double y1);
 
-    double heckeCheck();
+    double heckeCheck(map<Index, double>& coeffMap);
     bool sufficientSignChanges(const vector<double>& v1, const vector<double>& v2);
+
+    vector<double> mergeToVector(const MatrixXd& v1, const MatrixXd& v2);
 };
 
 

@@ -1,17 +1,21 @@
 /*TODO
+     * ?????????? Memory leak????????? what!
+     * Idea: go hog wild and compile a library that runs a single thread of exact KBessel
+     * Make a vector of these objects, or something stupid like that.
+     *
      * Add Weyl law spacing to search method
      *
      * Continue making pointwise checking work!
      *
      * Make reals-only arb code mpfr
      *
+     * Fully implement the rest of the fields
+     *
      * Implement "search for well conditioned value of Y" in pointwise methods
      * Don't need it right now, would be nice to have eventually.
      *
      * Implement a way to not store the M0 and MY indices separately (lots of duplicates). Sometimes I need only
      * indices up to M0, sometimes up to MY. Carefully figure these out and address over-precomputing.
-     *
-     * Get rid of unordered_map's for orbit retrieval
      *
      * Make include guards have the right project name.
      *
@@ -23,7 +27,6 @@
      * */
 
 #include <iostream>
-#include "ArchtKBessel.h"
 #include "BianchiMaassPointwise.h"
 #include "BianchiMaassSearch.h"
 #include <chrono>
@@ -31,18 +34,20 @@
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl << std::flush
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        throw(std::invalid_argument("command line argument should be two numbers"));
+    if (argc != 6) {
+        throw(std::invalid_argument("command line arguments should be: d symClass D leftEndpoint rightEndpoint"));
     }
-    double leftEndpoint = std::stod(argv[1]);
-    double rightEndpoint = std::stod(argv[2]);
-
-    int d = 19;
-    char symClass = 'C';
-    int D = 4;
+    int d = std::stoi(argv[1]);
+    char symClass = argv[2][0];
+    int D = std::stoi(argv[3]);
+    double leftEndpoint = std::stod(argv[4]);
+    double rightEndpoint = std::stod(argv[5]);
 
     BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
-    bms.searchForEigenvalues(6, 7);
+    bms.searchForEigenvalues(leftEndpoint, leftEndpoint + 0.00001);
+
+    BianchiMaassSearch bms2 = BianchiMaassSearch(d, D, symClass);
+    bms2.searchForEigenvalues(leftEndpoint + 0.00001, leftEndpoint + 0.00002);
 
     //BianchiMaassPointwise bmp = BianchiMaassPointwise(d, D, symClass);
     //bmp.checkSingleEigenvalue(6.011020660400391 ,0.065);

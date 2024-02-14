@@ -34,7 +34,7 @@ Auxiliary::~Auxiliary() {
         arb_clear(&temps[i]);
         arb_clear(&sums[i]);
     }
-    flint_cleanup();
+    flint_cleanup_master();
 }
 
 
@@ -324,7 +324,21 @@ double Auxiliary::multiPrecisionSummation(const std::vector<double> &numbers) {
         arb_add(&sums[thisThread], &sums[thisThread], &temps[thisThread], 500);
     }
     double answer = std::stod(arb_get_str(&sums[thisThread], 60, ARB_STR_NO_RADIUS));
+
     return answer;
+}
+
+/**
+ * In scientific notation, if x = a * 10^b and a is a number in the interval [1,10),
+ * returns next(a) * 10^b where next(a) is the closest integer strictly greater than a.
+ * @param x = a * 10^b and a is a number in the interval [1,10)
+ * @return next(a) * 10^b where next(a) is the closest integer strictly greater than a
+ */
+double Auxiliary::nextWithinOrderOfMag(double x) {
+    double f = std::floor(std::log(x)/std::log(10.0));
+    double g = floor(x/pow(10.0,f));
+    double h = (g + 1)*pow(10.0,f);
+    return h;
 }
 
 

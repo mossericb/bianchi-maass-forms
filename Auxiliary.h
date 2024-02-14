@@ -29,6 +29,7 @@ public:
 
     static double imagTheta(int d);
     double multiPrecisionSummation(const std::vector<double>& numbers);
+    static double nextWithinOrderOfMag(double x);
     //static double pi;
 
 private:
