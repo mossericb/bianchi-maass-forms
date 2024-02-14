@@ -20,6 +20,9 @@ ARB_LIBRARY:FILEPATH=/opt/homebrew/lib/libarb.dylib
 //Path to a library.
 ARCHTKBESSEL_LIBRARY:FILEPATH=/usr/local/lib/libArchtKBessel.a
 
+//Path to a library.
+ARCHT_LIBRARY:FILEPATH=/usr/local/lib/libArchtKBessel.a
+
 //Value Computed by CMake
 Bianchi-Maass_Forms_BINARY_DIR:STATIC=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-release
 

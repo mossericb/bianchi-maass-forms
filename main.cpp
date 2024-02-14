@@ -1,7 +1,5 @@
 /*TODO
-     * ?????????? Memory leak????????? what!
-     * Idea: go hog wild and compile a library that runs a single thread of exact KBessel
-     * Make a vector of these objects, or something stupid like that.
+     * Reduce recomputation of KBessel now that memory is handled
      *
      * Add Weyl law spacing to search method
      *
@@ -29,13 +27,16 @@
 #include <iostream>
 #include "BianchiMaassPointwise.h"
 #include "BianchiMaassSearch.h"
+#include "KBesselExact.h"
 #include <chrono>
+#include <acb_hypgeom.h>
+#include <ArchtKBessel.h>
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl << std::flush
 
 int main(int argc, char *argv[]) {
     if (argc != 6) {
-        throw(std::invalid_argument("command line arguments should be: d symClass D leftEndpoint rightEndpoint"));
+        throw (std::invalid_argument("command line arguments should be: d symClass D leftEndpoint rightEndpoint"));
     }
     int d = std::stoi(argv[1]);
     char symClass = argv[2][0];
@@ -44,10 +45,9 @@ int main(int argc, char *argv[]) {
     double rightEndpoint = std::stod(argv[5]);
 
     BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
-    bms.searchForEigenvalues(leftEndpoint, leftEndpoint + 0.00001);
+    bms.searchForEigenvalues(leftEndpoint, rightEndpoint);
 
-    BianchiMaassSearch bms2 = BianchiMaassSearch(d, D, symClass);
-    bms2.searchForEigenvalues(leftEndpoint + 0.00001, leftEndpoint + 0.00002);
+
 
     //BianchiMaassPointwise bmp = BianchiMaassPointwise(d, D, symClass);
     //bmp.checkSingleEigenvalue(6.011020660400391 ,0.065);
