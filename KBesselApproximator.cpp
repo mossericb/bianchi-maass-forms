@@ -13,6 +13,15 @@
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl
 
+/*
+ * Idea: Instead of dividing the range into two parts: coarse and fine, separate it into many more spacings
+ * Could be like, 10 different levels of fineness, the finest being a point every 2^-19, and the coarsest being 2^-9
+ * Could be something even more than that, something more continuous.
+ * Either way, it should be something dynamic, so that once I start using large spectral parameters, it still works.
+ *
+ *
+ */
+
 KBesselApproximator::KBesselApproximator(int bitsOfPrecision) {
     prec = bitsOfPrecision;
     r = 0;
@@ -127,13 +136,18 @@ void KBesselApproximator::extendPrecomputedRange(double newLowerBound, double ne
         //newFineSplines.resize(newIntervalCount);
         fineSplines.resize(existingFineIntervals + newIntervalCount);
         //...in parallel
-#pragma omp parallel for default(none) shared(newIntervalCount, precomputes, existingFineIntervals)
+#pragma omp parallel for default(none) shared(newIntervalCount, precomputes, existingFineIntervals, K)
         for (int i = 0; i < newIntervalCount; i++) {
             double left = r - (existingFineIntervals + i + 1) * fineIntervalWidth;
+            double derivativeLeft = K.estimateDerivativeKBessel(left);
+            double right = left + fineSplineSpacing * (fineSplineKnotCount - 1);
+            double derivativeRight = K.estimateDerivativeKBessel(right);
             boost::math::interpolators::cardinal_cubic_b_spline spline(precomputes[i].begin(),
                                                                        precomputes[i].end(),
                                                                        left,
-                                                                       fineSplineSpacing);
+                                                                       fineSplineSpacing,
+                                                                       derivativeLeft,
+                                                                       derivativeRight);
             fineSplines[existingFineIntervals + i] = spline;
         }
 
@@ -177,13 +191,18 @@ void KBesselApproximator::extendPrecomputedRange(double newLowerBound, double ne
         coarseSplines.resize(existingCoarseIntervals + newIntervalCount);
 
         //...in parallel
-#pragma omp parallel for default(none) shared(newIntervalCount, precomputes, existingCoarseIntervals)
+#pragma omp parallel for default(none) shared(newIntervalCount, precomputes, existingCoarseIntervals, K)
         for (int i = 0; i < newIntervalCount; i++) {
             double left = r + (existingCoarseIntervals + i) * coarseIntervalWidth;
+            double derivativeLeft = K.estimateDerivativeKBessel(left);
+            double right = left + coarseSplineSpacing * (coarseSplineKnotCount - 1);
+            double derivativeRight = K.estimateDerivativeKBessel(right);
             boost::math::interpolators::cardinal_cubic_b_spline spline(precomputes[i].begin(),
                                                                        precomputes[i].end(),
                                                                        left,
-                                                                       coarseSplineSpacing);
+                                                                       coarseSplineSpacing,
+                                                                       derivativeLeft,
+                                                                       derivativeRight);
             coarseSplines[existingCoarseIntervals + i] = spline;
         }
 

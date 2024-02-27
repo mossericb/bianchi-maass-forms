@@ -13,7 +13,7 @@
 
 using std::complex;
 
-using std::vector, std::pair, std::tuple, std::map;
+using std::vector, std::pair, std::map;
 
 #ifndef BIANCHI_MAASS_FORMS_TESTPOINTORBITDATA
 #define BIANCHI_MAASS_FORMS_TESTPOINTORBITDATA
@@ -35,7 +35,7 @@ public:
     [[nodiscard]] double getY0() const { return Y0; };
 
     vector<Index> indicesUpToM(const double M);
-    tuple<vector<Index>, map<Index, vector<pair<Index, int>>>>
+    pair<vector<Index>, map<Index, vector<pair<Index, int>>>>
     indexOrbitQuotientData(vector<Index> indices, const char symClass);
 
 private:

@@ -86,7 +86,7 @@ vector<Index> ImaginaryQuadraticIntegers::indicesUpToM(const double M) {
     return answer;
 }
 
-tuple<vector<Index>, map<Index, vector<pair<Index, int>>>>
+pair<vector<Index>, map<Index, vector<pair<Index, int>>>>
 ImaginaryQuadraticIntegers::indexOrbitQuotientData(vector<Index> indices, const char symClass) {
     vector<Index> indexTransversal;
     map<Index, vector<pair<Index,int>>> orbitDataModSign;
@@ -113,7 +113,7 @@ ImaginaryQuadraticIntegers::indexOrbitQuotientData(vector<Index> indices, const 
         Index conjIndex = index.conj(d);
         bool conjIsInRotations = false;
         for (const auto& tup : orbit) {
-            if (conjIndex == get<0>(tup)) {
+            if (conjIndex == tup.first) {
                 conjIsInRotations = true;
                 break;
             }
@@ -144,11 +144,11 @@ ImaginaryQuadraticIntegers::indexOrbitQuotientData(vector<Index> indices, const 
         vector<pair<Index,int>> orbitModSign;
         vector<Index> alreadyGotten;
         for (const auto& tup : orbit) {
-            Index l = get<0>(tup);
-            int pmOne = get<1>(tup);
+            Index l = tup.first;
+            int pmOne = tup.second;
             if (std::find(alreadyGotten.begin(), alreadyGotten.end(),l) == alreadyGotten.end()) {
                 //add it
-                tuple<Index,int> classModMinusOne = {l,pmOne};
+                pair<Index,int> classModMinusOne = {l,pmOne};
                 alreadyGotten.push_back(l);
                 alreadyGotten.push_back(Index(-l.getA(), -l.getB()));
                 orbitModSign.push_back(classModMinusOne);
@@ -158,7 +158,7 @@ ImaginaryQuadraticIntegers::indexOrbitQuotientData(vector<Index> indices, const 
 
         /*Delete the indicesM0 in the orbit from the copied list of indicesM0.*/
         for (auto itr1 : orbit) {
-            Index toDelete = get<0>(itr1);
+            Index toDelete = itr1.first;
             auto toDeleteItr = std::find(indices.begin(), indices.end(), toDelete);
             indices.erase(toDeleteItr);
         }

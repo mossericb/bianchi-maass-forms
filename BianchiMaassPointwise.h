@@ -9,7 +9,6 @@
 #include <complex>
 #include <map>
 #include <unordered_map>
-#include <tuple>
 #include <functional>
 #include <fstream>
 #include <omp.h>
@@ -23,7 +22,7 @@
 #include <eigen3/Eigen/Dense>
 
 //Containers
-using std::vector, std::unordered_map, std::tuple, std::map;
+using std::vector, std::unordered_map, std::map;
 
 //Math
 using std::complex, Eigen::MatrixXd;
@@ -116,8 +115,8 @@ private:
     vector<Index> indexTransversal;
     vector<Index> indicesMY;
     vector<Index> indexTransversalMY;
-    unordered_map<Index, vector<tuple<Index, int>>> indexOrbitData;
-    unordered_map<Index, vector<tuple<Index, int>>> indexOrbitDataModMinusOne;
+    unordered_map<Index, vector<pair<Index, int>>> indexOrbitData;
+    unordered_map<Index, vector<pair<Index, int>>> indexOrbitDataModMinusOne;
 
     double rand01();
 

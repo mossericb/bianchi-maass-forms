@@ -31,6 +31,7 @@ private:
 
     double r;
 
+    double derivativeShift = pow(2,-25);
     double fineSplineSpacing = pow(2,-19);
     double coarseSplineSpacing = pow(2,-12);
     int fineSplineKnotCount = 100;

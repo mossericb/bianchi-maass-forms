@@ -5,6 +5,7 @@
 #include "KBesselExact.h"
 #include "omp.h"
 #include <acb_hypgeom.h>
+#include <boost/math/differentiation/finite_difference.hpp>
 
 KBesselExact::KBesselExact(double r, int bitsOfPrecision) {
     prec = bitsOfPrecision;
@@ -34,6 +35,13 @@ KBesselExact::~KBesselExact() {
         delete K[i];
     }
     K.clear();
+}
+
+double KBesselExact::estimateDerivativeKBessel(const double x) {
+    auto f = [this](double x) { return this->exactKBessel(x); };
+    double dfdx = boost::math::differentiation::finite_difference_derivative(f, x);
+
+    return dfdx;
 }
 
 

@@ -5,7 +5,6 @@
 #include <complex>
 #include <map>
 #include <unordered_map>
-#include <tuple>
 #include <functional>
 #include <fstream>
 #include <utility>
@@ -72,6 +71,8 @@ private:
     double truncation;
     double volumeOfFD;
 
+    double EIGENVALUE_INTERVAL_CUTOFF = pow(2,-16);
+
     /***************************************************
      * Private methods used in ALL calculations.
      ***************************************************/
@@ -94,6 +95,8 @@ private:
     double argminY2;
 
     Auxiliary Aux;
+
+    map<double, KBesselApproximator> rToKBess;
     /***************************************************
      * Private methods used in SEARCH calculations.
      ***************************************************/
@@ -111,7 +114,7 @@ private:
     MatrixXd produceMatrix(const vector<Index> &indexTransversal,
                            map<Index, vector<TestPointOrbitData>> &mToTestPointData,
                            map<Index, vector<pair<Index, int>>> &ntoIndexOrbitData,
-                           const double Y,
+                           double Y,
                            KBesselApproximator &K);
     pair<MatrixXd, double> solveMatrix(const MatrixXd &matrix, const vector<Index> &indexTransversal,
                          const int indexOfNormalization);
@@ -120,7 +123,7 @@ private:
                         const vector<TestPointOrbitData> &mTestPointOrbits, const double Y,
                         const vector<pair<Index, int>> &nIndexOrbitDataModSign);
 
-    void secantSearch(double r1, double r2);
+    void secantMethod(double r1, double r2);
 
     int countSignChanges(const vector<double> &v1, const vector<double> &v2);
 

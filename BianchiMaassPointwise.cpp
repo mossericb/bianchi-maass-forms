@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
-#include <tuple>
 #include <map>
 #include <iostream>
 #include <iomanip>
@@ -206,12 +205,12 @@ double BianchiMaassPointwise::evaluate(const double r, const Quaternion& z, cons
         double cs = 0;
         if (symClass == 'D' || symClass == 'G' || d == 1) {
             for (auto lClass : itr.second) {
-                cs += get<1>(lClass) * 2 * cos(pi/A * traceProduct(I * get<0>(lClass).getComplex(d),
+                cs += lClass.second * 2 * cos(pi/A * traceProduct(I * (lClass.first).getComplex(d),
                                                                    z.getComplex()));
             }
         } else {
             for (auto lClass : itr.second) {
-                cs += get<1>(lClass) * 2 * sin(pi/A * traceProduct(I * get<0>(lClass).getComplex(d),
+                cs += lClass.second * 2 * sin(pi/A * traceProduct(I * (lClass.first).getComplex(d),
                                                                    z.getComplex()));
             }
         }
@@ -450,7 +449,7 @@ BianchiMaassPointwise::getPointPullbackOrbits(const Index &m, const double Y, co
                     //The orbit in this case is {x, -x, -bar(x), bar(x)}
                     //So orbit/{+/-1} = {[x], [-bar(x)]}
                     //So the only proper translate is -bar(x)
-                    tuple<complex<double>, char> tup (-conj(x), reflectionSign);
+                    pair<complex<double>, char> tup (-conj(x), reflectionSign);
                     orbit.properTranslatesModSign.push_back(tup);
                 }
                 answer.push_back(orbit);
@@ -474,7 +473,7 @@ BianchiMaassPointwise::getPointPullbackOrbits(const Index &m, const double Y, co
                 orbit.representativeComplex = x;
                 orbit.representativePullback = pullback;
 
-                tuple<complex<double>, char> tup (-conj(x), reflectionSign);
+                pair<complex<double>, char> tup (-conj(x), reflectionSign);
                 orbit.properTranslatesModSign.push_back(tup);
 
                 answer.push_back(orbit);
@@ -499,22 +498,22 @@ BianchiMaassPointwise::getPointPullbackOrbits(const Index &m, const double Y, co
                     //So orbit/{+/-1} is {[x], [ix]}
                     //So the only proper translate is ix
 
-                    tuple<complex<double>, char> tup (I*x, nonsquareUnitSign);
+                    pair<complex<double>, char> tup (I*x, nonsquareUnitSign);
                     orbit.properTranslatesModSign.push_back(tup);
                 } else {
                     //The orbit is {x, ix, -x, -ix, bar(x), ibar(x), -bar(x), -ibar(x)}
                     //So orbit/{+/-1} is {[x], [ix], [-bar(x)], [-ibar(x)]}
                     //So the proper translates are ix, -bar(x), and -ibar(x)
 
-                    tuple<complex<double>, char> tup (I*x, nonsquareUnitSign);
+                    pair<complex<double>, char> tup (I*x, nonsquareUnitSign);
                     orbit.properTranslatesModSign.push_back(tup);
 
-                    get<0>(tup) = -conj(x);
-                    get<1>(tup) = reflectionSign;
+                    tup.first = -conj(x);
+                    tup.second = reflectionSign;
                     orbit.properTranslatesModSign.push_back(tup);
 
-                    get<0>(tup) = -I*conj(x);
-                    get<1>(tup) = reflectionSign * nonsquareUnitSign;
+                    tup.first = -I*conj(x);
+                    tup.second = reflectionSign * nonsquareUnitSign;
                     orbit.properTranslatesModSign.push_back(tup);
                 }
 
@@ -555,11 +554,11 @@ BianchiMaassPointwise::getPointPullbackOrbits(const Index &m, const double Y, co
                     //So orbit/{+/-1} is {[x], [wx], [w^2x]}
                     //So the proper translates are wx, w^2x
 
-                    tuple<complex<double>, char> tup (theta*x, nonsquareUnitSign);
+                    pair<complex<double>, char> tup (theta*x, nonsquareUnitSign);
                     orbit.properTranslatesModSign.push_back(tup);
 
-                    get<0>(tup) = theta*theta*x;
-                    get<1>(tup) = 1; //theta*theta is a square unit
+                    tup.first = theta*theta*x;
+                    tup.second = 1; //theta*theta is a square unit
                     orbit.properTranslatesModSign.push_back(tup);
 
                     //magic quantity that tells me about the real part of x
@@ -571,16 +570,16 @@ BianchiMaassPointwise::getPointPullbackOrbits(const Index &m, const double Y, co
                         //The orbit is {x, wx, w^2x, -x, -wx, -w^2x, -bar(x), -wbar(x), -w^2bar(x), bar(x), wbar(x), w^2bar(x)}
                         //So orbit/{+/-1} is {[x], [wx], [w^2x], [-bar(x)], [-wbar(x)], [-w^2bar(x)]}
                         //So the proper translates are wx, w^2x, -bar(x), -wbar(x), -w^2bar(x)
-                        get<0>(tup) = -conj(x);
-                        get<1>(tup) = reflectionSign;
+                        tup.first = -conj(x);
+                        tup.second = reflectionSign;
                         orbit.properTranslatesModSign.push_back(tup);
 
-                        get<0>(tup) = -theta*conj(x);
-                        get<1>(tup) = reflectionSign * nonsquareUnitSign;
+                        tup.first = -theta*conj(x);
+                        tup.second = reflectionSign * nonsquareUnitSign;
                         orbit.properTranslatesModSign.push_back(tup);
 
-                        get<0>(tup) = -theta*theta*conj(x);
-                        get<1>(tup) = reflectionSign; //theta*theta is a square unit
+                        tup.first = -theta*theta*conj(x);
+                        tup.second = reflectionSign; //theta*theta is a square unit
                         orbit.properTranslatesModSign.push_back(tup);
                     }
                 }
@@ -643,9 +642,9 @@ double BianchiMaassPointwise::computeEntry(const Index &m, const Index &n) {
 
             double indexTerm = 0;
             for (const auto& tup : indexOrbitDataModMinusOne[n]) {
-                Index l = get<0>(tup);
+                Index l = tup.first;
                 complex<double> xStar = pullback.getComplex();
-                double ellTerm = get<1>(tup); //This is a_l/a_n
+                double ellTerm = tup.second; //This is a_l/a_n
                 ellTerm *= cos(pi/A * traceProduct(I* l.getComplex(d), xStar));
                 indexTerm += ellTerm;
             }
@@ -653,8 +652,8 @@ double BianchiMaassPointwise::computeEntry(const Index &m, const Index &n) {
 
             double testPointTerm = cos(pi/A * traceProduct(-I* m.getComplex(d), x));
             for (const auto& tup : testPointOrbit.properTranslatesModSign) {
-                complex<double> etaX = get<0>(tup);
-                char sign = get<1>(tup);
+                complex<double> etaX = tup.first;
+                char sign = tup.second;
                 testPointTerm += sign * cos(pi/A * traceProduct(-I* m.getComplex(d), etaX));
             }
             term *= testPointTerm;
@@ -674,9 +673,9 @@ double BianchiMaassPointwise::computeEntry(const Index &m, const Index &n) {
 
             double indexTerm = 0;
             for (const auto& tup : indexOrbitDataModMinusOne[n]) {
-                Index l = get<0>(tup);
+                Index l = tup.first;
                 complex<double> xStar = pullback.getComplex();
-                double ellTerm = get<1>(tup); //This is a_l/a_n
+                double ellTerm = tup.second; //This is a_l/a_n
                 ellTerm *= sin(pi/A * traceProduct(I* l.getComplex(d), xStar));
                 indexTerm += ellTerm;
             }
@@ -684,8 +683,8 @@ double BianchiMaassPointwise::computeEntry(const Index &m, const Index &n) {
 
             double testPointTerm = sin(pi/A * traceProduct(-I* m.getComplex(d), x));
             for (const auto& tup : testPointOrbit.properTranslatesModSign) {
-                complex<double> etaX = get<0>(tup);
-                char sign = get<1>(tup);
+                complex<double> etaX = tup.first;
+                char sign = tup.second;
                 testPointTerm += sign * sin(pi/A * traceProduct(-I* m.getComplex(d), etaX));
             }
             term *= testPointTerm;
@@ -752,8 +751,8 @@ void BianchiMaassPointwise::solveMatrix() {
         if (i == indexOfNormalization) {
             auto orbit = indexOrbitData[index];
             for (auto tup : orbit) {
-                double coeff = get<1>(tup);
-                coefficientMap[get<0>(tup)] = coeff;
+                double coeff = tup.second;
+                coefficientMap[tup.first] = coeff;
             }
         } else {
             //look through the orbit and assign the same value to all of them using the +/- factor
@@ -761,8 +760,8 @@ void BianchiMaassPointwise::solveMatrix() {
             auto orbit = indexOrbitData[index];
             for (auto tup : orbit) {
                 double coeff = x(modifiedi);
-                coeff *= get<1>(tup);
-                coefficientMap[get<0>(tup)] = coeff;
+                coeff *= tup.second;
+                coefficientMap[tup.first] = coeff;
             }
         }
     }
@@ -827,11 +826,11 @@ void BianchiMaassPointwise::computeIndexData() {
 
     while (!tempIndices.empty()) {
         Index index = tempIndices.front();
-        vector<tuple<Index, int>> orbit = {tuple<Index, int>(index, 1)};
+        vector<pair<Index, int>> orbit = {pair<Index, int>(index, 1)};
 
         Index tempIndex = index.rotate(d);
         int tempCoeff = 1*rotationCoeff;
-        tuple<Index, int> tempTuple = {tempIndex, tempCoeff};
+        pair<Index, int> tempTuple = {tempIndex, tempCoeff};
         while (tempIndex != index) {
             orbit.push_back(tempTuple);
 
@@ -843,7 +842,7 @@ void BianchiMaassPointwise::computeIndexData() {
         Index conjIndex = index.conj(d);
         bool conjIsInRotations = false;
         for (const auto& tup : orbit) {
-            if (conjIndex == get<0>(tup)) {
+            if (conjIndex == tup.first) {
                 conjIsInRotations = true;
                 break;
             }
@@ -879,14 +878,14 @@ void BianchiMaassPointwise::computeIndexData() {
         indexOrbitData[index] = orbit;
 
         /*Compute the orbit mod +-1*/
-        vector<tuple<Index,int>> orbitModMinusOne;
+        vector<pair<Index,int>> orbitModMinusOne;
         vector<Index> alreadyGotten;
         for (const auto& tup : orbit) {
-            Index l = get<0>(tup);
+            Index l = tup.first;
             int pmOne = get<1>(tup);
             if (std::find(alreadyGotten.begin(), alreadyGotten.end(),l) == alreadyGotten.end()) {
                 //add it
-                tuple<Index,int> classModMinusOne = {l,pmOne};
+                pair<Index,int> classModMinusOne = {l,pmOne};
                 alreadyGotten.push_back(l);
                 alreadyGotten.push_back(Index(-l.getA(), -l.getB()));
                 orbitModMinusOne.push_back(classModMinusOne);
@@ -896,7 +895,7 @@ void BianchiMaassPointwise::computeIndexData() {
 
         /*Delete the indicesM0 in the orbit from the copied list of indicesM0.*/
         for (auto itr1 : orbit) {
-            Index toDelete = get<0>(itr1);
+            Index toDelete = itr1.first;
             auto itr2 = tempIndices.begin();
             while (itr2 != tempIndices.end()) {
                 if (*itr2 == toDelete) {

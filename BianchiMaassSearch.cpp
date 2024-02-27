@@ -9,12 +9,12 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
-#include <tuple>
 #include <map>
 #include <iostream>
 #include <iomanip>
 #include <random>
 #include <chrono>
+#include <filesystem>
 #include <eigen3/Eigen/SVD>
 #include "KBesselExact.h"
 //#include "Plotter.h"
@@ -317,7 +317,7 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
                     //The orbit in this case is {x, -x, -bar(x), bar(x)}
                     //So orbit/{+/-1} = {[x], [-bar(x)]}
                     //So the only proper translate is -bar(x)
-                    tuple<complex<double>, char> tup (-conj(x), reflectionSign);
+                    pair<complex<double>, char> tup (-conj(x), reflectionSign);
                     orbit.properTranslatesModSign.push_back(tup);
                 }
                 answer.push_back(orbit);
@@ -340,7 +340,7 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
                 orbit.representativeComplex = x;
                 orbit.representativePullback = pullback;
 
-                tuple<complex<double>, char> tup (-conj(x), reflectionSign);
+                pair<complex<double>, char> tup (-conj(x), reflectionSign);
                 orbit.properTranslatesModSign.push_back(tup);
 
                 answer.push_back(orbit);
@@ -364,14 +364,14 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
                     //So orbit/{+/-1} is {[x], [ix]}
                     //So the only proper translate is ix
 
-                    tuple<complex<double>, char> tup (I*x, nonsquareUnitSign);
+                    pair<complex<double>, char> tup (I*x, nonsquareUnitSign);
                     orbit.properTranslatesModSign.push_back(tup);
                 } else {
                     //The orbit is {x, ix, -x, -ix, bar(x), ibar(x), -bar(x), -ibar(x)}
                     //So orbit/{+/-1} is {[x], [ix], [-bar(x)], [-ibar(x)]}
                     //So the proper translates are ix, -bar(x), and -ibar(x)
 
-                    tuple<complex<double>, char> tup (I*x, nonsquareUnitSign);
+                    pair<complex<double>, char> tup (I*x, nonsquareUnitSign);
                     orbit.properTranslatesModSign.push_back(tup);
 
                     get<0>(tup) = -conj(x);
@@ -419,7 +419,7 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
                     //So orbit/{+/-1} is {[x], [wx], [w^2x]}
                     //So the proper translates are wx, w^2x
 
-                    tuple<complex<double>, char> tup (theta*x, nonsquareUnitSign);
+                    pair<complex<double>, char> tup (theta*x, nonsquareUnitSign);
                     orbit.properTranslatesModSign.push_back(tup);
 
                     get<0>(tup) = theta*theta*x;
@@ -542,14 +542,14 @@ void BianchiMaassSearch::recursiveSearchForEigenvalues(const double leftR, const
 MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal,
                                            map<Index, vector<TestPointOrbitData>> &mToTestPointData,
                                            map<Index, vector<pair<Index, int>>> &ntoIndexOrbitData,
-                                           const double Y,
+                                           double Y,
                                            KBesselApproximator &K) {
 
     int size = indexTransversal.size();
     MatrixXd answer;
     answer.resize(size, size);
 
-#pragma omp parallel for collapse(2) default(none) shared(indexTransversal, size, answer, mToTestPointData, ntoIndexOrbitData, Y, K)
+#pragma omp parallel for collapse(2) default(none) shared(indexTransversal, size, answer, mToTestPointData, ntoIndexOrbitData,Y, K)
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             Index m = indexTransversal[i];
@@ -743,7 +743,17 @@ bool BianchiMaassSearch::signChangeVectorIsIncreasing(vector<int> &v) {
         return false;
     }
 }
-
+/**
+ * If (x0, y0) and (x1, y1) are two distinct points then there is a unique line passing through them.
+ * This function returns the unique zero of this line. Of course, if y0=y1 then there is no zero, and
+ * the formula will return infinity if you do that.
+ *
+ * @param x0
+ * @param y0
+ * @param x1
+ * @param y1
+ * @return The (x-coordinate of the) zero of the line passing through (x0, y0) and (x1, y1).
+ */
 double BianchiMaassSearch::findZeroOfLinearInterpolation(double x0, double y0, double x1, double y1) {
     return -y0 * (x1 - x0)/(y1 - y0) + x0;
 }
@@ -913,7 +923,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 #pragma omp parallel for default(none) shared(indexTransversal, mToY1TestPointOrbits, Y1, MY1)
             for (int i = 0; i < indexTransversal.size(); i++) {
                 Index m = indexTransversal[i];
-                auto orbits = getPointPullbackOrbits(m, Y1, MY1);;
+                auto orbits = getPointPullbackOrbits(m, Y1, MY1);
 #pragma omp critical
                 mToY1TestPointOrbits[m] = orbits;
             }
@@ -1155,14 +1165,14 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         double stop = 0.000001;
         if (rightR - leftR < stop && heckeCheck(coeffMap) < 1) {
             std::cout << "[" << leftR << ", " << rightR << "], final precision reached, eigenvalue possible" << std::endl;
-            outputFile << "[" << leftR << ", " << rightR << "]\n";
+            outputFile << setprecision(16) << "[" << leftR << ", " << rightR << "]\n";
             return {};
         }
 
-        double heckeThreshold = 0.001;
+        double heckeThreshold = 0.0001;
         if (rightR - leftR < heckeThreshold) {
             //Compute the coeffMap
-            for (int i = 0; indexTransversal.size(); i++) {
+            for (int i = 0; i < indexTransversal.size(); i++) {
                 Index n = indexTransversal[i];
                 double coeff = solutionY1(i);
                 coeffMap[n] = coeff;
@@ -1238,4 +1248,21 @@ vector<double> BianchiMaassSearch::mergeToVector(const MatrixXd& v1, const Matri
         answer.push_back(v1(i));
     }
     return answer;
+}
+
+/**
+ * Given a relatively narrow interval [r1,r2] containing an eigenvalue,
+ * this zooms in on the eigenvalue using the secant method (uses the first
+ * Hecke relation as the cost function). r2-r1 should be at most 0.001.
+ *
+ * @param r1 Left endpoint of interval containing eigenvalue.
+ * @param r2 Right endpoint of interval containing eigenvalue.
+ */
+void BianchiMaassSearch::secantMethod(double r1, double r2) {
+    //find the conditioning goal the first time this is called
+    //compute r1 matrix
+    //compute hecke check for r1
+    //compute hecke check for r2
+    //secant
+    //loop until
 }

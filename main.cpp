@@ -1,5 +1,8 @@
 /*TODO
-     * Reduce recomputation of KBessel now that memory is handled
+     * Reduce recomputation of KBessel now that memory is handled. Could even have map<double, KBesselExact> for each eigenvalue!
+     *
+     * Use the KBessel precomputation for the 4 symmetry classes, might as well! Define a special character for symClass
+     * that triggers searching for all the classes at once.
      *
      * Add Weyl law spacing to search method
      *
@@ -33,6 +36,7 @@
 #include <ArchtKBessel.h>
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl << std::flush
+using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
     if (argc != 6) {
@@ -44,8 +48,17 @@ int main(int argc, char *argv[]) {
     double leftEndpoint = std::stod(argv[4]);
     double rightEndpoint = std::stod(argv[5]);
 
-    BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
-    bms.searchForEigenvalues(leftEndpoint, rightEndpoint);
+    //BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
+    //bms.searchForEigenvalues(leftEndpoint, rightEndpoint);
+
+    KBesselApproximator kba = KBesselApproximator(53);
+
+    auto start = high_resolution_clock::now();
+    kba.setRAndPrecompute(6, .2, 200);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<seconds>(stop - start);
+    std::cout << duration.count() << "\n";
+
 
 
 
@@ -55,7 +68,7 @@ int main(int argc, char *argv[]) {
     /*for (int D = 2; D <= 16; D++) {
         std::cout << "D = " << D << std::endl;
         BianchiMaassComputer* c1 = new BianchiMaassComputer(d, D, symClass, 6.05377197265625);
-        c1->secantSearch(leftEndpoint, rightEndpoint);
+        c1->secantMethod(leftEndpoint, rightEndpoint);
         delete c1;
     }*/
 

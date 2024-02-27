@@ -14,6 +14,7 @@ public:
     ~KBesselExact();
 
     double exactKBessel(const double x);
+    double estimateDerivativeKBessel(const double x);
 
 private:
     int prec;
