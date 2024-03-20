@@ -19,7 +19,7 @@ KBesselExact::KBesselExact(double r, int bitsOfPrecision) {
 
     K.reserve(threads);
     for (int i = 0; i < threads; i++) {
-        K.push_back(new ArchtKBessel(prec));
+        K.push_back(new ArchtKBessel());
         K[i]->setR(r);
     }
 }

@@ -10,6 +10,10 @@
 #include <vector>
 #include <boost/math/special_functions/chebyshev_transform.hpp>
 #include <boost/math/interpolators/cardinal_cubic_b_spline.hpp>
+#include <map>
+
+using std::map, std::vector;
+using CubicSpline = boost::math::interpolators::cardinal_cubic_b_spline<double>;
 
 class KBesselApproximator {
 public:
@@ -18,33 +22,42 @@ public:
     void setRAndPrecompute(double r, double precomputeLowerBound, double precomputeUpperBound);
     void extendPrecomputedRange(double newLowerBound, double newUpperBound);
     void setRAndClear(double newR);
-    double approxKBessel(const double& x);
+    double approxKBessel(const double x);
     double getR() { return this->r; }
     void printTiming();
     std::vector<double> maximize();
 
 private:
+    /*
+     *
+     * TODO Make it so that I can initialize the class so that the minimum value approximated is
+     * 2*pi/A * 1 * Y_0
+     * All other K-Bessel function calls can be computed as a 1-off exactly!
+    */
     int prec;
 
     double precomputedRegionLeftBound;
     double precomputedRegionRightBound;
+    int computedChunkCount;
+    int computedShrinkingChunkCount;
 
     double r;
 
-    double derivativeShift = pow(2,-25);
-    double fineSplineSpacing = pow(2,-19);
-    double coarseSplineSpacing = pow(2,-12);
-    int fineSplineKnotCount = 100;
-    int coarseSplineKnotCount = 100;
+    vector<double> chunkStepSize;
+    vector<double> shrinkingChunkStepSize;
+    double getSpacing(double x);
 
-    std::vector<boost::math::interpolators::cardinal_cubic_b_spline<double>> fineSplines;
-    std::vector<boost::math::interpolators::cardinal_cubic_b_spline<double>> coarseSplines;
+    static constexpr double CHUNK_WIDTH = 1.0;
+    static constexpr int SPLINE_KNOT_COUNT = 128;
+    static constexpr double ABS_ERROR_CUTOFF = 5.0e-15;
+
+    vector<vector<CubicSpline>> chunks;
+    vector<vector<CubicSpline>> shrinkingChunks;
 
     double fineIntervalWidth;
     double coarseIntervalWidth;
 
     void runTest();
-
 };
 
 

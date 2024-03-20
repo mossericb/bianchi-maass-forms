@@ -26,14 +26,12 @@ KBesselApproximator::KBesselApproximator(int bitsOfPrecision) {
     prec = bitsOfPrecision;
     r = 0;
 
-    fineIntervalWidth = fineSplineSpacing * (fineSplineKnotCount - 1);
-    coarseIntervalWidth = coarseSplineSpacing * (coarseSplineKnotCount - 1);
-
     precomputedRegionLeftBound = r;
     precomputedRegionRightBound = r;
 }
 
-double KBesselApproximator::approxKBessel(const double& x) {
+double KBesselApproximator::approxKBessel(const double x) {
+    //TODO: When everything is working properly, delete this.
     if (x < precomputedRegionLeftBound || x > precomputedRegionRightBound) {
         watch(x);
         watch(r);
@@ -42,12 +40,31 @@ double KBesselApproximator::approxKBessel(const double& x) {
         throw std::invalid_argument("KBessel approximation out of bounds");
     }
 
-    if (x < r) {
-        int leftIndex = std::floor((r - x)/fineIntervalWidth);
-        return fineSplines[leftIndex](x);
+    if (x < CHUNK_WIDTH) {
+        /*
+         * The scheme here is that there are "shrinking chunks" starting at CHUNK_WIDTH on downward.
+         * Let C = CHUNK_WIDTH
+         * The first chunk is [C/2, C)
+         * The second chunk is [C/4, C/2)
+         * and so on.
+         * So the nth (zero-indexed) shrinking chunk is the interval [C/2^(n+1), C/2^n)
+         *
+         * If log_2(C/x) <= n+1 then C/2^(n+1) <= x.
+         */
+        int shrinkingChunkIndex = ceil(log2(CHUNK_WIDTH/x)) - 1;
+        int subIndex = floor(
+                (x - CHUNK_WIDTH/pow(2,shrinkingChunkIndex)) //distance from x to the left endpoint of its shrinking chunk
+                /(SPLINE_KNOT_COUNT * shrinkingChunkStepSize[shrinkingChunkIndex]) //this is the width of the spline interval
+                );
+        return shrinkingChunks[shrinkingChunkIndex][subIndex](x);
     } else {
-        int leftIndex = std::floor((x - r)/coarseIntervalWidth);
-        return coarseSplines[leftIndex](x);
+        int chunkIndex = floor((x - CHUNK_WIDTH)/CHUNK_WIDTH);
+        int subIndex = floor(
+                (x - (CHUNK_WIDTH + chunkIndex * CHUNK_WIDTH)) // distance from x to left endpoint of its chunk
+                /(SPLINE_KNOT_COUNT * chunkStepSize[chunkIndex]) //this is the width of the spline interval
+                );
+
+        return chunks[chunkIndex][subIndex](x);
     }
 }
 
@@ -60,14 +77,17 @@ void KBesselApproximator::setRAndPrecompute(double newR, double precomputeLowerB
 void KBesselApproximator::setRAndClear(double newR) {
     this->r = newR;
 
-    fineSplines.clear();
-    coarseSplines.clear();
+    chunkStepSize.clear();
+    shrinkingChunkStepSize.clear();
+
+    chunks.clear();
+    shrinkingChunks.clear();
 
     precomputedRegionLeftBound = r;
     precomputedRegionRightBound = r;
 }
 
-std::vector<double> KBesselApproximator::maximize() {
+vector<double> KBesselApproximator::maximize() {
     double start = r;
     double left = r - 0.01;
 
@@ -103,113 +123,253 @@ std::vector<double> KBesselApproximator::maximize() {
     return {here, hereValue};
 }
 
+/**
+ * Precomputes values of the K-Bessel function on the interval [newLowerBound, newUpperBound]. This interval must be
+ * contained in the interval (0, infty).
+ *
+ * The generic usage of this method should have the lower bound be quite small, say on the order of 10^-1.
+ * The upper bound can be as large as desired.
+ *
+ * This entire class is optimized for this usage, so in fact this routine will always precompute the interval
+ * [CHUNK_WIDTH, newUpperBound] since we expect to always need at least this much. Precomputing less than CHUNK_WIDTH
+ * is more expensive and is done as requested.
+ *
+ * The user may call this function multiple times for a fixed parameter r. It will only precomputes more if the range
+ * expands, i.e. it never recomputes things.
+ *
+ * This method checks for accuracy automatically up to the relative error which is a static private member of this class.
+ * The accuracy check is not rigorously verified, only empirically at some problem points in each chunk.
+ *
+ * @param newLowerBound Positive number, usually small, on the order 10^-1
+ * @param newUpperBound Positive number, usually large, on the order 10^3 to 10^4
+ */
 void KBesselApproximator::extendPrecomputedRange(double newLowerBound, double newUpperBound) {
-    if (newLowerBound < precomputedRegionLeftBound) {
-        //Compute number of new intervals (to be inserted on the left)
-        int existingFineIntervals = fineSplines.size();
-        int newIntervalCount = std::ceil((r - newLowerBound)/fineIntervalWidth);
-        newIntervalCount = newIntervalCount - existingFineIntervals;
-        newIntervalCount = std::max(0, newIntervalCount);
+    KBesselExact kbe = KBesselExact(r);
 
-        std::vector<std::vector<double>> precomputes;
-        precomputes.resize(newIntervalCount);
+    /* ********************************************************************
+     *
+     * Precompute chunks, meaning values in the range [CHUNK_WIDTH, newUpperBound]
+     *
+     **********************************************************************/
 
-        //Allocate memory for random access in parallelized loop
-        for (int i = 0; i < newIntervalCount; i++) {
-            precomputes[i].resize(fineSplineKnotCount);
-        }
+    //Figure what new chunks need to be computed
+    int indexOfLastNewChunk = ceil((newUpperBound - CHUNK_WIDTH)/CHUNK_WIDTH) - 1;
 
-        KBesselExact K = KBesselExact(r);
-        //Compute K-Bessel values at all the new points
-#pragma omp parallel for collapse(2) default(none) shared(newIntervalCount, precomputes, existingFineIntervals, K)
-        for (int i = 0; i < newIntervalCount; i++) {
-            for (int j = 0; j < fineSplineKnotCount; j++) {
-                double left = r - (existingFineIntervals + i + 1) * fineIntervalWidth;
-                double x = left + j*fineSplineSpacing;
-                double y = K.exactKBessel(x);
-                precomputes[i][j] = y;
-            }
-        }
-
-        //Build the new spline objects for each interval...
-        //std::vector<boost::math::interpolators::cardinal_cubic_b_spline<double>> newFineSplines;
-        //newFineSplines.resize(newIntervalCount);
-        fineSplines.resize(existingFineIntervals + newIntervalCount);
-        //...in parallel
-#pragma omp parallel for default(none) shared(newIntervalCount, precomputes, existingFineIntervals, K)
-        for (int i = 0; i < newIntervalCount; i++) {
-            double left = r - (existingFineIntervals + i + 1) * fineIntervalWidth;
-            double derivativeLeft = K.estimateDerivativeKBessel(left);
-            double right = left + fineSplineSpacing * (fineSplineKnotCount - 1);
-            double derivativeRight = K.estimateDerivativeKBessel(right);
-            boost::math::interpolators::cardinal_cubic_b_spline spline(precomputes[i].begin(),
-                                                                       precomputes[i].end(),
-                                                                       left,
-                                                                       fineSplineSpacing,
-                                                                       derivativeLeft,
-                                                                       derivativeRight);
-            fineSplines[existingFineIntervals + i] = spline;
-        }
-
-        //Update the new left bound for the precomputed region and insert all the new spline objects
-        precomputedRegionLeftBound = r - (existingFineIntervals + newIntervalCount) * fineIntervalWidth;
+    //Add new slots in the chunkStepSize and chunks vectors
+    if (indexOfLastNewChunk >= chunkStepSize.size()) {
+        chunkStepSize.resize(indexOfLastNewChunk + 1);
+        chunks.resize(indexOfLastNewChunk + 1);
     }
 
-    if (precomputedRegionRightBound < newUpperBound) {
-        //
-        //Now to compute the new stuff to the right
-        //
+    //Compute spacing requirement for each new chunk
+    //Do it in reverse since earlier chunks require spacing at least as fine as later chunks
+    double spacing = pow(2.0, -1);
+    for (int i = indexOfLastNewChunk; i >= computedChunkCount; i--) {
+        bool errorIsSatisfactory = false;
+        while (!errorIsSatisfactory) {
+            //generate one interpolant
+            int knots = std::min(SPLINE_KNOT_COUNT, (int)ceil(CHUNK_WIDTH/spacing) + 1);
+            knots = std::max(3, knots); //3 knots required for cubic interpolation
+            vector<double> precompute(knots, 0.0);
 
-        //Compute number of new intervals (to be inserted on the right)
-        int existingCoarseIntervals = coarseSplines.size();
-        int newIntervalCount = std::ceil((newUpperBound - r)/coarseIntervalWidth);
-        newIntervalCount = newIntervalCount - existingCoarseIntervals;
-        newIntervalCount = std::max(0, newIntervalCount);
-
-        std::vector<std::vector<double>> precomputes;
-        precomputes.resize(newIntervalCount);
-
-        //Allocate memory for random access in parallelized loop
-        for (int i = 0; i < newIntervalCount; i++) {
-            precomputes[i].resize(coarseSplineKnotCount);
-        }
-        KBesselExact K = KBesselExact(r);
-        //Compute K-Bessel values at all the new points
-#pragma omp parallel for collapse(2) default(none) shared(newIntervalCount, precomputes, existingCoarseIntervals, K)
-        for (int i = 0; i < newIntervalCount; i++) {
-            for (int j = 0; j < coarseSplineKnotCount; j++) {
-                double left = r + (existingCoarseIntervals + i) * coarseIntervalWidth;
-                double x = left + j * coarseSplineSpacing;
-                double y = K.exactKBessel(x);
-                precomputes[i][j] = y;
+            double intervalLeft = CHUNK_WIDTH + i * CHUNK_WIDTH;
+            double intervalRight = intervalLeft + (knots - 1) * spacing;
+            for (int j = 0; j < knots; j++) {
+                double x = intervalLeft + j * spacing;
+                double y = kbe.exactKBessel(x);
+                precompute[j] = y;
             }
+
+            CubicSpline testSpline(precompute.begin(),
+                                   precompute.end(),
+                                   intervalLeft,
+                                   spacing,
+                                   kbe.estimateDerivativeKBessel(intervalLeft),
+                                   kbe.estimateDerivativeKBessel(intervalRight));
+
+            //check it for accuracy
+            errorIsSatisfactory = true;
+            for (int j = 1; j < 10; j++) {
+                double x = intervalLeft + j * (spacing/10);
+                double exact = kbe.exactKBessel(x);
+                double approx = testSpline(x);
+                if (exact == 0) {
+                    continue;
+                } else {
+                    double relativeError = (approx - exact)/exact;
+                    relativeError = abs(relativeError);
+
+                    if (relativeError > ABS_ERROR_CUTOFF) {
+                        errorIsSatisfactory = false;
+                        break;
+                    }
+                }
+            }
+
+            if (errorIsSatisfactory) {
+                break;
+            }
+
+            spacing /= 2.0;
         }
-
-        //Build the new spline objects for each interval...
-        //std::vector<boost::math::interpolators::cardinal_cubic_b_spline<double>> newCoarseSplines;
-        //newCoarseSplines.resize(newIntervalCount);
-        coarseSplines.resize(existingCoarseIntervals + newIntervalCount);
-
-        //...in parallel
-#pragma omp parallel for default(none) shared(newIntervalCount, precomputes, existingCoarseIntervals, K)
-        for (int i = 0; i < newIntervalCount; i++) {
-            double left = r + (existingCoarseIntervals + i) * coarseIntervalWidth;
-            double derivativeLeft = K.estimateDerivativeKBessel(left);
-            double right = left + coarseSplineSpacing * (coarseSplineKnotCount - 1);
-            double derivativeRight = K.estimateDerivativeKBessel(right);
-            boost::math::interpolators::cardinal_cubic_b_spline spline(precomputes[i].begin(),
-                                                                       precomputes[i].end(),
-                                                                       left,
-                                                                       coarseSplineSpacing,
-                                                                       derivativeLeft,
-                                                                       derivativeRight);
-            coarseSplines[existingCoarseIntervals + i] = spline;
-        }
-
-        //Update the new right bound for the precomputed region and insert all the new spline objects
-        precomputedRegionRightBound = r + (existingCoarseIntervals + newIntervalCount) * coarseIntervalWidth;
+        chunkStepSize[computedChunkCount + i] = spacing;
     }
-    //runTest();
+    
+    //Compute all the splines, make it parallel
+#pragma omp parallel for default(none) shared(indexOfLastNewChunk, kbe)
+    for (int i = computedChunkCount; i <= indexOfLastNewChunk; i++) {
+        //get left endpoint for this chunk
+        //get spacing for this chunk
+        //figure out how many intervals happen in this chunk
+        //for each interval
+        //  precompute K-Bessel values
+        //  make spline
+        //  add splines to the chunks vector
+
+        //get left and right endpoints for this chunk
+        double left = CHUNK_WIDTH + i * CHUNK_WIDTH;
+
+        //get spacing for this chunk
+        double spacing = chunkStepSize[i];
+
+        //figure out how many intervals happen in this chunk
+        int knots = std::min(SPLINE_KNOT_COUNT, (int)ceil(CHUNK_WIDTH/spacing) + 1);
+        knots = std::max(3, knots);
+        double intervalLength = (knots - 1) * spacing;
+        int numIntervals = ceil(CHUNK_WIDTH/intervalLength);
+        chunks[i].resize(numIntervals);
+
+        //for each interval
+        for (int j = 0; j < numIntervals; j++) {
+            //  precompute K-Bessel values
+            vector<double> precompute(knots, 0.0);
+            double intervalLeft = left + j * intervalLength;
+            double intervalRight = intervalLeft + (knots - 1) * spacing;
+            for (int k = 0; k < knots; k++) {
+                double x = intervalLeft + k * spacing;
+                double y = kbe.exactKBessel(x);
+                precompute[k] = y;
+            }
+
+            //  make spline
+            CubicSpline spline(precompute.begin(),
+                               precompute.end(),
+                               intervalLeft,
+                               spacing,
+                               kbe.estimateDerivativeKBessel(intervalLeft),
+                               kbe.estimateDerivativeKBessel(intervalRight));
+
+            //  add splines to the chunks vector
+            chunks[i][j] = spline;
+        }
+    }
+    computedChunkCount = chunks.size();
+    precomputedRegionRightBound = CHUNK_WIDTH + CHUNK_WIDTH * (computedChunkCount);
+
+
+    /* ********************************************************************
+     *
+     * Precompute shrinking chunks, meaning values in the range [newLowerBound, CHUNK_WIDTH)
+     *
+     **********************************************************************/
+
+    int indexOfLastNewShrinkingChunk = ceil(log2(CHUNK_WIDTH / newLowerBound)) - 1;
+    indexOfLastNewShrinkingChunk = std::max(indexOfLastNewShrinkingChunk, 0);
+
+    if (indexOfLastNewShrinkingChunk >= shrinkingChunks.size()) {
+        shrinkingChunks.resize(indexOfLastNewShrinkingChunk + 1);
+        shrinkingChunkStepSize.resize(indexOfLastNewShrinkingChunk + 1);
+    }
+
+    for (int newShrinkingChunk = computedShrinkingChunkCount; newShrinkingChunk <= indexOfLastNewShrinkingChunk; newShrinkingChunk++) {
+
+        if (newShrinkingChunk == 0) {
+            spacing = chunkStepSize[0];
+        } else {
+            spacing = shrinkingChunkStepSize[newShrinkingChunk - 1];
+        }
+        double left = CHUNK_WIDTH/pow(2,newShrinkingChunk + 1);
+
+        bool errorIsSatisfactory = false;
+        while (!errorIsSatisfactory) {
+            //generate one interpolant
+            vector<double> precompute(SPLINE_KNOT_COUNT, 0.0);
+
+            for (int i = 0; i < SPLINE_KNOT_COUNT; i++) {
+                double x = left + i * spacing;
+                double y = kbe.exactKBessel(x);
+                precompute[i] = y;
+            }
+            double right = left + SPLINE_KNOT_COUNT * spacing;
+
+            CubicSpline testSpline(precompute.begin(),
+                                   precompute.end(),
+                                   left,
+                                   spacing,
+                                   kbe.estimateDerivativeKBessel(left),
+                                   kbe.estimateDerivativeKBessel(right));
+
+            //check it for accuracy
+            errorIsSatisfactory = true;
+            for (int j = 1; j < 10; j++) {
+                double x = left + spacing * j / 10;
+                double exact = kbe.exactKBessel(x);
+                double approx = testSpline(x);
+                if (exact == 0) {
+                    continue;
+                } else {
+                    double relativeError = (approx - exact)/exact;
+                    relativeError = abs(relativeError);
+
+                    if (relativeError > ABS_ERROR_CUTOFF) {
+                        errorIsSatisfactory = false;
+                        break;
+                    }
+                }
+            }
+
+            if (errorIsSatisfactory) {
+                break;
+            }
+
+            spacing /= 2.0;
+        }
+        shrinkingChunkStepSize[newShrinkingChunk] = spacing;
+    }
+
+#pragma omp parallel for default(none) shared(indexOfLastNewShrinkingChunk, spacing, kbe)
+    for (int newShrinkingChunk = computedShrinkingChunkCount; newShrinkingChunk <= indexOfLastNewShrinkingChunk; newShrinkingChunk++) {
+
+        double left = CHUNK_WIDTH/pow(2,newShrinkingChunk + 1);
+        double right = CHUNK_WIDTH/pow(2, newShrinkingChunk);
+
+        double intervalWidth = SPLINE_KNOT_COUNT * spacing;
+        int numberOfIntervals = ceil((right - left)/intervalWidth);
+
+        shrinkingChunks[newShrinkingChunk].resize(numberOfIntervals);
+        for (int i = 0; i < numberOfIntervals; i++) {
+            vector<double> precompute(SPLINE_KNOT_COUNT, 0.0);
+            double intervalLeft = left + i * intervalWidth;
+            double intervalRight = left + (SPLINE_KNOT_COUNT - 1) * intervalWidth;
+            for (int j = 0; j < SPLINE_KNOT_COUNT; j++) {
+                double x = intervalLeft + j * spacing;
+                double y = kbe.exactKBessel(x);
+                precompute[j] = y;
+            }
+
+            CubicSpline spline(precompute.begin(),
+                               precompute.end(),
+                               intervalLeft,
+                               spacing,
+                               kbe.estimateDerivativeKBessel(intervalLeft),
+                               kbe.estimateDerivativeKBessel(intervalRight));
+
+            shrinkingChunks[newShrinkingChunk][i] = spline;
+        }
+    }
+    computedShrinkingChunkCount = shrinkingChunks.size();
+    precomputedRegionLeftBound = CHUNK_WIDTH/pow(2.0, computedShrinkingChunkCount + 1);
+
 }
 
 void KBesselApproximator::runTest() {
@@ -239,6 +399,11 @@ void KBesselApproximator::runTest() {
             std::cout << x << ", " << exact << std::endl;
         }
     }
+}
+
+double KBesselApproximator::getSpacing(double x) {
+    int chunkIndex = floor((x - CHUNK_WIDTH)/CHUNK_WIDTH);
+    return chunkStepSize[chunkIndex];
 }
 
 /*
@@ -276,7 +441,7 @@ int transformerIndex(double x, double a) {
     double tol = std::numeric_limits<double>::epsilon();
 
     auto start = std::chrono::high_resolution_clock::now();
-    std::vector<boost::math::chebyshev_transform<double>> chebyshevTransformers;
+    vector<boost::math::chebyshev_transform<double>> chebyshevTransformers;
 
     double left = a;
 
