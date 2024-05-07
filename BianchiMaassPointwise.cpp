@@ -32,10 +32,11 @@ using std::cout, std::string, std::endl, std::flush, std::setprecision, std::to_
  * @brief Initializes a BianchiMaassPointwise object. Can be used for pointwise calculations.
  *
  * @param d Q(sqrt(-d)) is the field that the forms are defined for. d should be in {1,2,3,7,11,19,43,67,163}.
- * @param D 10^(-D) is the magnitude of the error term of the truncation of Bianchi-Maass form Fourier-Bessel series.
+ * @param D 10^(-D) is the magnitude of the relativeError term of the truncation of Bianchi-Maass form Fourier-Bessel series.
  * @param symClass 'D', 'G', 'C', or 'H' are symmetry classes as defined in the literature.
  */
-BianchiMaassPointwise::BianchiMaassPointwise(int d, int D, char symClass) {
+BianchiMaassPointwise::BianchiMaassPointwise(int d, int D, char symClass)
+    : K(computeK(d, D, symClass)) {
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -48,7 +49,7 @@ BianchiMaassPointwise::BianchiMaassPointwise(int d, int D, char symClass) {
 
     //Check that D is valid
     if (D <= 0) {
-        throw(std::invalid_argument("D should be positive. 10^-D is the truncation error."));
+        throw(std::invalid_argument("D should be positive. 10^-D is the truncation relativeError."));
     }
 
     //Check that symclass is valid
@@ -67,6 +68,8 @@ BianchiMaassPointwise::BianchiMaassPointwise(int d, int D, char symClass) {
     A = Od.getA();
     theta = Od.getTheta();
     Y0 = Od.getY0();
+
+    K = KBesselApproximator(2 * PI/A * 1 * Y0);
 
     //outputFile.open("d" + to_string(d) + "_D" + to_string(D) + "_" + symClass + "_" + to_string(Y1Parameter) + ".txt");
 
@@ -200,17 +203,17 @@ double BianchiMaassPointwise::evaluate(const double r, const Quaternion& z, cons
         double term = a_n*z.getJ();
 
         //kappa(2*pi/A*|n|*y)
-        term *= tempK.exactKBessel(2 * pi / A * n.getAbs(d) * z.getJ());
+        term *= tempK.exactKBessel(2 * PI / A * n.getAbs(d) * z.getJ());
 
         double cs = 0;
         if (symClass == 'D' || symClass == 'G' || d == 1) {
             for (auto lClass : itr.second) {
-                cs += lClass.second * 2 * cos(pi/A * traceProduct(I * (lClass.first).getComplex(d),
+                cs += lClass.second * 2 * cos(PI/A * traceProduct(I * (lClass.first).getComplex(d),
                                                                    z.getComplex()));
             }
         } else {
             for (auto lClass : itr.second) {
-                cs += lClass.second * 2 * sin(pi/A * traceProduct(I * (lClass.first).getComplex(d),
+                cs += lClass.second * 2 * sin(PI/A * traceProduct(I * (lClass.first).getComplex(d),
                                                                    z.getComplex()));
             }
         }
@@ -292,27 +295,27 @@ double BianchiMaassPointwise::computeM0General(const double r) {
     //ON THE DISTRIBUTION OF EIGENVALUES OF MAASS FORMS ON CERTAIN MOONSHINE GROUPS
 
     //Step 1: Make sure the equality point happens between my left and right endpoints
-    double minM0 = max(r, 1.0)/(2*pi/A*Y0);
+    double minM0 = max(r, 1.0)/(2*PI/A*Y0);
     double maxM0 = 100;
 
     double peak = tempK.exactKBessel(max(r,1.0));
-    double evalLeft = truncation * peak - tempK.exactKBessel(2*pi/A*minM0*Y0);
-    double evalRight = truncation * peak - tempK.exactKBessel(2*pi/A*maxM0*Y0);
+    double evalLeft = truncation * peak - tempK.exactKBessel(2*PI/A*minM0*Y0);
+    double evalRight = truncation * peak - tempK.exactKBessel(2*PI/A*maxM0*Y0);
     while (!areDifferentSign(evalLeft, evalRight)) {
         maxM0 *= 2;
-        evalRight = truncation * peak - tempK.exactKBessel(2*pi/A*maxM0*Y0);
+        evalRight = truncation * peak - tempK.exactKBessel(2*PI/A*maxM0*Y0);
     }
 
 
     //Step 2: Do binary search
     double left = minM0;
     double right = maxM0;
-    evalLeft = truncation * peak - tempK.exactKBessel(2*pi/A*left*Y0);
+    evalLeft = truncation * peak - tempK.exactKBessel(2*PI/A*left*Y0);
 
     //Super accuracy here doesn't really matter, but it's fast, so we go this far because we can
     while (right - left > 0.000001) {
         double center = (left + right)/2.0;
-        double evalCenter = truncation * peak - tempK.exactKBessel(2*pi/A*center*Y0);
+        double evalCenter = truncation * peak - tempK.exactKBessel(2*PI/A*center*Y0);
 
         if (areDifferentSign(evalLeft, evalCenter)) {
             right = center;
@@ -613,7 +616,7 @@ void BianchiMaassPointwise::populateMatrix() {
             }
         }
 
-        K.extendPrecomputedRange(2 * pi / A * 1 * Y, 2 * pi / A * M0 * maxYStar);
+        K.extendPrecomputedRange(2 * PI / A * M0 * maxYStar);
 #pragma omp parallel for default(none) shared(matrix, indexTransversal, i, m, size)
         for (int j = 0; j < size; j++) {
 
@@ -638,23 +641,23 @@ double BianchiMaassPointwise::computeEntry(const Index &m, const Index &n) {
 
             //toAdd =  ystar * kappa(2*pi/A*|n|*ystar) * e(symClass, n, x^*) * exp(-pi*I/A * <I*m,x>)
             double yStar = pullback.getJ();
-            double term = yStar * K.approxKBessel(2 * pi / A * n.getAbs(d) * yStar);
+            double term = yStar * K.approxKBessel(2 * PI / A * n.getAbs(d) * yStar);
 
             double indexTerm = 0;
             for (const auto& tup : indexOrbitDataModMinusOne[n]) {
                 Index l = tup.first;
                 complex<double> xStar = pullback.getComplex();
                 double ellTerm = tup.second; //This is a_l/a_n
-                ellTerm *= cos(pi/A * traceProduct(I* l.getComplex(d), xStar));
+                ellTerm *= cos(PI/A * traceProduct(I* l.getComplex(d), xStar));
                 indexTerm += ellTerm;
             }
             term *= indexTerm;
 
-            double testPointTerm = cos(pi/A * traceProduct(-I* m.getComplex(d), x));
+            double testPointTerm = cos(PI/A * traceProduct(-I* m.getComplex(d), x));
             for (const auto& tup : testPointOrbit.properTranslatesModSign) {
                 complex<double> etaX = tup.first;
                 char sign = tup.second;
-                testPointTerm += sign * cos(pi/A * traceProduct(-I* m.getComplex(d), etaX));
+                testPointTerm += sign * cos(PI/A * traceProduct(-I* m.getComplex(d), etaX));
             }
             term *= testPointTerm;
 
@@ -669,23 +672,23 @@ double BianchiMaassPointwise::computeEntry(const Index &m, const Index &n) {
             auto pullback = testPointOrbit.representativePullback;
 
             double yStar = pullback.getJ();
-            double term = yStar * K.approxKBessel(2 * pi / A * n.getAbs(d) * yStar);
+            double term = yStar * K.approxKBessel(2 * PI / A * n.getAbs(d) * yStar);
 
             double indexTerm = 0;
             for (const auto& tup : indexOrbitDataModMinusOne[n]) {
                 Index l = tup.first;
                 complex<double> xStar = pullback.getComplex();
                 double ellTerm = tup.second; //This is a_l/a_n
-                ellTerm *= sin(pi/A * traceProduct(I* l.getComplex(d), xStar));
+                ellTerm *= sin(PI/A * traceProduct(I* l.getComplex(d), xStar));
                 indexTerm += ellTerm;
             }
             term *= indexTerm;
 
-            double testPointTerm = sin(pi/A * traceProduct(-I* m.getComplex(d), x));
+            double testPointTerm = sin(PI/A * traceProduct(-I* m.getComplex(d), x));
             for (const auto& tup : testPointOrbit.properTranslatesModSign) {
                 complex<double> etaX = tup.first;
                 char sign = tup.second;
-                testPointTerm += sign * sin(pi/A * traceProduct(-I* m.getComplex(d), etaX));
+                testPointTerm += sign * sin(PI/A * traceProduct(-I* m.getComplex(d), etaX));
             }
             term *= testPointTerm;
 
@@ -698,7 +701,7 @@ double BianchiMaassPointwise::computeEntry(const Index &m, const Index &n) {
     //Add on the kronecker delta term
     if (m == n) {
         //deltaTerm = Y * kappa(2*pi/A*|m|*Y)
-        double deltaTerm = Y * K.approxKBessel(2 * pi / A * m.getAbs(d) * Y);
+        double deltaTerm = Y * K.approxKBessel(2 * PI / A * m.getAbs(d) * Y);
 
         answer += deltaTerm;
     }
@@ -928,6 +931,16 @@ double BianchiMaassPointwise::traceProduct(const complex<double> &z, const compl
 
 bool BianchiMaassPointwise::areDifferentSign(const double &a, const double &b) {
     return (a > 0 && b < 0) || (a < 0 && b > 0);
+}
+
+double BianchiMaassPointwise::computeK(int d, int D, char symClass) {
+    Od = ImaginaryQuadraticIntegers(d);
+
+    A = Od.getA();
+    theta = Od.getTheta();
+    Y0 = Od.getY0();
+
+    return 2 * PI/A * 1 * Y0;
 }
 
 

@@ -1,0 +1,30 @@
+#ifndef ARCHTKBESSEL_LIBRARY_H
+#define ARCHTKBESSEL_LIBRARY_H
+
+#include <mpfr.h>
+#include <mpfi.h>
+#include <vector>
+
+class ArchtKBessel {
+public:
+    ArchtKBessel();
+    ~ArchtKBessel();
+
+    void setR(const double &r);
+    double evaluate(const double &x);
+private:
+    static constexpr double PI = 3.141592653589793238462643383279;
+    static constexpr double E = 2.7182818284590452353602874713;
+    static constexpr int BEGINNING_BITS = 54;
+    double zeroCutoff;
+
+    double r;
+    double bitComputationHelper = log2(PI/2.0);
+
+    std::vector<mpfi_ptr> vec_f;
+    std::vector<__mpfi_struct> vec_mpfi_r;
+    std::vector<__mpfi_struct> vec_mpfi_x;
+    std::vector<__mpfr_struct> vec_mid;
+};
+
+#endif //ARCHTKBESSEL_LIBRARY_H

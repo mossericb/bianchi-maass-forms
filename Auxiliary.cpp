@@ -48,7 +48,7 @@ int Auxiliary::mod(int x, int modulus) {
     }
 }
 
-int Auxiliary::next(long double x) {
+int Auxiliary::next(double x) {
     int answer = floor(x) + 1;
     return answer;
 }

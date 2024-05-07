@@ -69,7 +69,7 @@ private:
 
     ofstream outputFile;
 
-    double pi = 3.141592653589793238462643383279502884197;
+    static constexpr double PI = 3.141592653589793238462643383279502884197;
     complex<double> I = {0,1};
 
     double tolerance;
@@ -128,6 +128,7 @@ private:
     double computeEntry(const Index& m, const Index& n);
     void computeIndexData();
     void solveMatrix();
+    double computeK(int d, int D, char symClass);
 };
 
 

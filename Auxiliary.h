@@ -16,7 +16,7 @@ public:
     ~Auxiliary();
 
     static int mod(int x, int modulus);
-    static int next(long double x);
+    static int next(double x);
     /*static void computeTheta(acb_t theta, int d, int bits);
     static void intervalReduce(arb_struct *answer, const arb_struct *x, const arb_struct *scale, int bits);
     static void vectorReduce(acb_struct *answer, const acb_struct *v, const acb_t toReduce, int bits);

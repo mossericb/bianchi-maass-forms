@@ -303,7 +303,7 @@ Quaternion operator*(const SL2C &gamma, const Quaternion &q) {
 
     Quaternion answer = a*q + b;
     answer /= (c*q + d);
-    //answer.w = 0; //mitigate error propagation
+    //answer.w = 0; //mitigate relativeError propagation
     return answer;
 }
 

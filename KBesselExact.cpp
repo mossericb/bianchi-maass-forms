@@ -4,37 +4,30 @@
 
 #include "KBesselExact.h"
 #include "omp.h"
-#include <acb_hypgeom.h>
 #include <boost/math/differentiation/finite_difference.hpp>
 
-KBesselExact::KBesselExact(double r, int bitsOfPrecision) {
-    prec = bitsOfPrecision;
-    this->r = r;
+KBesselExact::KBesselExact(double r) {
 
 #pragma omp parallel default(none) shared(threads)
     {
 #pragma omp single
         threads = omp_get_max_threads();
-    };
+    }
 
     K.reserve(threads);
     for (int i = 0; i < threads; i++) {
-        K.push_back(new ArchtKBessel());
-        K[i]->setR(r);
+        K.emplace_back();
+        K[i].setR(r);
     }
+}
+
+KBesselExact::KBesselExact() : KBesselExact(0) {
 }
 
 double KBesselExact::exactKBessel(const double x) {
     int threadNum = omp_get_thread_num();
 
-    return K[threadNum]->evaluate(x);
-}
-
-KBesselExact::~KBesselExact() {
-    for (int i = 0; i < threads; i++) {
-        delete K[i];
-    }
-    K.clear();
+    return K[threadNum].evaluate(x);
 }
 
 double KBesselExact::estimateDerivativeKBessel(const double x) {
@@ -42,6 +35,12 @@ double KBesselExact::estimateDerivativeKBessel(const double x) {
     double dfdx = boost::math::differentiation::finite_difference_derivative(f, x);
 
     return dfdx;
+}
+
+void KBesselExact::updateR(const double r) {
+    for (auto a : K) {
+        a.setR(r);
+    }
 }
 
 

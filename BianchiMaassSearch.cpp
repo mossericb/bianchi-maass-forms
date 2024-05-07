@@ -44,7 +44,7 @@ BianchiMaassSearch::BianchiMaassSearch(int d, int D, char symClass) {
 
     //Check that D is valid
     if (D <= 0) {
-        throw(std::invalid_argument("D should be positive. 10^-D is the truncation error."));
+        throw(std::invalid_argument("D should be positive. 10^-D is the truncation relativeError."));
     }
 
     //Check that symclass is valid
@@ -800,10 +800,12 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     //In subsequent calls, start with Y1 and Y2 at the top end of the range and adjust a few times until
     //the condition number is close to the computed ballpark
 
-    KBesselApproximator K = KBesselApproximator(53);
-    K.setRAndClear(rightR);
-
     double M0 = computeM0General(rightR);
+
+    KBesselApproximator K = KBesselApproximator(2*pi/A /*usual factor*/
+                                                                        * 1 /*smallest magnitude of an index*/
+                                                                        * Y0 /*smallest height of a pullback*/
+                                                                        );
 
     vector<Index> indicesM0 = Od.indicesUpToM(M0);
     auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
@@ -897,7 +899,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
                 }
             }
 
-            K.extendPrecomputedRange(2 * pi / A * 1 * Y1, 2 * pi / A * M0 * maxYStar);
+            K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
 
             matrixY1 = produceMatrix(indexTransversal,
                                      mToY1TestPointOrbits,
@@ -936,7 +938,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
                 }
             }
 
-            K.extendPrecomputedRange(2 * pi / A * 1 * Y1, 2 * pi / A * M0 * maxYStar);
+            K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
 
             matrixY1 = produceMatrix(indexTransversal,
                                      mToY1TestPointOrbits,
@@ -1002,7 +1004,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         }
 
         //Right now K is set to leftR
-        K.extendPrecomputedRange(2 * pi / A * 1 * Y1, 2 * pi / A * M0 * maxYStar);
+        K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
 
         matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, K);
         matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, K);
@@ -1015,7 +1017,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 
         leftG = mergeToVector(gY1, gY2);
 
-        K.setRAndPrecompute(rightR, 2 * pi / A * 1 * Y1, 2 * pi / A * M0 * maxYStar);
+        K.setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
 
         matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, K);
         matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, K);
@@ -1067,7 +1069,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
                 }
             }
 
-            K.extendPrecomputedRange(2 * pi / A * 1 * Y1, 2 * pi / A * M0 * maxYStar);
+            K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
 
             matrixY1 = produceMatrix(indexTransversal,
                                      mToY1TestPointOrbits,
@@ -1130,7 +1132,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         //Then get leftR Y1 set
         //The test points are already computed
         K.setRAndClear(leftR);
-        K.extendPrecomputedRange(2 * pi / A * 1 * Y1, 2 * pi / A * M0 * maxYStar);
+        K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
 
         matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, K);
         auto solutionAndCondition = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);

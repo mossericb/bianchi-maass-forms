@@ -10,20 +10,17 @@
 
 class KBesselExact {
 public:
-    explicit KBesselExact(double r, int bitsOfPrecision = 53);
-    ~KBesselExact();
+    explicit KBesselExact(double r);
+    KBesselExact();
 
     double exactKBessel(const double x);
     double estimateDerivativeKBessel(const double x);
+    void updateR(const double r);
 
 private:
-    int prec;
-
     int threads;
 
-    double r;
-
-    std::vector<ArchtKBessel*> K;
+    std::vector<ArchtKBessel> K;
 };
 
 

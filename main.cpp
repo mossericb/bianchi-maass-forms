@@ -48,19 +48,25 @@ int main(int argc, char *argv[]) {
     double leftEndpoint = std::stod(argv[4]);
     double rightEndpoint = std::stod(argv[5]);
 
-    //BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
-    //bms.searchForEigenvalues(leftEndpoint, rightEndpoint);
+    /*
+    BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
+    bms.searchForEigenvalues(leftEndpoint, rightEndpoint);
+    */
 
-    KBesselApproximator kba = KBesselApproximator(53);
+
+    KBesselApproximator kba = KBesselApproximator(2*3.14/(sqrt(19.0)/2)*1*sqrt(2.0/19));
 
     auto start = high_resolution_clock::now();
-    kba.setRAndPrecompute(6, .2, 200);
+    kba.setRAndPrecompute(6, 200);
     auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<seconds>(stop - start);
+    auto duration = duration_cast<milliseconds>(stop - start);
     std::cout << duration.count() << "\n";
 
+    kba.extendPrecomputedRange(200);
 
+    kba.runTest();
 
+    system("leaks Bianchi-Maass_Forms");
 
     //BianchiMaassPointwise bmp = BianchiMaassPointwise(d, D, symClass);
     //bmp.checkSingleEigenvalue(6.011020660400391 ,0.065);
