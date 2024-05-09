@@ -2,14 +2,14 @@
 // Created by Eric Moss on 8/9/23.
 //
 
-#include "KBesselApproximator.h"
+#include "KBessel.h"
 #include <flint/flint.h>
 #include <sstream>
 #include <iomanip>
 #include <iostream>
 #include <cassert>
+#include <boost/math/differentiation/finite_difference.hpp>
 #include "omp.h"
-#include "KBesselExact.h"
 #include "Auxiliary.h"
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl
@@ -22,14 +22,14 @@
  *
  */
 
-KBesselApproximator::KBesselApproximator(double precomputeLowerBound) {
-    r = 0;
+KBessel::KBessel(double precomputeLowerBound, double r) {
+    this->r = r;
 
     /*This is put here so that it can be initialized dynamically depending on r,
      * in case that becomes useful later.
      */
     firstChunkLeftEndpoint = 1.0;
-    chunkWidth = 1.0;
+    chunkWidth = 5.0;
 
     numberOfShrinkingChunks = 12;
     shrinkingChunkFirstWidth = (firstChunkLeftEndpoint - precomputeLowerBound)/pow(2, numberOfShrinkingChunks - 1);
@@ -41,9 +41,37 @@ KBesselApproximator::KBesselApproximator(double precomputeLowerBound) {
         throw std::invalid_argument("precomputeLowerBound must be less than "
         + std::to_string(chunkWidth));
     }
+
+
+    /**
+     * Initialize the exact functionality
+     */
+#pragma omp parallel default(none) shared(threads)
+    {
+#pragma omp single
+        threads = omp_get_max_threads();
+    }
+
+    K.reserve(threads);
+    for (int i = 0; i < threads; i++) {
+        K.push_back(new ArchtKBessel(r));
+    }
 }
 
-double KBesselApproximator::approxKBessel(const double x) {
+KBessel::~KBessel() {
+    for (auto bess : K) {
+        delete bess;
+    }
+    K.clear();
+}
+
+double KBessel::exactKBessel(double x) {
+    int threadNum = omp_get_thread_num();
+    double ans = K[threadNum]->evaluate(x);
+    return ans;
+}
+
+double KBessel::approxKBessel(const double x) {
     //TODO: Bake in logic for when K evaluates to 0, and also throw errors when it is evaluated below
     //the specified bound. Make this logic reflect in the precompute routine.0
 
@@ -94,14 +122,20 @@ double KBesselApproximator::approxKBessel(const double x) {
     }
 }
 
-void KBesselApproximator::setRAndPrecompute(double newR, double precomputeUpperBound) {
+void KBessel::setRAndPrecompute(double newR, double precomputeUpperBound) {
     setRAndClear(newR);
 
     extendPrecomputedRange(precomputeUpperBound);
 }
 
-void KBesselApproximator::setRAndClear(double newR) {
+void KBessel::setRAndClear(double newR) {
     r = newR;
+
+    for (auto A : K) {
+        A->setR(r);
+    }
+
+
     //firstChunkLeftEndpoint = std::max(r/2.0, precomputedRegionLeftBound + 1);
     firstChunkLeftEndpoint = 1;
     shrinkingChunkFirstWidth = (firstChunkLeftEndpoint - precomputedRegionLeftBound)/pow(2, numberOfShrinkingChunks - 1);
@@ -140,8 +174,7 @@ void KBesselApproximator::setRAndClear(double newR) {
  * @param newLowerBound Positive number, usually small, on the order 10^-1
  * @param newUpperBound Positive number, usually large, on the order 10^3 to 10^4
  */
-void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
-    KBesselExact kbe = KBesselExact(r);
+void KBessel::extendPrecomputedRange(double newUpperBound) {
 
     /* ********************************************************************
      *
@@ -175,13 +208,14 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
      * leftmost one.
      */
     int threads;
+
 #pragma omp parallel default(none) shared(threads)
     {
 #pragma omp single
         threads = omp_get_num_threads();
     }
 
-#pragma omp parallel default(none) shared(indexOfLastNewChunk, threads, kbe)
+#pragma omp parallel default(none) shared(indexOfLastNewChunk, threads)
     {
         int thread = omp_get_thread_num();
         int skip = (indexOfLastNewChunk - computedChunkCount)/threads;
@@ -205,7 +239,7 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
                 double intervalRight = intervalLeft + (knots - 1) * spacing;
                 for (int j = 0; j < knots; j++) {
                     double x = intervalLeft + j * spacing;
-                    double y = kbe.exactKBessel(x);
+                    double y = exactKBessel(x);
                     precompute[j] = y;
                 }
 
@@ -213,25 +247,20 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
                                        precompute.end(),
                                        intervalLeft,
                                        spacing,
-                                       kbe.estimateDerivativeKBessel(intervalLeft),
-                                       kbe.estimateDerivativeKBessel(intervalRight));
+                                       approxDerivativeKBessel(intervalLeft),
+                                       approxDerivativeKBessel(intervalRight));
 
                 //check it for accuracy
                 errorIsSatisfactory = true;
                 for (int j = 1; j < 10; j++) {
                     double x = intervalLeft + j * (spacing/10);
-                    double exact = kbe.exactKBessel(x);
+                    double exact = exactKBessel(x);
                     double approx = testSpline(x);
-                    if (exact == 0) {
-                        continue;
-                    } else {
-                        double error = relativeError(exact, approx);
 
-
-                        if (error > ABS_ERROR_CUTOFF) {
-                            errorIsSatisfactory = false;
-                            break;
-                        }
+                    double error = relativeError(exact, approx);
+                    if (error > ABS_ERROR_CUTOFF) {
+                        errorIsSatisfactory = false;
+                        break;
                     }
                 }
 
@@ -247,7 +276,7 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
     }
     
     //Compute all the splines, make it parallel
-#pragma omp parallel for default(none) shared(indexOfLastNewChunk, kbe)
+#pragma omp parallel for default(none) shared(indexOfLastNewChunk)
     for (int i = computedChunkCount; i <= indexOfLastNewChunk; i++) {
         //get left endpoint for this chunk
         //get spacing for this chunk
@@ -277,7 +306,7 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
             double intervalRight = intervalLeft + (knots - 1) * spacing;
             for (int k = 0; k < knots; k++) {
                 double x = intervalLeft + k * spacing;
-                double y = kbe.exactKBessel(x);
+                double y = exactKBessel(x);
                 precompute[k] = y;
             }
 
@@ -286,8 +315,8 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
                                precompute.end(),
                                intervalLeft,
                                spacing,
-                               kbe.estimateDerivativeKBessel(intervalLeft),
-                               kbe.estimateDerivativeKBessel(intervalRight));
+                               approxDerivativeKBessel(intervalLeft),
+                               approxDerivativeKBessel(intervalRight));
 
             //  add splines to the chunks vector
             chunks[i][j] = spline;
@@ -335,7 +364,7 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
 
             for (int i = 0; i < SPLINE_KNOT_COUNT; i++) {
                 double x = left + i * spacing;
-                double y = kbe.exactKBessel(x);
+                double y = exactKBessel(x);
                 precompute[i] = y;
             }
             double right = left + (SPLINE_KNOT_COUNT - 1) * spacing;
@@ -344,25 +373,20 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
                                    precompute.end(),
                                    left,
                                    spacing,
-                                   kbe.estimateDerivativeKBessel(left),
-                                   kbe.estimateDerivativeKBessel(right));
+                                   approxDerivativeKBessel(left),
+                                   approxDerivativeKBessel(right));
 
             //check it for accuracy
             errorIsSatisfactory = true;
             for (int j = 1; j < 10; j++) {
                 double x = left + spacing * j / 10;
-                double exact = kbe.exactKBessel(x);
+                double exact = exactKBessel(x);
                 double approx = testSpline(x);
-                if (exact == 0) {
-                    continue;
-                } else {
-                    double error = relativeError(exact, approx);
+                double error = relativeError(exact, approx);
 
-
-                    if (error > ABS_ERROR_CUTOFF) {
-                        errorIsSatisfactory = false;
-                        break;
-                    }
+                if (error > ABS_ERROR_CUTOFF) {
+                    errorIsSatisfactory = false;
+                    break;
                 }
             }
 
@@ -375,7 +399,7 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
         shrinkingChunkStepSize[newShrinkingChunk] = spacing;
     }
 
-#pragma omp parallel for default(none) shared(kbe)
+#pragma omp parallel for default(none)
     for (int newShrinkingChunk = 0; newShrinkingChunk < numberOfShrinkingChunks; newShrinkingChunk++) {
 
         double left;
@@ -400,7 +424,7 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
             double subIntervalRight = left + (i + 1) * subIntervalWidth;
             for (int j = 0; j < SPLINE_KNOT_COUNT; j++) {
                 double x = subIntervalLeft + j * spacing;
-                double y = kbe.exactKBessel(x);
+                double y = exactKBessel(x);
                 precompute[j] = y;
             }
 
@@ -408,20 +432,20 @@ void KBesselApproximator::extendPrecomputedRange(double newUpperBound) {
                                precompute.end(),
                                subIntervalLeft,
                                spacing,
-                               kbe.estimateDerivativeKBessel(subIntervalLeft),
-                               kbe.estimateDerivativeKBessel(subIntervalRight));
+                               approxDerivativeKBessel(subIntervalLeft),
+                               approxDerivativeKBessel(subIntervalRight));
 
             shrinkingChunks[newShrinkingChunk][i] = spline;
         }
     }
 }
 
-void KBesselApproximator::runTest() {
+void KBessel::runTest() {
     double maxErrorSoFar = 0;
-    KBesselExact K = KBesselExact(r);
+
     for (int i = 0; i < 1000; i++) {
         double x = r - i*(r-precomputedRegionLeftBound)/1000.0;
-        double exact = K.exactKBessel(x);
+        double exact = exactKBessel(x);
         double approx = approxKBessel(x);
         double error = relativeError(exact, approx);
         if (error > maxErrorSoFar && exact != 0 && error > ABS_ERROR_CUTOFF) {
@@ -434,7 +458,7 @@ void KBesselApproximator::runTest() {
     maxErrorSoFar = 0;
     for (int i = 0; i < 1000; i++) {
         double x = r + i*(precomputedRegionRightBound - r)/1000.0;
-        double exact = K.exactKBessel(x);
+        double exact = exactKBessel(x);
         double approx = approxKBessel(x);
         double error = relativeError(exact, approx);
         if (error > maxErrorSoFar && exact != 0 && error > ABS_ERROR_CUTOFF) {
@@ -445,95 +469,18 @@ void KBesselApproximator::runTest() {
     }
 }
 
-double KBesselApproximator::relativeError(double exact, double approx) {
+double KBessel::relativeError(double exact, double approx) {
     return abs(approx-exact)/(1 + abs(exact));
 }
 
-/*
- * double chebyWidth = pow(2,-7);
+double KBessel::approxDerivativeKBessel(double x) {
+    auto f = [this](double x) { return this->exactKBessel(x); };
+    double dfdx = boost::math::differentiation::finite_difference_derivative(f, x);
 
-double rand01() {
-    return std::rand() / (RAND_MAX + 1.0);
-}
-
-double randab(double a, double b) {
-    return a + rand01()*(b-a);
-}
-
-int transformerIndex(double x, double a) {
-    int floor = std::floor((x-a)/chebyWidth);
-    return floor;
-}
- *
- * #include <boost/math/special_functions/chebyshev.hpp>
-#include <boost/math/special_functions//chebyshev_transform.hpp>
-#include <fftw3.h>
- *
- * KBesselApproximator K = KBesselApproximator(9);
-
-    auto kBesselFunction = [&K](double x) {
-        return K.computeKBessel(x);
-    };
-
-
-
-    double a = 8.5;
-    double b = 50;
-    K.setRAndPrecompute(9, a, b);
-
-    double tol = std::numeric_limits<double>::epsilon();
-
-    auto start = std::chrono::high_resolution_clock::now();
-    vector<boost::math::chebyshev_transform<double>> chebyshevTransformers;
-
-    double left = a;
-
-    while (left < b) {
-        boost::math::chebyshev_transform<double> chebyshevTransformer([&](double x) { return kBesselFunction(x); }, left, left + chebyWidth, tol);
-        chebyshevTransformers.push_back(chebyshevTransformer);
-        left += chebyWidth;
+    if (isnan(dfdx)) {
+        std::cout << x << std::endl;
     }
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
-    std::cout << "step 1 ";
-    watch(duration);
+    return dfdx;
+}
 
 
-    std::chrono::duration<double> exactDuration = std::chrono::duration<double> (0);
-    std::chrono::duration<double> approxDuration = std::chrono::duration<double> (0);
-    std::chrono::duration<double> lagrangeDuration = std::chrono::duration<double> (0);
-    int numPoints = pow(10,6);
-    double maxDiff = 0;
-    for (int i = 0; i < numPoints; i++) {
-        double x = a + i*(b-a)/(double)numPoints;
-        start = std::chrono::high_resolution_clock::now();
-        double exact = K.exactKBessel(x);
-        end = std::chrono::high_resolution_clock::now();
-        duration = end - start;
-        exactDuration += duration;
-
-        start = std::chrono::high_resolution_clock::now();
-        double approx = chebyshevTransformers[transformerIndex(x,a)](x);
-        end = std::chrono::high_resolution_clock::now();
-        duration = end - start;
-        approxDuration += duration;
-
-        start = std::chrono::high_resolution_clock::now();
-        double lagrangeApprox = K.approxKBessel(x);
-        end = std::chrono::high_resolution_clock::now();
-        duration = end - start;
-        approxDuration += duration;
-
-        double diff = exact - approx;
-        diff = abs(diff);
-        if (diff > maxDiff) {
-            maxDiff = diff;
-            watch(maxDiff);
-            watch(x);
-        }
-    }
-
-    watch(approxDuration);
-    watch(exactDuration);
-    watch(lagrangeDuration);
- */

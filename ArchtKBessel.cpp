@@ -4,10 +4,9 @@
 #include <iostream>
 #include <numbers>
 
-ArchtKBessel::ArchtKBessel() {
+ArchtKBessel::ArchtKBessel(double r) {
     mpfi_ptr bess = init_kbessel(BEGINNING_BITS);
     vec_f.push_back(bess);
-    r = 0;
 
     mpfi_t mpfi_r;
     mpfi_init2(mpfi_r, BEGINNING_BITS);
@@ -20,6 +19,8 @@ ArchtKBessel::ArchtKBessel() {
     mpfr_t mid;
     mpfr_init2(mid, BEGINNING_BITS);
     vec_mid.push_back(*mid);
+
+    setR(r);
 }
 
 ArchtKBessel::~ArchtKBessel() {
@@ -42,9 +43,11 @@ ArchtKBessel::~ArchtKBessel() {
         mpfr_clear(&mid);
     }
     vec_mid.clear();
+
+    mpfr_free_cache();
 }
 
-void ArchtKBessel::setR(const double &r) {
+void ArchtKBessel::setR(double r) {
     this->r = r;
     for (int i = 0; i < vec_mpfi_r.size(); i++) {
         mpfr_set_d(&(vec_mpfi_r[i].left), r, MPFR_RNDN);
@@ -53,7 +56,7 @@ void ArchtKBessel::setR(const double &r) {
     zeroCutoff = (1136 + PI*r/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
 }
 
-double ArchtKBessel::evaluate(const double &x) {
+double ArchtKBessel::evaluate(double x) {
     if (x < 2.0 * r) {
         mpfr_set_d(&(vec_mpfi_x[0].left), x, MPFR_RNDN);
         mpfr_set_d(&(vec_mpfi_x[0].right), x, MPFR_RNDN);
@@ -61,6 +64,10 @@ double ArchtKBessel::evaluate(const double &x) {
         kbessel(vec_f[0], &vec_mpfi_r[0], &vec_mpfi_x[0]);
         mpfi_mid(&vec_mid[0], vec_f[0]);
         double ans = mpfr_get_d(&vec_mid[0], MPFR_RNDN);
+        if (isnan(ans)) {
+            int a = 0;
+        }
+        //mpfr_free_cache();
         return ans;
     } else if (x > zeroCutoff) {
         return 0;
@@ -100,5 +107,9 @@ double ArchtKBessel::evaluate(const double &x) {
     mpfi_mid(&vec_mid[bitsIndex], vec_f[bitsIndex]);
     double ans = mpfr_get_d(&vec_mid[bitsIndex], MPFR_RNDN);
 
+    if (isnan(ans)) {
+        int a = 0;
+    }
+    //mpfr_free_cache();
     return ans;
 }

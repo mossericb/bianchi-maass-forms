@@ -30,10 +30,8 @@
 #include <iostream>
 #include "BianchiMaassPointwise.h"
 #include "BianchiMaassSearch.h"
-#include "KBesselExact.h"
 #include <chrono>
 #include <acb_hypgeom.h>
-#include <ArchtKBessel.h>
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl << std::flush
 using namespace std::chrono;
@@ -48,16 +46,17 @@ int main(int argc, char *argv[]) {
     double leftEndpoint = std::stod(argv[4]);
     double rightEndpoint = std::stod(argv[5]);
 
-    /*
+
     BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
     bms.searchForEigenvalues(leftEndpoint, rightEndpoint);
-    */
 
 
-    KBesselApproximator kba = KBesselApproximator(2*3.14/(sqrt(19.0)/2)*1*sqrt(2.0/19));
+
+    /*
+    KBessel kba = KBessel(2*3.14/(sqrt(19.0)/2)*1*sqrt(2.0/19));
 
     auto start = high_resolution_clock::now();
-    kba.setRAndPrecompute(6, 200);
+    kba.setRAndPrecompute(6, 500);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
     std::cout << duration.count() << "\n";
@@ -67,6 +66,7 @@ int main(int argc, char *argv[]) {
     kba.runTest();
 
     system("leaks Bianchi-Maass_Forms");
+    */
 
     //BianchiMaassPointwise bmp = BianchiMaassPointwise(d, D, symClass);
     //bmp.checkSingleEigenvalue(6.011020660400391 ,0.065);

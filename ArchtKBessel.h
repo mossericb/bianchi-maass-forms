@@ -7,11 +7,11 @@
 
 class ArchtKBessel {
 public:
-    ArchtKBessel();
+    explicit ArchtKBessel(double r);
     ~ArchtKBessel();
 
-    void setR(const double &r);
-    double evaluate(const double &x);
+    void setR(double r);
+    double evaluate(double x);
 private:
     static constexpr double PI = 3.141592653589793238462643383279;
     static constexpr double E = 2.7182818284590452353602874713;

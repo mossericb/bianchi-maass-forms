@@ -17,12 +17,6 @@
 //Path to a library.
 ARB_LIBRARY:FILEPATH=/opt/homebrew/lib/libarb.dylib
 
-//Path to a library.
-ARCHTKBESSEL_LIBRARY:FILEPATH=/usr/local/lib/libArchtKBessel.a
-
-//Path to a library.
-ARCHT_LIBRARY:FILEPATH=/usr/local/lib/libArchtKBessel.a
-
 //Value Computed by CMake
 Bianchi-Maass_Forms_BINARY_DIR:STATIC=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-release
 
@@ -51,8 +45,8 @@ CMAKE_BUILD_TYPE:STRING=Release
 //Enable colored diagnostics throughout.
 CMAKE_COLOR_DIAGNOSTICS:BOOL=ON
 
-//No help, variable specified on the command line.
-CMAKE_CXX_COMPILER:UNINITIALIZED=/opt/homebrew/Cellar/llvm/17.0.6_1/bin/clang++
+//CXX compiler
+CMAKE_CXX_COMPILER:STRING=/opt/homebrew/Cellar/llvm/17.0.6_1/bin/clang++
 
 //LLVM archiver
 CMAKE_CXX_COMPILER_AR:FILEPATH=/opt/homebrew/Cellar/llvm/17.0.6_1/bin/llvm-ar
@@ -61,7 +55,7 @@ CMAKE_CXX_COMPILER_AR:FILEPATH=/opt/homebrew/Cellar/llvm/17.0.6_1/bin/llvm-ar
 CMAKE_CXX_COMPILER_RANLIB:FILEPATH=/opt/homebrew/Cellar/llvm/17.0.6_1/bin/llvm-ranlib
 
 //Flags used by the CXX compiler during all build types.
-CMAKE_CXX_FLAGS:STRING=
+CMAKE_CXX_FLAGS:STRING=-O2
 
 //Flags used by the CXX compiler during DEBUG builds.
 CMAKE_CXX_FLAGS_DEBUG:STRING=-g
@@ -75,8 +69,8 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 //Flags used by the CXX compiler during RELWITHDEBINFO builds.
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
-//No help, variable specified on the command line.
-CMAKE_C_COMPILER:UNINITIALIZED=/opt/homebrew/Cellar/llvm/17.0.6_1/bin/clang
+//C compiler
+CMAKE_C_COMPILER:STRING=/opt/homebrew/Cellar/llvm/17.0.6_1/bin/clang
 
 //LLVM archiver
 CMAKE_C_COMPILER_AR:FILEPATH=/opt/homebrew/Cellar/llvm/17.0.6_1/bin/llvm-ar

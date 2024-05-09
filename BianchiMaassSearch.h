@@ -13,7 +13,7 @@
 #include "Index.h"
 #include "Quaternion.h"
 #include "Auxiliary.h"
-#include "KBesselApproximator.h"
+#include "KBessel.h"
 #include "ImaginaryQuadraticIntegers.h"
 
 #include <eigen3/Eigen/Dense>
@@ -96,7 +96,7 @@ private:
 
     Auxiliary Aux;
 
-    map<double, KBesselApproximator> rToKBess;
+    map<double, KBessel> rToKBess;
     /***************************************************
      * Private methods used in SEARCH calculations.
      ***************************************************/
@@ -115,11 +115,11 @@ private:
                            map<Index, vector<TestPointOrbitData>> &mToTestPointData,
                            map<Index, vector<pair<Index, int>>> &ntoIndexOrbitData,
                            double Y,
-                           KBesselApproximator &K);
+                           KBessel &K);
     pair<MatrixXd, double> solveMatrix(const MatrixXd &matrix, const vector<Index> &indexTransversal,
                          const int indexOfNormalization);
     vector<double> getGVector();
-    double computeEntry(const Index &m, const Index &n, KBesselApproximator &K,
+    double computeEntry(const Index &m, const Index &n, KBessel &K,
                         const vector<TestPointOrbitData> &mTestPointOrbits, const double Y,
                         const vector<pair<Index, int>> &nIndexOrbitDataModSign);
 

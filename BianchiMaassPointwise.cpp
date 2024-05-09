@@ -10,7 +10,6 @@
 #include <random>
 #include <chrono>
 #include <eigen3/Eigen/SVD>
-#include "KBesselExact.h"
 //#include "Plotter.h"
 //#include "PlotWindow.h"
 //#include "FunctionToEvaluate.h"
@@ -36,7 +35,7 @@ using std::cout, std::string, std::endl, std::flush, std::setprecision, std::to_
  * @param symClass 'D', 'G', 'C', or 'H' are symmetry classes as defined in the literature.
  */
 BianchiMaassPointwise::BianchiMaassPointwise(int d, int D, char symClass)
-    : K(computeK(d, D, symClass)) {
+    : K(computeK(d, D, symClass), 0) {
 
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -69,7 +68,7 @@ BianchiMaassPointwise::BianchiMaassPointwise(int d, int D, char symClass)
     theta = Od.getTheta();
     Y0 = Od.getY0();
 
-    K = KBesselApproximator(2 * PI/A * 1 * Y0);
+    K = KBessel(2 * PI / A * 1 * Y0, 0);
 
     //outputFile.open("d" + to_string(d) + "_D" + to_string(D) + "_" + symClass + "_" + to_string(Y1Parameter) + ".txt");
 
@@ -193,7 +192,7 @@ double BianchiMaassPointwise::evaluate(const double r, const Quaternion& z, cons
         solveMatrix();
     }
 
-    KBesselExact tempK = KBesselExact(r);
+    ArchtKBessel bess(r);
 
     vector<double> terms;
     for (auto itr : indexOrbitDataModMinusOne) {
@@ -203,7 +202,7 @@ double BianchiMaassPointwise::evaluate(const double r, const Quaternion& z, cons
         double term = a_n*z.getJ();
 
         //kappa(2*pi/A*|n|*y)
-        term *= tempK.exactKBessel(2 * PI / A * n.getAbs(d) * z.getJ());
+        term *= bess.evaluate(2 * PI / A * n.getAbs(d) * z.getJ());
 
         double cs = 0;
         if (symClass == 'D' || symClass == 'G' || d == 1) {
@@ -286,7 +285,7 @@ void BianchiMaassPointwise::clearData() {
  * @param r Spectral parameter
  */
 double BianchiMaassPointwise::computeM0General(const double r) {
-    KBesselExact tempK = KBesselExact(r);
+    ArchtKBessel bess(r);
 
     //Method: use binary search to find M0 such that
     //K(2*pi/A * M0 * Y0) = 10^-D * K(max(r,1))
@@ -298,24 +297,24 @@ double BianchiMaassPointwise::computeM0General(const double r) {
     double minM0 = max(r, 1.0)/(2*PI/A*Y0);
     double maxM0 = 100;
 
-    double peak = tempK.exactKBessel(max(r,1.0));
-    double evalLeft = truncation * peak - tempK.exactKBessel(2*PI/A*minM0*Y0);
-    double evalRight = truncation * peak - tempK.exactKBessel(2*PI/A*maxM0*Y0);
+    double peak = bess.evaluate(max(r,1.0));
+    double evalLeft = truncation * peak - bess.evaluate(2*PI/A*minM0*Y0);
+    double evalRight = truncation * peak - bess.evaluate(2*PI/A*maxM0*Y0);
     while (!areDifferentSign(evalLeft, evalRight)) {
         maxM0 *= 2;
-        evalRight = truncation * peak - tempK.exactKBessel(2*PI/A*maxM0*Y0);
+        evalRight = truncation * peak - bess.evaluate(2*PI/A*maxM0*Y0);
     }
 
 
     //Step 2: Do binary search
     double left = minM0;
     double right = maxM0;
-    evalLeft = truncation * peak - tempK.exactKBessel(2*PI/A*left*Y0);
+    evalLeft = truncation * peak - bess.evaluate(2*PI/A*left*Y0);
 
     //Super accuracy here doesn't really matter, but it's fast, so we go this far because we can
     while (right - left > 0.000001) {
         double center = (left + right)/2.0;
-        double evalCenter = truncation * peak - tempK.exactKBessel(2*PI/A*center*Y0);
+        double evalCenter = truncation * peak - bess.evaluate(2*PI/A*center*Y0);
 
         if (areDifferentSign(evalLeft, evalCenter)) {
             right = center;

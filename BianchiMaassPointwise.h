@@ -16,7 +16,7 @@
 #include "Index.h"
 #include "Quaternion.h"
 #include "Auxiliary.h"
-#include "KBesselApproximator.h"
+#include "KBessel.h"
 #include "ImaginaryQuadraticIntegers.h"
 
 #include <eigen3/Eigen/Dense>
@@ -100,7 +100,7 @@ private:
     MatrixXd matrix;
     map<Index, double> coefficientMap;
 
-    KBesselApproximator K;
+    KBessel K;
     Auxiliary Aux;
 
     double maxYStar;

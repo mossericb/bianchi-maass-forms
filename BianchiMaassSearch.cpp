@@ -16,7 +16,7 @@
 #include <chrono>
 #include <filesystem>
 #include <eigen3/Eigen/SVD>
-#include "KBesselExact.h"
+#include "ArchtKBessel.h"
 //#include "Plotter.h"
 //#include "PlotWindow.h"
 //#include "FunctionToEvaluate.h"
@@ -153,7 +153,7 @@ void BianchiMaassSearch::narrowLikelyInterval(const double leftR, const double r
 }
 
 double BianchiMaassSearch::computeM0General(const double r) {
-    KBesselExact K = KBesselExact(r);
+    ArchtKBessel bess(r);
 
     //Method: use binary search to find M0 such that
     //K(2*pi/A * M0 * Y0) = 10^-D * K(max(r,1))
@@ -165,24 +165,24 @@ double BianchiMaassSearch::computeM0General(const double r) {
     double minM0 = max(r, 1.0)/(2*pi/A*Y0);
     double maxM0 = 100;
 
-    double peak = K.exactKBessel(max(r,1.0));
-    double evalLeft = truncation * peak - K.exactKBessel(2*pi/A*minM0*Y0);
-    double evalRight = truncation * peak - K.exactKBessel(2*pi/A*maxM0*Y0);
+    double peak = bess.evaluate(max(r,1.0));
+    double evalLeft = truncation * peak - bess.evaluate(2*pi/A*minM0*Y0);
+    double evalRight = truncation * peak - bess.evaluate(2*pi/A*maxM0*Y0);
     while (!areDifferentSign(evalLeft, evalRight)) {
         maxM0 *= 2;
-        evalRight = truncation * peak - K.exactKBessel(2*pi/A*maxM0*Y0);
+        evalRight = truncation * peak - bess.evaluate(2*pi/A*maxM0*Y0);
     }
 
 
     //Step 2: Do binary search
     double left = minM0;
     double right = maxM0;
-    evalLeft = truncation * peak - K.exactKBessel(2*pi/A*left*Y0);
+    evalLeft = truncation * peak - bess.evaluate(2*pi/A*left*Y0);
 
     //Super accuracy here doesn't really matter, but it's fast, so we go this far because we can
     while (right - left > 0.000001) {
         double center = (left + right)/2.0;
-        double evalCenter = truncation * peak - K.exactKBessel(2*pi/A*center*Y0);
+        double evalCenter = truncation * peak - bess.evaluate(2*pi/A*center*Y0);
 
         if (areDifferentSign(evalLeft, evalCenter)) {
             right = center;
@@ -543,7 +543,7 @@ MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal
                                            map<Index, vector<TestPointOrbitData>> &mToTestPointData,
                                            map<Index, vector<pair<Index, int>>> &ntoIndexOrbitData,
                                            double Y,
-                                           KBesselApproximator &K) {
+                                           KBessel &K) {
 
     int size = indexTransversal.size();
     MatrixXd answer;
@@ -623,7 +623,7 @@ pair<MatrixXd, double> BianchiMaassSearch::solveMatrix(const MatrixXd &matrix, c
 }
 
 double
-BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBesselApproximator &K,
+BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
                                  const vector<TestPointOrbitData> &mTestPointOrbits, const double Y,
                                  const vector<pair<Index, int>> &nIndexOrbitDataModSign) {
     double answer = 0;
@@ -702,7 +702,7 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBesselApproxim
     //Add on the kronecker delta term
     if (m == n) {
         //deltaTerm = Y * kappa(2*pi/A*|m|*Y)
-        double deltaTerm = Y * K.approxKBessel(2 * pi / A * m.getAbs(d) * Y);
+        double deltaTerm = Y * K.exactKBessel(2 * pi / A * m.getAbs(d) * Y);
 
         answer = Aux.multiPrecisionSummation({answer, deltaTerm});
     }
@@ -802,10 +802,10 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 
     double M0 = computeM0General(rightR);
 
-    KBesselApproximator K = KBesselApproximator(2*pi/A /*usual factor*/
+    KBessel K = KBessel(2 * pi / A /*usual factor*/
                                                                         * 1 /*smallest magnitude of an index*/
                                                                         * Y0 /*smallest height of a pullback*/
-                                                                        );
+                                                                        , rightR);
 
     vector<Index> indicesM0 = Od.indicesUpToM(M0);
     auto data = Od.indexOrbitQuotientData(indicesM0, symClass);

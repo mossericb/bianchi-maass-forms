@@ -47,8 +47,8 @@ add_executable(${PROJECT_NAME}
         Quaternion.h
         Auxiliary.cpp
         Auxiliary.h
-        KBesselApproximator.cpp
-        KBesselApproximator.h
+        KBessel.cpp
+        KBessel.h
         SL2C.cpp
         SL2C.h
         FunctionToEvaluate.h
@@ -64,8 +64,6 @@ add_executable(${PROJECT_NAME}
         BianchiMaassSearch.h
         ImaginaryQuadraticIntegers.cpp
         ImaginaryQuadraticIntegers.h
-        KBesselExact.cpp
-        KBesselExact.h
         ArchtKBessel.h
         ArchtKBessel.cpp)
 
@@ -87,7 +85,7 @@ cmake_print_variables(FFTW_LIBRARY)
 cmake_print_variables(OpenMP)
 #cmake_print_variables(ARCHTKBESSEL_LIBRARY)
 
-target_link_libraries(${PROJECT_NAME} ${ARCHT_LIBRARY})
+#target_link_libraries(${PROJECT_NAME} ${ARCHT_LIBRARY})
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
