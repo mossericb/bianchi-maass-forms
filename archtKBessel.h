@@ -5,10 +5,10 @@
 #include <mpfi.h>
 #include <vector>
 
-class ArchtKBessel {
+class archtKBessel {
 public:
-    explicit ArchtKBessel(double r);
-    ~ArchtKBessel();
+    explicit archtKBessel(double r);
+    ~archtKBessel();
 
     void setR(double r);
     double evaluate(double x);

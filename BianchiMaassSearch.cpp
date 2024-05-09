@@ -16,7 +16,7 @@
 #include <chrono>
 #include <filesystem>
 #include <eigen3/Eigen/SVD>
-#include "ArchtKBessel.h"
+#include "archtKBessel.h"
 //#include "Plotter.h"
 //#include "PlotWindow.h"
 //#include "FunctionToEvaluate.h"
@@ -153,7 +153,7 @@ void BianchiMaassSearch::narrowLikelyInterval(const double leftR, const double r
 }
 
 double BianchiMaassSearch::computeM0General(const double r) {
-    ArchtKBessel bess(r);
+    archtKBessel bess(r);
 
     //Method: use binary search to find M0 such that
     //K(2*pi/A * M0 * Y0) = 10^-D * K(max(r,1))
@@ -1163,7 +1163,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 
     int signChanges = countSignChanges(leftG, rightG);
 
-    if (signChanges > searchPossibleSignChanges/3.0) {
+    if (signChanges > searchPossibleSignChanges/10.0) {
         double stop = 0.000001;
         if (rightR - leftR < stop && heckeCheck(coeffMap) < 1) {
             std::cout << "[" << leftR << ", " << rightR << "], final precision reached, eigenvalue possible" << std::endl;

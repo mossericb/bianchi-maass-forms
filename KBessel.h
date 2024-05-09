@@ -11,7 +11,7 @@
 #include <boost/math/special_functions/chebyshev_transform.hpp>
 #include <boost/math/interpolators/cardinal_cubic_b_spline.hpp>
 #include <map>
-#include "ArchtKBessel.h"
+#include "archtKBessel.h"
 
 using std::map, std::vector;
 using CubicSpline = boost::math::interpolators::cardinal_cubic_b_spline<double>;
@@ -57,7 +57,7 @@ private:
     vector<vector<CubicSpline>> shrinkingChunks;
 
     int threads;
-    std::vector<ArchtKBessel*> K;
+    std::vector<archtKBessel*> K;
 
     static constexpr double PI = 3.1415926535897932384626433832795028841971693993751058209749445923;
     static constexpr double E = 2.7182818284590452353602874713526624977572470936999595749669676277;

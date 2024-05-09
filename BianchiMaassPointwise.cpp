@@ -192,7 +192,7 @@ double BianchiMaassPointwise::evaluate(const double r, const Quaternion& z, cons
         solveMatrix();
     }
 
-    ArchtKBessel bess(r);
+    archtKBessel bess(r);
 
     vector<double> terms;
     for (auto itr : indexOrbitDataModMinusOne) {
@@ -285,7 +285,7 @@ void BianchiMaassPointwise::clearData() {
  * @param r Spectral parameter
  */
 double BianchiMaassPointwise::computeM0General(const double r) {
-    ArchtKBessel bess(r);
+    archtKBessel bess(r);
 
     //Method: use binary search to find M0 such that
     //K(2*pi/A * M0 * Y0) = 10^-D * K(max(r,1))

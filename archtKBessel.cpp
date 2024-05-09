@@ -1,10 +1,9 @@
-#include "ArchtKBessel.h"
+#include "archtKBessel.h"
 #include "archt/kbessel.c"
 
 #include <iostream>
-#include <numbers>
 
-ArchtKBessel::ArchtKBessel(double r) {
+archtKBessel::archtKBessel(double r) {
     mpfi_ptr bess = init_kbessel(BEGINNING_BITS);
     vec_f.push_back(bess);
 
@@ -23,7 +22,7 @@ ArchtKBessel::ArchtKBessel(double r) {
     setR(r);
 }
 
-ArchtKBessel::~ArchtKBessel() {
+archtKBessel::~archtKBessel() {
     for (auto bess : vec_f) {
         clear_kbessel(bess);
     }
@@ -47,7 +46,7 @@ ArchtKBessel::~ArchtKBessel() {
     mpfr_free_cache();
 }
 
-void ArchtKBessel::setR(double r) {
+void archtKBessel::setR(double r) {
     this->r = r;
     for (int i = 0; i < vec_mpfi_r.size(); i++) {
         mpfr_set_d(&(vec_mpfi_r[i].left), r, MPFR_RNDN);
@@ -56,7 +55,7 @@ void ArchtKBessel::setR(double r) {
     zeroCutoff = (1136 + PI*r/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
 }
 
-double ArchtKBessel::evaluate(double x) {
+double archtKBessel::evaluate(double x) {
     if (x < 2.0 * r) {
         mpfr_set_d(&(vec_mpfi_x[0].left), x, MPFR_RNDN);
         mpfr_set_d(&(vec_mpfi_x[0].right), x, MPFR_RNDN);

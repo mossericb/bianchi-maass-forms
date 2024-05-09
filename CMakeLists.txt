@@ -24,8 +24,8 @@ find_library(MPFI_LIBRARY mpfi REQUIRED)
 find_library(MPI_LIBRARY mpi REQUIRED)
 find_library(PARI_LIBRARY pari REQUIRED)
 find_library(FFTW_LIBRARY fftw3 REQUIRED)
-#find_library(ARCHTKBESSEL_LIBRARY ArchtKBessel REQUIRED)
-#find_library(ARCHT_LIBRARY ArchtKBessel REQUIRED)
+#find_library(ARCHTKBESSEL_LIBRARY archtKBessel REQUIRED)
+#find_library(ARCHT_LIBRARY archtKBessel REQUIRED)
 
 #variable_watch(ARCHT_LIBRARY)
 variable_watch(PYTHON_LIBRARY)
@@ -64,8 +64,8 @@ add_executable(${PROJECT_NAME}
         BianchiMaassSearch.h
         ImaginaryQuadraticIntegers.cpp
         ImaginaryQuadraticIntegers.h
-        ArchtKBessel.h
-        ArchtKBessel.cpp)
+        archtKBessel.h
+        archtKBessel.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${FLINT_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${ARB_LIBRARY})

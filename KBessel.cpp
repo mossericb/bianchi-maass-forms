@@ -54,7 +54,7 @@ KBessel::KBessel(double precomputeLowerBound, double r) {
 
     K.reserve(threads);
     for (int i = 0; i < threads; i++) {
-        K.push_back(new ArchtKBessel(r));
+        K.push_back(new archtKBessel(r));
     }
 }
 
