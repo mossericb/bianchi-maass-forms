@@ -67,12 +67,6 @@ BianchiMaassSearch::BianchiMaassSearch(int d, int D, char symClass) {
     truncation = pow(10,-D);
     tolerance = pow(10,-(D+6));
 
-    cout << setprecision(16);
-    cout << "A: " << A << endl;
-    cout << "theta: " << theta << endl;
-    cout << "Y0: " << Y0 << endl;
-    cout << "truncation: " << truncation << endl;
-
     //open file
     const std::string directory = "Output/"; // Change this to the desired directory
     createOutputDirectory(directory);
@@ -86,8 +80,6 @@ BianchiMaassSearch::BianchiMaassSearch(int d, int D, char symClass) {
         outputFile << "d = " << d << " ";
         outputFile << "symClass = " << symClass << " ";
         outputFile << "D = " << D << " ";
-        outputFile << "Y0 = " << Y0 << " ";
-        outputFile << "A = " << A << endl;
     } else {
         std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
     }
@@ -105,7 +97,8 @@ void BianchiMaassSearch::searchForEigenvalues(const double leftR, const double r
     if (leftR >= rightR) {
         throw(std::invalid_argument("leftR should be less than rightR"));
     }
-    outputFile << "Searching interval [" << leftR << ", " << rightR << "]" << endl;
+    outputFile << "leftEndpoint = " << leftR << '\n';
+    outputFile << "rightEndpoint = " << rightR << '\n';
 
     double SPACING = 1.0 / 8;
     vector<double> endpoints;

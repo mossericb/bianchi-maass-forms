@@ -46,6 +46,12 @@ int main(int argc, char *argv[]) {
     double leftEndpoint = std::stod(argv[4]);
     double rightEndpoint = std::stod(argv[5]);
 
+    std::cout << "d = " << d << '\n';
+    std::cout << "symClass = " << symClass << '\n';
+    std::cout << "D = " << D << '\n';
+    std::cout << "leftEndpoint = " << leftEndpoint << '\n';
+    std::cout << "rightEndpoint = " << rightEndpoint << '\n';
+
 
     BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
     bms.searchForEigenvalues(leftEndpoint, rightEndpoint);
