@@ -148,7 +148,7 @@ void KBessel::setRAndClear(double newR) {
     chunks.clear();
     shrinkingChunks.clear();
 
-    computedChunkCount = 0;
+    chunkKnotCount.clear();
 
     precomputedRegionRightBound = precomputedRegionLeftBound;
 }
@@ -188,11 +188,13 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
         newUpperBound = zeroCutoff;
     }
 
+    int previouslyComputedChunks = chunks.size();
+
     //Figure what new chunks need to be computed
-    int indexOfLastNewChunk = ceil((newUpperBound - firstChunkLeftEndpoint) / chunkWidth) - 1;
+    int indexOfLastNewChunk = floor((newUpperBound - firstChunkLeftEndpoint) / chunkWidth);
 
     //Add new slots in the chunkStepSize and chunks vectors
-    if (indexOfLastNewChunk >= chunkStepSize.size()) {
+    if (indexOfLastNewChunk >= chunks.size()) {
         chunkStepSize.resize(indexOfLastNewChunk + 1);
         chunkKnotCount.resize(indexOfLastNewChunk + 1);
         chunks.resize(indexOfLastNewChunk + 1);
@@ -215,15 +217,35 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
         threads = omp_get_num_threads();
     }
 
-#pragma omp parallel default(none) shared(indexOfLastNewChunk, threads)
+#pragma omp parallel default(none) shared(indexOfLastNewChunk, threads, previouslyComputedChunks)
     {
         int thread = omp_get_thread_num();
-        int skip = (indexOfLastNewChunk - computedChunkCount)/threads;
-        int start = indexOfLastNewChunk - thread * skip;
-        int end = indexOfLastNewChunk - (thread + 1) * skip + 1;
-        if (thread == threads - 1) {
-            end = computedChunkCount;
+
+        int newChunksToCompute = indexOfLastNewChunk - previouslyComputedChunks + 1;
+
+        int start;
+        int end;
+        int skip = std::max(1, (indexOfLastNewChunk - previouslyComputedChunks)/threads);
+
+        if (newChunksToCompute > threads) {
+            start = indexOfLastNewChunk - thread * skip;// if thread == 0 this is indexOfLastNewChunk
+            end = indexOfLastNewChunk - (thread + 1) * skip + 1;
+            if (thread == threads - 1) {
+                end = previouslyComputedChunks;
+            }
+        } else {
+            if (thread >= newChunksToCompute) {
+                //this stops the thread from entering the for loop
+                start = 0;
+                end = 1;
+            } else {
+                start = indexOfLastNewChunk - thread;
+                end = start;
+            }
         }
+
+
+
 
         double spacing = pow(2.0, -1);
         int knots = 0;
@@ -270,14 +292,14 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
 
                 spacing /= 2.0;
             }
-            chunkStepSize[computedChunkCount + i] = spacing;
-            chunkKnotCount[computedChunkCount + i] = knots;
+            chunkStepSize[i] = spacing;
+            chunkKnotCount[i] = knots;
         }
     }
     
     //Compute all the splines, make it parallel
-#pragma omp parallel for default(none) shared(indexOfLastNewChunk)
-    for (int i = computedChunkCount; i <= indexOfLastNewChunk; i++) {
+#pragma omp parallel for default(none) shared(indexOfLastNewChunk, previouslyComputedChunks)
+    for (int i = previouslyComputedChunks; i <= indexOfLastNewChunk; i++) {
         //get left endpoint for this chunk
         //get spacing for this chunk
         //figure out how many intervals happen in this chunk
@@ -322,8 +344,7 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
             chunks[i][j] = spline;
         }
     }
-    computedChunkCount = chunks.size();
-    precomputedRegionRightBound = firstChunkLeftEndpoint + chunkWidth * (computedChunkCount);
+    precomputedRegionRightBound = firstChunkLeftEndpoint + chunkWidth * chunks.size();
 
 
     /* ********************************************************************

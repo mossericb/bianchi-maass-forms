@@ -19,7 +19,6 @@ private:
     double zeroCutoff;
 
     double r;
-    double bitComputationHelper = log2(PI/2.0);
 
     std::vector<mpfi_ptr> vec_f;
     std::vector<__mpfi_struct> vec_mpfi_r;

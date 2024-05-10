@@ -1157,7 +1157,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     int signChanges = countSignChanges(leftG, rightG);
 
     if (signChanges > searchPossibleSignChanges/10.0) {
-        double stop = 0.000001;
+        double stop = pow(10, -D - 1);
         if (rightR - leftR < stop && heckeCheck(coeffMap) < 1) {
             std::cout << "[" << leftR << ", " << rightR << "], final precision reached, eigenvalue possible" << std::endl;
             outputFile << setprecision(16) << "[" << leftR << ", " << rightR << "]\n";
