@@ -40,7 +40,7 @@ private:
 
     double r;
 
-    double numberOfShrinkingChunks;
+    int numberOfShrinkingChunks;
     double shrinkingChunkFirstWidth;
     double chunkWidth;
     double firstChunkLeftEndpoint;

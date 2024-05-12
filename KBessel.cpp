@@ -31,7 +31,7 @@ KBessel::KBessel(double precomputeLowerBound, double r) {
     firstChunkLeftEndpoint = 1.0;
     chunkWidth = 5.0;
 
-    numberOfShrinkingChunks = 12;
+
     shrinkingChunkFirstWidth = (firstChunkLeftEndpoint - precomputeLowerBound)/pow(2, numberOfShrinkingChunks - 1);
 
     precomputedRegionLeftBound = precomputeLowerBound;
@@ -51,6 +51,8 @@ KBessel::KBessel(double precomputeLowerBound, double r) {
 #pragma omp single
         threads = omp_get_max_threads();
     }
+
+    numberOfShrinkingChunks = std::max(12, threads);
 
     K.reserve(threads);
     for (int i = 0; i < threads; i++) {
@@ -209,15 +211,8 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
      * Within each contiguous sequence of chunks we would expect the spacing to not change much, except for the
      * leftmost one.
      */
-    int threads;
 
-#pragma omp parallel default(none) shared(threads)
-    {
-#pragma omp single
-        threads = omp_get_num_threads();
-    }
-
-#pragma omp parallel default(none) shared(indexOfLastNewChunk, threads, previouslyComputedChunks)
+#pragma omp parallel default(none) shared(indexOfLastNewChunk, previouslyComputedChunks)
     {
         int thread = omp_get_thread_num();
 

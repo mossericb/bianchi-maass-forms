@@ -71,15 +71,20 @@ BianchiMaassSearch::BianchiMaassSearch(int d, int D, char symClass) {
     const std::string directory = "Output/"; // Change this to the desired directory
     createOutputDirectory(directory);
     int maxNumber = findMaxFileNumber(directory);
-    std::string outputFilename = directory + "output_" + std::to_string(maxNumber + 1) + ".txt";
+    std::string outputFilename = directory
+            + "output_"
+            + to_string(d) + " "
+            + symClass + " "
+            + std::to_string(maxNumber + 1)
+            + ".txt";
 
     outputFile.open(outputFilename);
 
     if (outputFile.is_open()) {
         // Write content to the file
-        outputFile << "d = " << d << " ";
-        outputFile << "symClass = " << symClass << " ";
-        outputFile << "D = " << D << " ";
+        outputFile << "d = " << d << '\n';
+        outputFile << "symClass = " << symClass << '\n';
+        outputFile << "D = " << D << '\n';
     } else {
         std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
     }
@@ -963,7 +968,9 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         argminY1 = ansY1;
         argminY2 = ansY2;
         computeAllConditionNumbers = false;
-        conditionGoal = Auxiliary::nextWithinOrderOfMag(min);
+        //MAGIC NUMBER, determined by experimentation
+        //If this is too low you can end up in an endless loop looking for well-conditioned Y1 or Y2
+        conditionGoal = 2.0 * min;
 
         //compute the matrices again :)
         Y1 = argminY1;

@@ -24,6 +24,20 @@ const std::vector<std::complex<double>> Quaternion::d19Translators = {{0,0},
                                                                       getTheta(19)-1.0,
                                                                       -getTheta(19)+1.0};
 
+const std::vector<std::complex<double>> Quaternion::d43Alphas = {};
+const std::vector<SL2C> Quaternion::d43MAlphas = {};
+const std::vector<std::complex<double>> Quaternion::d43Translators = {};
+
+const std::vector<std::complex<double>> Quaternion::d67Alphas = {};
+const std::vector<SL2C> Quaternion::d67MAlphas = {};
+const std::vector<std::complex<double>> Quaternion::d67Translators = {};
+
+const std::vector<std::complex<double>> Quaternion::d163Alphas = {};
+const std::vector<SL2C> Quaternion::d163MAlphas = {};
+const std::vector<std::complex<double>> Quaternion::d163Translators = {};
+
+//TODO write down alphas, MAlphas, Translators for d = 43, 67, 163, write
+
 
 
 Quaternion::Quaternion(double x, double y, double z, double w) {

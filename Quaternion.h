@@ -48,6 +48,18 @@ public:
     const static std::vector<SL2C> d19MAlphas;
     const static std::vector<std::complex<double>> d19Translators;
 
+    const static std::vector<std::complex<double>> d43Alphas;
+    const static std::vector<SL2C> d43MAlphas;
+    const static std::vector<std::complex<double>> d43Translators;
+
+    const static std::vector<std::complex<double>> d67Alphas;
+    const static std::vector<SL2C> d67MAlphas;
+    const static std::vector<std::complex<double>> d67Translators;
+
+    const static std::vector<std::complex<double>> d163Alphas;
+    const static std::vector<SL2C> d163MAlphas;
+    const static std::vector<std::complex<double>> d163Translators;
+
 private:
     void reduceModT();
     bool reduceModInversion(int d);
