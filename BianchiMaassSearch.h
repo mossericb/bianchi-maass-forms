@@ -101,7 +101,7 @@ private:
      * Private methods used in SEARCH calculations.
      ***************************************************/
 
-    int findMaxFileNumber(const std::string& directory);
+    int findMaxFileNumber(const string &directory, const string &prefix);
     void createOutputDirectory(const std::string& directory);
     /*void recursiveSearchForEigenvalues(const double leftR, const double rightR,
                                        vector<double>& leftG,
