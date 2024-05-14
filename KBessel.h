@@ -45,7 +45,7 @@ private:
     double chunkWidth;
     double firstChunkLeftEndpoint;
     static constexpr int SPLINE_KNOT_COUNT = 128;
-    static constexpr double ABS_ERROR_CUTOFF = 5e-16;
+    static constexpr double ABS_ERROR_CUTOFF = 1e-16;
 
     vector<double> chunkStepSize;
     vector<double> shrinkingChunkStepSize;

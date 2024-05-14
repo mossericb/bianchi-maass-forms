@@ -1230,7 +1230,13 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
             }
         }
 
-        double stop = pow(10, -D - 1);
+        /*
+         * Stopping condition determined by empirical observation, but is also
+         * sensible! If you forge on past this point you start detecting fewer sign changes
+         * than are really there, and the distinction between an interval having the eigenvalue
+         * or not becomes blurry.
+         */
+        double stop = pow(10, -D + 1);
         bool finalPrecisionReached = (rightR - leftR) < stop;
         if (finalPrecisionReached && signChanges > searchPossibleSignChanges/2.0) {
             std::cout << "--final precision reached, eigenvalue possible\n";
