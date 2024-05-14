@@ -18,6 +18,8 @@ private:
     static constexpr int BEGINNING_BITS = 54;
     double zeroCutoff;
 
+    mpfr_t acc;
+
     double r;
 
     std::vector<mpfi_ptr> vec_f;

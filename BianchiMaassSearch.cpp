@@ -819,6 +819,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         }
     }
 
+    std::cout << std::setprecision(16);
     watch(M0);
     watch(leftR);
     watch(rightR);
@@ -1046,8 +1047,8 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 
             double hecke = heckeCheck(coeffMap);
             if (abs(hecke) > 1) {
-                std::cout << "[" << leftR << ", " << rightR << "], stopping, failed Hecke check " << signChanges
-                          << "/" << searchPossibleSignChanges << std::endl;
+                std::cout << "[" << leftR << ", " << rightR << "], stopping, failed Hecke check " << hecke << ", "
+                << signChanges << "/" << searchPossibleSignChanges << std::endl;
                 return {};
             }
         }
