@@ -493,9 +493,6 @@ double KBessel::approxDerivativeKBessel(double x) {
     auto f = [this](double x) { return this->exactKBessel(x); };
     double dfdx = boost::math::differentiation::finite_difference_derivative(f, x);
 
-    if (isnan(dfdx)) {
-        std::cout << x << std::endl;
-    }
     return dfdx;
 }
 
