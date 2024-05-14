@@ -64,11 +64,18 @@ double archtKBessel::evaluate(double x) {
             mpfi_set_d(&(vec_mpfi_x[i]), x);
 
             kbessel(vec_f[i], &vec_mpfi_r[i], &vec_mpfi_x[i]);
+            /*
             mpfi_diam(&vec_mid[i], vec_f[i]);
             if (mpfr_lessequal_p(&vec_mid[i], acc)) {
                 mpfi_mid(&vec_mid[i], vec_f[i]);
                 double ans = mpfr_get_d(&vec_mid[i], MPFR_RNDN);
                 return ans;
+            }*/
+
+            double ans1 = mpfr_get_d(&(vec_f[i]->left), MPFR_RNDN);
+            double ans2 = mpfr_get_d(&(vec_f[i]->right), MPFR_RNDN);
+            if (ans1 == ans2) {
+                return ans1;
             }
         }
 

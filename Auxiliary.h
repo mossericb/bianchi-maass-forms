@@ -8,7 +8,7 @@
 #include <iostream>
 #include <vector>
 #include "Index.h"
-#include "arb.h"
+#include "mpfr.h"
 
 class Auxiliary {
 public:
@@ -33,8 +33,7 @@ public:
     //static double pi;
 
 private:
-    std::vector<arb_struct> temps;
-    std::vector<arb_struct> sums;
+    std::vector<__mpfr_struct> sums;
     int threads = 0;
 };
 

@@ -6,7 +6,6 @@
 
 #include "Auxiliary.h"
 //#include <math.h>
-#include "arb.h"
 //#include "pari/pari.h"
 //#include "flint/flint.h"
 //#include "BianchiMaassComputer.h"
@@ -20,21 +19,19 @@ Auxiliary::Auxiliary() {
         threads = omp_get_num_threads();
     }
 
-    temps.resize(threads);
     sums.resize(threads);
 
     for (int i = 0; i < threads; i++) {
-        arb_init(&temps[i]);
-        arb_init(&sums[i]);
+        mpfr_init2(&sums[i], 2000);
     }
 }
 
 Auxiliary::~Auxiliary() {
     for (int i = 0; i < threads; i++) {
-        arb_clear(&temps[i]);
-        arb_clear(&sums[i]);
+        mpfr_clear(&sums[i]);
     }
-    flint_cleanup_master();
+    mpfr_free_cache();
+    mpfr_mp_memory_cleanup();
 }
 
 
@@ -316,14 +313,13 @@ double Auxiliary::imagTheta(int d) {
 }
 
 double Auxiliary::multiPrecisionSummation(const std::vector<double> &numbers) {
-    int thisThread = omp_get_thread_num();
+    int thread = omp_get_thread_num();
 
-    arb_zero(&sums[thisThread]);
-    for (double number : numbers) {
-        arb_set_d(&temps[thisThread], number);
-        arb_add(&sums[thisThread], &sums[thisThread], &temps[thisThread], 500);
+    mpfr_set_zero(&sums[thread], 1);
+    for (const double number : numbers) {
+        mpfr_add_d(&sums[thread], &sums[thread], number, MPFR_RNDN);
     }
-    double answer = std::stod(arb_get_str(&sums[thisThread], 60, ARB_STR_NO_RADIUS));
+    double answer = mpfr_get_d(&sums[thread], MPFR_RNDN);
 
     return answer;
 }

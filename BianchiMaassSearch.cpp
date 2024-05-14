@@ -757,6 +757,10 @@ double BianchiMaassSearch::findZeroOfLinearInterpolation(double x0, double y0, d
     return -y0 * (x1 - x0)/(y1 - y0) + x0;
 }
 
+/*
+ * TODO: make hecke check use two hecke relations
+ * implement for all fields
+ */
 double BianchiMaassSearch::heckeCheck(map<Index, double>& coeffMap) {
     if (d == 1) {
         return 1000000;
@@ -853,6 +857,8 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     vector<double> leftG;
     rightG.reserve(indexTransversal.size()*2);
     leftG.reserve(indexTransversal.size()*2);
+
+    bool hadToStartOver = false;
 
     if (computeAllConditionNumbers) {
         double upperY = 2.0 * max(1.0, rightR)/(2*pi/A*M0);
@@ -1115,6 +1121,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
                 if (tries > 10) {
                     computeAllConditionNumbers = true;
                     std::cout << "--condition search started over" << std::endl;
+                    hadToStartOver = true;
                     goto startOver;
                 }
                 if (solutionAndCondition.second > conditionGoal) {
@@ -1150,6 +1157,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         if (tries > 10) {
             computeAllConditionNumbers = true;
             std::cout << "--condition search started over" << std::endl;
+            hadToStartOver = true;
             goto startOver;
         }
         if (solutionAndCondition.second > conditionGoal) {
@@ -1168,6 +1176,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         if (tries > 10) {
             computeAllConditionNumbers = true;
             std::cout << "--condition search started over" << std::endl;
+            hadToStartOver = true;
             goto startOver;
         }
         if (solutionAndCondition.second > conditionGoal) {
@@ -1180,14 +1189,28 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         gY2 = matrixY2 * solutionY1;
         leftG = mergeToVector(gY1, gY2);
 
-        std::cout << "--condition search ended after " << tries << " tries" << std::endl;
+        if (tries > 0) {
+            std::cout << "--condition search ended after " << tries << " retries" << std::endl;
+        }
+
+    }
+
+    /*
+     * When you have to start over, for whatever reason, this means that condition numbers
+     * blow up in that interval. The method resets the condition number search goal, but I
+     * don't want this goal to stay artificially high. So whenever the algorithm has to start over,
+     * it sets this flag to signal that next time it should re-restart over to make the condition
+     * search goal lower again.
+     */
+    if (hadToStartOver) {
+        computeAllConditionNumbers = true;
     }
 
     int searchPossibleSignChanges = indexTransversal.size() * 2;
 
     int signChanges = countSignChanges(leftG, rightG);
 
-    if (signChanges > searchPossibleSignChanges/10.0) {
+    if (signChanges > searchPossibleSignChanges/4.0) {
         double heckeThreshold = 0.0001;
         if (rightR - leftR < heckeThreshold) {
             //Compute the coeffMap
@@ -1198,24 +1221,33 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
             }
 
             double hecke = heckeCheck(coeffMap);
+            std::cout << "--hecke " << hecke << '\n';
+
             if (abs(hecke) > 1) {
-                std::cout << "--stopping, failed Hecke check " << hecke << ", "
-                << signChanges << "/" << searchPossibleSignChanges << std::endl;
+                std::cout << "--sign changes " << signChanges << "/" << searchPossibleSignChanges << '\n';
+                std::cout << "--stopping, failed Hecke check" << endl;
                 return {};
             }
         }
 
         double stop = pow(10, -D - 1);
-        if (rightR - leftR < stop) {
-            std::cout << "--final precision reached, eigenvalue possible" << std::endl;
+        bool finalPrecisionReached = (rightR - leftR) < stop;
+        if (finalPrecisionReached && signChanges > searchPossibleSignChanges/2.0) {
+            std::cout << "--final precision reached, eigenvalue possible\n";
+            std::cout << "--sign changes " << signChanges << "/" << searchPossibleSignChanges << std::endl;
             outputFile << setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
+            return {};
+        } else if (finalPrecisionReached) {
+            std::cout << "--final precision reached, eigenvalue unlikely\n";
+            std::cout << "--sign changes " << signChanges << "/" << searchPossibleSignChanges << std::endl;
             return {};
         }
 
 
 
         //Call on the left and right intervals
-        std::cout << "--passed sign check " << signChanges << "/" << searchPossibleSignChanges << endl;
+        std::cout << "--passed sign check\n";
+        std::cout << "--sign changes " << signChanges << "/" << searchPossibleSignChanges << endl;
         double centerR = (leftR + rightR)/2.0;
 
         vector<pair<double,double>> intervals = {pair<double,double>{leftR, centerR},
