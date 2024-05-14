@@ -85,7 +85,7 @@ BianchiMaassSearch::BianchiMaassSearch(int d, int D, char symClass) {
         // Write content to the file
         outputFile << "d = " << d << '\n';
         outputFile << "symClass = " << symClass << '\n';
-        outputFile << "D = " << D << '\n';
+        outputFile << "D = " << D << std::endl;
     } else {
         std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
     }
@@ -104,7 +104,7 @@ void BianchiMaassSearch::searchForEigenvalues(const double leftR, const double r
         throw(std::invalid_argument("leftR should be less than rightR"));
     }
     outputFile << "leftEndpoint = " << leftR << '\n';
-    outputFile << "rightEndpoint = " << rightR << '\n';
+    outputFile << "rightEndpoint = " << rightR << std::endl;
 
     double SPACING = 1.0 / 8;
     vector<double> endpoints;
@@ -1208,7 +1208,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         double stop = pow(10, -D - 1);
         if (rightR - leftR < stop) {
             std::cout << "--final precision reached, eigenvalue possible" << std::endl;
-            outputFile << setprecision(16) << "[" << leftR << ", " << rightR << "]\n";
+            outputFile << setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
             return {};
         }
 
