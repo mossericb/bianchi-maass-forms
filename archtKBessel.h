@@ -25,7 +25,6 @@ private:
     std::vector<mpfi_ptr> vec_f;
     std::vector<__mpfi_struct> vec_mpfi_r;
     std::vector<__mpfi_struct> vec_mpfi_x;
-    std::vector<__mpfr_struct> vec_mid;
 };
 
 #endif //ARCHTKBESSEL_LIBRARY_H

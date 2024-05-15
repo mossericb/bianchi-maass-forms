@@ -29,7 +29,7 @@ KBessel::KBessel(double precomputeLowerBound, double r) {
      * in case that becomes useful later.
      */
     firstChunkLeftEndpoint = 1.0;
-    chunkWidth = 5.0;
+    chunkWidth = 1.0;
 
 
     shrinkingChunkFirstWidth = (firstChunkLeftEndpoint - precomputeLowerBound)/pow(2, numberOfShrinkingChunks - 1);

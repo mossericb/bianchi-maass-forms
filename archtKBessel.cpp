@@ -17,10 +17,6 @@ archtKBessel::archtKBessel(double r) {
     mpfi_init2(mpfi_x, BEGINNING_BITS);
     vec_mpfi_x.push_back(*mpfi_x);
 
-    mpfr_t mid;
-    mpfr_init2(mid, BEGINNING_BITS);
-    vec_mid.push_back(*mid);
-
     setR(r);
 }
 
@@ -39,11 +35,6 @@ archtKBessel::~archtKBessel() {
         mpfi_clear(&mp_x);
     }
     vec_mpfi_x.clear();
-
-    for (auto mid : vec_mid) {
-        mpfr_clear(&mid);
-    }
-    vec_mid.clear();
 
     mpfr_free_cache();
 }
@@ -64,13 +55,6 @@ double archtKBessel::evaluate(double x) {
             mpfi_set_d(&(vec_mpfi_x[i]), x);
 
             kbessel(vec_f[i], &vec_mpfi_r[i], &vec_mpfi_x[i]);
-            /*
-            mpfi_diam(&vec_mid[i], vec_f[i]);
-            if (mpfr_lessequal_p(&vec_mid[i], acc)) {
-                mpfi_mid(&vec_mid[i], vec_f[i]);
-                double ans = mpfr_get_d(&vec_mid[i], MPFR_RNDN);
-                return ans;
-            }*/
 
             double ans1 = mpfr_get_d(&(vec_f[i]->left), MPFR_RNDN);
             double ans2 = mpfr_get_d(&(vec_f[i]->right), MPFR_RNDN);
@@ -89,27 +73,22 @@ double archtKBessel::evaluate(double x) {
 
             mpfi_t mpfi_r;
             mpfi_init2(mpfi_r, pow(2,i) * BEGINNING_BITS);
-            mpfr_set_d(&(mpfi_r->left), r, MPFR_RNDN);
-            mpfr_set_d(&(mpfi_r->right), r, MPFR_RNDN);
             vec_mpfi_r.push_back(*mpfi_r);
+            mpfi_set_d(&vec_mpfi_r[i], r);
 
             mpfi_t mpfi_x;
             mpfi_init2(mpfi_x, pow(2,i) * BEGINNING_BITS);
             vec_mpfi_x.push_back(*mpfi_x);
-
-            mpfr_t mid;
-            mpfr_init2(mid, pow(2,i) * BEGINNING_BITS);
-            vec_mid.push_back(*mid);
-
-            mpfi_set_d(&(vec_mpfi_x[i]), x);
+            mpfi_set_d(&vec_mpfi_x[i], x);
 
             kbessel(vec_f[i], &vec_mpfi_r[i], &vec_mpfi_x[i]);
-            mpfi_diam(&vec_mid[i], vec_f[i]);
-            if (mpfr_lessequal_p(&vec_mid[i], acc)) {
-                mpfi_mid(&vec_mid[i], vec_f[i]);
-                double ans = mpfr_get_d(&vec_mid[i], MPFR_RNDN);
-                return ans;
+
+            double ans1 = mpfr_get_d(&(vec_f[i]->left), MPFR_RNDN);
+            double ans2 = mpfr_get_d(&(vec_f[i]->right), MPFR_RNDN);
+            if (ans1 == ans2) {
+                return ans1;
             }
+
             ++i;
         }
     }
