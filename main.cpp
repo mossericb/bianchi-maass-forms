@@ -41,6 +41,10 @@ int main(int argc, char *argv[]) {
     std::cout << "leftEndpoint = " << leftEndpoint << '\n';
     std::cout << "rightEndpoint = " << rightEndpoint << '\n';
 
+    KBessel K = KBessel(0.9, 6);
+    K.extendPrecomputedRange(200);
+
+    return 0;
 
     BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
     bms.searchForEigenvalues(leftEndpoint, rightEndpoint);

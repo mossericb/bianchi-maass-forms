@@ -58,6 +58,8 @@ KBessel::KBessel(double precomputeLowerBound, double r) {
     for (int i = 0; i < threads; i++) {
         K.push_back(new archtKBessel(r));
     }
+
+    setRAndClear(r);
 }
 
 KBessel::~KBessel() {
@@ -486,7 +488,14 @@ void KBessel::runTest() {
 }
 
 double KBessel::relativeError(double exact, double approx) {
-    return abs(approx-exact)/(1 + abs(exact));
+    if (exact == 0) {
+        if (approx == 0) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+    return abs((approx-exact)/exact);
 }
 
 double KBessel::approxDerivativeKBessel(double x) {

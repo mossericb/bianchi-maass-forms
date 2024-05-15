@@ -1210,6 +1210,28 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 
     int signChanges = countSignChanges(leftG, rightG);
 
+    /* We expect most eigenvalues to appear like this
+     */
+    if (signChanges >= searchPossibleSignChanges * 0.975 && rightR - leftR < 0.001) {
+        for (int i = 0; i < indexTransversal.size(); i++) {
+            Index n = indexTransversal[i];
+            double coeff = solutionY1(i);
+            coeffMap[n] = coeff;
+        }
+
+        double hecke = heckeCheck(coeffMap);
+
+        std::cout << "--very high sign change count, eigenvalue probable\n";
+        std::cout << "--sign changes " << signChanges << "/" << searchPossibleSignChanges << '\n';
+        outputFile << setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
+        return {};
+    }
+
+
+    /* This is to ensure that we can zoom in far enough to find the good intervals.
+     * Also provides a way to catch some eigenvalues that might not appear as clearly.
+     *
+     */
     if (signChanges > searchPossibleSignChanges/4.0) {
         double heckeThreshold = 0.0001;
         if (rightR - leftR < heckeThreshold) {
@@ -1236,7 +1258,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
          * than are really there, and the distinction between an interval having the eigenvalue
          * or not becomes blurry.
          */
-        double stop = pow(10, -D + 1);
+        double stop = pow(10, -D + 2);
         bool finalPrecisionReached = (rightR - leftR) < stop;
         if (finalPrecisionReached && signChanges > searchPossibleSignChanges/2.0) {
             std::cout << "--final precision reached, eigenvalue possible\n";
