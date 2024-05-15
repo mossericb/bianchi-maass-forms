@@ -184,7 +184,7 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
      *
      **********************************************************************/
 
-    if (newUpperBound < precomputedRegionLeftBound) {
+    if (newUpperBound < precomputedRegionLeftBound && !shrinkingChunks.empty()) {
         return;
     } else if (newUpperBound > zeroCutoff) {
         newUpperBound = zeroCutoff;

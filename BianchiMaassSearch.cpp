@@ -1277,7 +1277,7 @@ int BianchiMaassSearch::findMaxFileNumber(const string &directory, const string 
 
             if (filename.find(prefix) == 0) {
                 // Extract the number after prefix
-                std::string numberStr = filename.substr(7);
+                std::string numberStr = filename.substr(prefix.length());
                 try {
                     int number = std::stoi(numberStr);
                     maxNumber = std::max(maxNumber, number);
