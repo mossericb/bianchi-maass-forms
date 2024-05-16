@@ -41,31 +41,9 @@ int main(int argc, char *argv[]) {
     std::cout << "leftEndpoint = " << leftEndpoint << '\n';
     std::cout << "rightEndpoint = " << rightEndpoint << '\n';
 
-    KBessel K = KBessel(0.9, 6);
-    K.extendPrecomputedRange(200);
-
-    return 0;
-
     BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
     bms.searchForEigenvalues(leftEndpoint, rightEndpoint);
 
-
-
-    /*
-    KBessel kba = KBessel(2*3.14/(sqrt(19.0)/2)*1*sqrt(2.0/19));
-
-    auto start = high_resolution_clock::now();
-    kba.setRAndPrecompute(6, 500);
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(stop - start);
-    std::cout << duration.count() << "\n";
-
-    kba.extendPrecomputedRange(200);
-
-    kba.runTest();
-
-    system("leaks Bianchi-Maass_Forms");
-    */
 
     //BianchiMaassPointwise bmp = BianchiMaassPointwise(d, D, symClass);
     //bmp.checkSingleEigenvalue(6.011020660400391 ,0.065);

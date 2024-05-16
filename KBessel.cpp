@@ -248,6 +248,9 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
         int knots = 0;
         for (int i = start; i >= end; i--) {
             bool errorIsSatisfactory = false;
+
+            CubicSpline testSpline;
+
             while (!errorIsSatisfactory) {
                 //generate one interpolant
                 knots = std::min(SPLINE_KNOT_COUNT, (int)ceil(chunkWidth / spacing) + 1);
@@ -262,7 +265,7 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
                     precompute[j] = y;
                 }
 
-                CubicSpline testSpline(precompute.begin(),
+                testSpline = CubicSpline (precompute.begin(),
                                        precompute.end(),
                                        intervalLeft,
                                        spacing,
@@ -291,6 +294,8 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
             }
             chunkStepSize[i] = spacing;
             chunkKnotCount[i] = knots;
+
+            //TODO Save the testspline, no sense recomputing the same thing later
         }
     }
     
@@ -316,6 +321,9 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
         double intervalLength = (knots - 1) * spacing;
         int numIntervals = ceil(chunkWidth / intervalLength);
         chunks[i].resize(numIntervals);
+        if (numIntervals < 0 || numIntervals > 100) {
+            int a = 0;
+        }
 
         //for each interval
         for (int j = 0; j < numIntervals; j++) {
@@ -488,14 +496,27 @@ void KBessel::runTest() {
 }
 
 double KBessel::relativeError(double exact, double approx) {
-    if (exact == 0) {
-        if (approx == 0) {
-            return 0;
-        } else {
-            return 1;
+    /*
+     *
+     * Error close to zero is very tricky.
+     * It simultaneously matters and does not matter.
+     *
+     * I decided that for the values which were within a few orders of magnitude of the smallest doubles,
+     * then just being within an order of magnitude was sufficient. Being too strict caused precompute methods
+     * to blow up.
+     *
+     * Otherwise, I use the standard formula for relative error.
+     */
+    if (abs(exact) < pow(10, -300)) {
+        if (exact == 0) {
+            bool isTiny = abs(approx) < pow(10, -312);
+            return (double)(!isTiny);
         }
+        bool withinOrderOfMagnitude = approx/exact <= 10 && approx/exact >= 0.1;
+        return (double)(!withinOrderOfMagnitude);
+    } else {
+        return abs((approx-exact)/exact);
     }
-    return abs((approx-exact)/exact);
 }
 
 double KBessel::approxDerivativeKBessel(double x) {
