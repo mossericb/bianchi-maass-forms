@@ -548,7 +548,7 @@ MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal
     MatrixXd answer;
     answer.resize(size, size);
 
-#pragma omp parallel for collapse(2) default(none) shared(indexTransversal, size, answer, mToTestPointData, ntoIndexOrbitData,Y, K)
+#pragma omp parallel for schedule(dynamic) collapse(2) default(none) shared(indexTransversal, size, answer, mToTestPointData, ntoIndexOrbitData,Y, K)
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             Index m = indexTransversal[i];

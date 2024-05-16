@@ -32,7 +32,14 @@ public:
     void runTest();
 
 private:
-    double relativeError(double exact, double approx);
+    double relativeError(double exact, double approx, double x = 0.0);
+    double slidingError(double x);
+
+    void setUpChunkSplineComputation(int indexOfLastNewChunk, int previouslyComputedChunks);
+    void computeChunkSplines(int indexOfLastNewChunk, int previouslyComputedChunks);
+
+    void setUpShrinkingChunkSplineComputation();
+    void computeShrinkingChunkSplines();
 
     double precomputedRegionLeftBound;
     double precomputedRegionRightBound;
@@ -45,7 +52,7 @@ private:
     double chunkWidth;
     double firstChunkLeftEndpoint;
     static constexpr int SPLINE_KNOT_COUNT = 128;
-    static constexpr double ABS_ERROR_CUTOFF = 5e-16;
+    static constexpr double ABS_ERROR_CUTOFF = 1e-15;
 
     vector<double> chunkStepSize;
     vector<double> shrinkingChunkStepSize;

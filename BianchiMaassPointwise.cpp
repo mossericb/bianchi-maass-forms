@@ -616,7 +616,7 @@ void BianchiMaassPointwise::populateMatrix() {
         }
 
         K.extendPrecomputedRange(2 * PI / A * M0 * maxYStar);
-#pragma omp parallel for default(none) shared(matrix, indexTransversal, i, m, size)
+#pragma omp parallel for schedule(dynamic) default(none) shared(matrix, indexTransversal, i, m, size)
         for (int j = 0; j < size; j++) {
 
             Index n = indexTransversal[j];

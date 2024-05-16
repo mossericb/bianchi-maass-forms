@@ -23,36 +23,14 @@
  */
 
 KBessel::KBessel(double precomputeLowerBound, double r) {
-    this->r = r;
-
-    /*This is put here so that it can be initialized dynamically depending on r,
-     * in case that becomes useful later.
-     */
-    firstChunkLeftEndpoint = 1.0;
-    chunkWidth = 1.0;
-
-
-    shrinkingChunkFirstWidth = (firstChunkLeftEndpoint - precomputeLowerBound)/pow(2, numberOfShrinkingChunks - 1);
-
     precomputedRegionLeftBound = precomputeLowerBound;
     precomputedRegionRightBound = precomputeLowerBound;
 
-    if (precomputeLowerBound >= chunkWidth) {
-        throw std::invalid_argument("precomputeLowerBound must be less than "
-        + std::to_string(chunkWidth));
-    }
-
-
-    /**
-     * Initialize the exact functionality
-     */
 #pragma omp parallel default(none) shared(threads)
     {
 #pragma omp single
         threads = omp_get_max_threads();
     }
-
-    numberOfShrinkingChunks = std::max(12, threads);
 
     K.reserve(threads);
     for (int i = 0; i < threads; i++) {
@@ -139,9 +117,29 @@ void KBessel::setRAndClear(double newR) {
         A->setR(r);
     }
 
+    chunkWidth = 1.0;
 
-    //firstChunkLeftEndpoint = std::max(r/2.0, precomputedRegionLeftBound + 1);
-    firstChunkLeftEndpoint = 1;
+    //In general, I expect oscillation to start happening around r - 1
+    //However, I always want to make sure that this value is always past the left bound
+    firstChunkLeftEndpoint = std::max(r - 1, precomputedRegionLeftBound + 1);
+
+    //set what I want the last width (this is the widest shrinking chunk)
+    double shrinkingChunkMaxLastWidth = std::min(1.0, (firstChunkLeftEndpoint - precomputedRegionLeftBound)/2);
+
+    int n = std::max(threads * 2, 2);
+
+    while (true) {
+        double firstWidth = (firstChunkLeftEndpoint - precomputedRegionLeftBound)/pow(2, n - 1);
+        double lastWidth = firstChunkLeftEndpoint - precomputedRegionLeftBound - pow(2,n - 2) * firstWidth;
+        if (lastWidth > shrinkingChunkMaxLastWidth) {
+            ++n;
+        } else {
+            break;
+        }
+    }
+
+    numberOfShrinkingChunks = n;
+
     shrinkingChunkFirstWidth = (firstChunkLeftEndpoint - precomputedRegionLeftBound)/pow(2, numberOfShrinkingChunks - 1);
 
     zeroCutoff = (1136 + PI*r/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
@@ -197,6 +195,95 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
     //Figure what new chunks need to be computed
     int indexOfLastNewChunk = floor((newUpperBound - firstChunkLeftEndpoint) / chunkWidth);
 
+    //Medium lift
+    setUpChunkSplineComputation(indexOfLastNewChunk, previouslyComputedChunks);
+
+    //Heavy lift
+    computeChunkSplines(indexOfLastNewChunk, previouslyComputedChunks);
+
+
+    /* ********************************************************************
+     *
+     * Precompute shrinking chunks, meaning values in the range [newLowerBound, chunkWidth)
+     * This is only done once per update of spectral parameter r.
+     *
+     **********************************************************************/
+
+    if (!shrinkingChunks.empty()) {
+        return;
+    }
+
+    //Light lift
+    setUpShrinkingChunkSplineComputation();
+
+    //Heavy lift
+    computeShrinkingChunkSplines();
+}
+
+void KBessel::runTest() {
+    double maxErrorSoFar = 0;
+
+    for (int i = 0; i < 1000; i++) {
+        double x = r - i*(r-precomputedRegionLeftBound)/1000.0;
+        double exact = exactKBessel(x);
+        double approx = approxKBessel(x);
+        double error = relativeError(exact, approx);
+        if (error > maxErrorSoFar && exact != 0 && error > ABS_ERROR_CUTOFF) {
+            maxErrorSoFar = error;
+            watch(maxErrorSoFar);
+            std::cout << x << ", " << exact << std::endl;
+        }
+    }
+
+    maxErrorSoFar = 0;
+    for (int i = 0; i < 1000; i++) {
+        double x = r + i*(precomputedRegionRightBound - r)/1000.0;
+        double exact = exactKBessel(x);
+        double approx = approxKBessel(x);
+        double error = relativeError(exact, approx);
+        if (error > maxErrorSoFar && exact != 0 && error > ABS_ERROR_CUTOFF) {
+            maxErrorSoFar = error;
+            watch(maxErrorSoFar);
+            std::cout << x << ", " << exact << std::endl;
+        }
+    }
+}
+
+double KBessel::relativeError(double exact, double approx, double x) {
+    return abs(exact - approx)/(pow(10,-30) + abs(exact));
+    /*
+     *
+     * Error close to zero is very tricky.
+     * It simultaneously matters and does not matter.
+     *
+     * I decided that for the values which were within a few orders of magnitude of the smallest doubles,
+     * then just being within an order of magnitude was sufficient. Being too strict caused precompute methods
+     * to blow up.
+     *
+     * Otherwise, I use the standard formula for relative error.
+     */
+    if (abs(exact) < pow(10, -300)) {
+        if (exact == 0) {
+            bool isTiny = abs(approx) < pow(10, -312);
+            return (double)(!isTiny);
+        }
+        bool withinOrderOfMagnitude = approx/exact <= 10 && approx/exact >= 0.1;
+        return (double)(!withinOrderOfMagnitude);
+    } else {
+        double error = abs((approx-exact)/exact);
+        error *= slidingError(exact);
+        return error;
+    }
+}
+
+double KBessel::approxDerivativeKBessel(double x) {
+    auto f = [this](double x) { return this->exactKBessel(x); };
+    double dfdx = boost::math::differentiation::finite_difference_derivative(f, x);
+
+    return dfdx;
+}
+
+void KBessel::setUpChunkSplineComputation(int indexOfLastNewChunk, int previouslyComputedChunks) {
     //Add new slots in the chunkStepSize and chunks vectors
     if (indexOfLastNewChunk >= chunks.size()) {
         chunkStepSize.resize(indexOfLastNewChunk + 1);
@@ -207,100 +294,79 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
     //Compute spacing requirement for each new chunk
     //Do it in reverse since earlier chunks require spacing at least as fine as later chunks
 
-    /*TODO: I need to parallelize this process since it takes quite a long time in a single thread.
-     * Keep the logical structure, but give each thread its own continguous sequence of chunks.
-     * Knowing that spacing decreases monotonically is the biggest speedup that we can't afford to lose.
-     * Within each contiguous sequence of chunks we would expect the spacing to not change much, except for the
-     * leftmost one.
-     */
+#pragma omp parallel for schedule(dynamic) default(none) shared(indexOfLastNewChunk, previouslyComputedChunks)
+    for (int i = indexOfLastNewChunk; i >= previouslyComputedChunks; i--) {
 
-#pragma omp parallel default(none) shared(indexOfLastNewChunk, previouslyComputedChunks)
-    {
-        int thread = omp_get_thread_num();
-
-        int newChunksToCompute = indexOfLastNewChunk - previouslyComputedChunks + 1;
-
-        int start;
-        int end;
-        int skip = std::max(1, (indexOfLastNewChunk - previouslyComputedChunks)/threads);
-
-        if (newChunksToCompute > threads) {
-            start = indexOfLastNewChunk - thread * skip;// if thread == 0 this is indexOfLastNewChunk
-            end = indexOfLastNewChunk - (thread + 1) * skip + 1;
-            if (thread == threads - 1) {
-                end = previouslyComputedChunks;
-            }
-        } else {
-            if (thread >= newChunksToCompute) {
-                //this stops the thread from entering the for loop
-                start = 0;
-                end = 1;
-            } else {
-                start = indexOfLastNewChunk - thread;
-                end = start;
+        double spacing = pow(2,-1);
+        for (int j = i + 1; j < chunkStepSize.size(); j++) {
+            if (chunkStepSize[j] > 0) {
+                spacing = chunkStepSize[j];
+                break;
             }
         }
 
-
-
-
-        double spacing = pow(2.0, -1);
         int knots = 0;
-        for (int i = start; i >= end; i--) {
-            bool errorIsSatisfactory = false;
+        bool errorIsSatisfactory = false;
 
-            CubicSpline testSpline;
+        CubicSpline testSpline;
 
-            while (!errorIsSatisfactory) {
-                //generate one interpolant
-                knots = std::min(SPLINE_KNOT_COUNT, (int)ceil(chunkWidth / spacing) + 1);
-                knots = std::max(3, knots); //3 knots required for cubic interpolation
-                vector<double> precompute(knots, 0.0);
+        while (!errorIsSatisfactory) {
+            //generate one interpolant
+            knots = std::min(SPLINE_KNOT_COUNT, (int)ceil(chunkWidth / spacing) + 1);
+            knots = std::max(3, knots); //3 knots required for cubic interpolation
+            vector<double> precompute(knots, 0.0);
 
-                double intervalLeft = firstChunkLeftEndpoint + i * chunkWidth;
-                double intervalRight = intervalLeft + (knots - 1) * spacing;
-                for (int j = 0; j < knots; j++) {
-                    double x = intervalLeft + j * spacing;
-                    double y = exactKBessel(x);
-                    precompute[j] = y;
-                }
+            double intervalLeft = firstChunkLeftEndpoint + i * chunkWidth;
+            double intervalRight = intervalLeft + (knots - 1) * spacing;
+            for (int j = 0; j < knots; j++) {
+                double x = intervalLeft + j * spacing;
+                double y = exactKBessel(x);
+                precompute[j] = y;
+            }
 
-                testSpline = CubicSpline (precompute.begin(),
-                                       precompute.end(),
-                                       intervalLeft,
-                                       spacing,
-                                       approxDerivativeKBessel(intervalLeft),
-                                       approxDerivativeKBessel(intervalRight));
+            testSpline = CubicSpline (precompute.begin(),
+                                      precompute.end(),
+                                      intervalLeft,
+                                      spacing,
+                                      approxDerivativeKBessel(intervalLeft),
+                                      approxDerivativeKBessel(intervalRight));
 
-                //check it for accuracy
-                errorIsSatisfactory = true;
-                for (int j = 1; j < 10; j++) {
-                    double x = intervalLeft + j * (spacing/10);
-                    double exact = exactKBessel(x);
-                    double approx = testSpline(x);
+            //check it for accuracy
+            errorIsSatisfactory = true;
+            for (int j = 1; j < 10; j++) {
+                double x = intervalLeft + j * (spacing/10);
+                double exact = exactKBessel(x);
+                double approx = testSpline(x);
 
-                    double error = relativeError(exact, approx);
-                    if (error > ABS_ERROR_CUTOFF) {
-                        errorIsSatisfactory = false;
-                        break;
-                    }
-                }
-
-                if (errorIsSatisfactory) {
+                double error = relativeError(exact, approx);
+                if (error > ABS_ERROR_CUTOFF) {
+                    errorIsSatisfactory = false;
                     break;
                 }
-
-                spacing /= 2.0;
             }
-            chunkStepSize[i] = spacing;
-            chunkKnotCount[i] = knots;
 
-            //TODO Save the testspline, no sense recomputing the same thing later
+            if (errorIsSatisfactory) {
+                break;
+            }
+
+            spacing /= 2.0;
         }
+        chunkStepSize[i] = spacing;
+        chunkKnotCount[i] = knots;
+
+        //Set up the vector of splines for this chunk
+        double intervalLength = (knots - 1) * spacing;
+        int numIntervals = ceil(chunkWidth / intervalLength);
+        chunks[i].resize(numIntervals);
+
+        //The testSpline is the first spline in the chunk
+        chunks[i][0] = testSpline;
     }
-    
+}
+
+void KBessel::computeChunkSplines(int indexOfLastNewChunk, int previouslyComputedChunks) {
     //Compute all the splines, make it parallel
-#pragma omp parallel for default(none) shared(indexOfLastNewChunk, previouslyComputedChunks)
+#pragma omp parallel for schedule(dynamic) default(none) shared(indexOfLastNewChunk, previouslyComputedChunks)
     for (int i = previouslyComputedChunks; i <= indexOfLastNewChunk; i++) {
         //get left endpoint for this chunk
         //get spacing for this chunk
@@ -320,13 +386,9 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
         int knots = chunkKnotCount[i];
         double intervalLength = (knots - 1) * spacing;
         int numIntervals = ceil(chunkWidth / intervalLength);
-        chunks[i].resize(numIntervals);
-        if (numIntervals < 0 || numIntervals > 100) {
-            int a = 0;
-        }
 
-        //for each interval
-        for (int j = 0; j < numIntervals; j++) {
+        //start at j = 1 because j = 0 was already computed in the previous step
+        for (int j = 1; j < numIntervals; j++) {
             //  precompute K-Bessel values
             vector<double> precompute(knots, 0.0);
             double intervalLeft = left + j * intervalLength;
@@ -350,30 +412,22 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
         }
     }
     precomputedRegionRightBound = firstChunkLeftEndpoint + chunkWidth * chunks.size();
+}
 
-
-    /* ********************************************************************
-     *
-     * Precompute shrinking chunks, meaning values in the range [newLowerBound, chunkWidth)
-     * This is only done once per update of spectral parameter r.
-     *
-     **********************************************************************/
-
-    if (!shrinkingChunks.empty()) {
-        return;
-    }
-
+void KBessel::setUpShrinkingChunkSplineComputation() {
     shrinkingChunks.resize(numberOfShrinkingChunks);
     shrinkingChunkStepSize.resize(numberOfShrinkingChunks);
 
 
-    double spacing;
+#pragma omp parallel for schedule(dynamic) default(none)
     for (int newShrinkingChunk = numberOfShrinkingChunks - 1; newShrinkingChunk >= 0; newShrinkingChunk--) {
 
-        if (newShrinkingChunk == numberOfShrinkingChunks - 1) {
-            spacing = chunkStepSize[0];
-        } else {
-            spacing = shrinkingChunkStepSize[newShrinkingChunk + 1];
+        double spacing = chunkStepSize[0];
+        for (int j = newShrinkingChunk; j < shrinkingChunkStepSize.size(); j++) {
+            if (shrinkingChunkStepSize[j] > 0) {
+                spacing = shrinkingChunkStepSize[j];
+                break;
+            }
         }
 
         double left;
@@ -424,8 +478,10 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
         }
         shrinkingChunkStepSize[newShrinkingChunk] = spacing;
     }
+}
 
-#pragma omp parallel for default(none)
+void KBessel::computeShrinkingChunkSplines() {
+#pragma omp parallel for schedule(dynamic) default(none)
     for (int newShrinkingChunk = 0; newShrinkingChunk < numberOfShrinkingChunks; newShrinkingChunk++) {
 
         double left;
@@ -464,66 +520,19 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
             shrinkingChunks[newShrinkingChunk][i] = spline;
         }
     }
+
 }
 
-void KBessel::runTest() {
-    double maxErrorSoFar = 0;
-
-    for (int i = 0; i < 1000; i++) {
-        double x = r - i*(r-precomputedRegionLeftBound)/1000.0;
-        double exact = exactKBessel(x);
-        double approx = approxKBessel(x);
-        double error = relativeError(exact, approx);
-        if (error > maxErrorSoFar && exact != 0 && error > ABS_ERROR_CUTOFF) {
-            maxErrorSoFar = error;
-            watch(maxErrorSoFar);
-            std::cout << x << ", " << exact << std::endl;
-        }
+double KBessel::slidingError(double x) {
+    x = abs(x);
+    if (x > 1 || x == 0) {
+        return 1;
     }
 
-    maxErrorSoFar = 0;
-    for (int i = 0; i < 1000; i++) {
-        double x = r + i*(precomputedRegionRightBound - r)/1000.0;
-        double exact = exactKBessel(x);
-        double approx = approxKBessel(x);
-        double error = relativeError(exact, approx);
-        if (error > maxErrorSoFar && exact != 0 && error > ABS_ERROR_CUTOFF) {
-            maxErrorSoFar = error;
-            watch(maxErrorSoFar);
-            std::cout << x << ", " << exact << std::endl;
-        }
-    }
-}
+    double digits = -log10(x);
+    double scale = (0.1/ABS_ERROR_CUTOFF - 1.)/300. * digits + 1.;
 
-double KBessel::relativeError(double exact, double approx) {
-    /*
-     *
-     * Error close to zero is very tricky.
-     * It simultaneously matters and does not matter.
-     *
-     * I decided that for the values which were within a few orders of magnitude of the smallest doubles,
-     * then just being within an order of magnitude was sufficient. Being too strict caused precompute methods
-     * to blow up.
-     *
-     * Otherwise, I use the standard formula for relative error.
-     */
-    if (abs(exact) < pow(10, -300)) {
-        if (exact == 0) {
-            bool isTiny = abs(approx) < pow(10, -312);
-            return (double)(!isTiny);
-        }
-        bool withinOrderOfMagnitude = approx/exact <= 10 && approx/exact >= 0.1;
-        return (double)(!withinOrderOfMagnitude);
-    } else {
-        return abs((approx-exact)/exact);
-    }
-}
-
-double KBessel::approxDerivativeKBessel(double x) {
-    auto f = [this](double x) { return this->exactKBessel(x); };
-    double dfdx = boost::math::differentiation::finite_difference_derivative(f, x);
-
-    return dfdx;
+    return scale;
 }
 
 

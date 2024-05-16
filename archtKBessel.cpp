@@ -51,7 +51,10 @@ double archtKBessel::evaluate(double x) {
     if (x > zeroCutoff) {
         return 0.0;
     } else {
-        for (int i = 0; i < vec_f.size(); i++) {
+        double bitsGuess = std::ceil( -0.5*(log2(PI/2.0) - log2(x)) - (PI*r/2.0 - x)*log2(E) + 60);
+        int indexGuess = std::max(0, (int)std::ceil(log2(((double)bitsGuess)/BEGINNING_BITS)));
+        indexGuess = std::min(indexGuess, (int)vec_f.size() - 1);
+        for (int i = indexGuess; i < vec_f.size(); i++) {
             mpfi_set_d(&(vec_mpfi_x[i]), x);
 
             kbessel(vec_f[i], &vec_mpfi_r[i], &vec_mpfi_x[i]);
