@@ -283,8 +283,8 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
     }
 
 
-    char nonsquareUnitSign = (symClass == 'D' || symClass == 'G') ? 1 : -1;
-    char reflectionSign = (symClass == 'D' || symClass == 'C') ? 1 : -1;
+    short nonsquareUnitSign = (symClass == 'D' || symClass == 'G') ? 1 : -1;
+    short reflectionSign = (symClass == 'D' || symClass == 'C') ? 1 : -1;
 
     //Now generate the representatives
     //then generate the orbits
@@ -316,7 +316,7 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
                     //The orbit in this case is {x, -x, -bar(x), bar(x)}
                     //So orbit/{+/-1} = {[x], [-bar(x)]}
                     //So the only proper translate is -bar(x)
-                    pair<complex<double>, char> tup (-conj(x), reflectionSign);
+                    pair<complex<double>, short> tup (-conj(x), reflectionSign);
                     orbit.properTranslatesModSign.push_back(tup);
                 }
                 answer.push_back(orbit);
@@ -339,7 +339,7 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
                 orbit.representativeComplex = x;
                 orbit.representativePullback = pullback;
 
-                pair<complex<double>, char> tup (-conj(x), reflectionSign);
+                pair<complex<double>, short> tup (-conj(x), reflectionSign);
                 orbit.properTranslatesModSign.push_back(tup);
 
                 answer.push_back(orbit);
@@ -363,14 +363,14 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
                     //So orbit/{+/-1} is {[x], [ix]}
                     //So the only proper translate is ix
 
-                    pair<complex<double>, char> tup (I*x, nonsquareUnitSign);
+                    pair<complex<double>, short> tup (I*x, nonsquareUnitSign);
                     orbit.properTranslatesModSign.push_back(tup);
                 } else {
                     //The orbit is {x, ix, -x, -ix, bar(x), ibar(x), -bar(x), -ibar(x)}
                     //So orbit/{+/-1} is {[x], [ix], [-bar(x)], [-ibar(x)]}
                     //So the proper translates are ix, -bar(x), and -ibar(x)
 
-                    pair<complex<double>, char> tup (I*x, nonsquareUnitSign);
+                    pair<complex<double>, short> tup (I*x, nonsquareUnitSign);
                     orbit.properTranslatesModSign.push_back(tup);
 
                     get<0>(tup) = -conj(x);
@@ -418,7 +418,7 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
                     //So orbit/{+/-1} is {[x], [wx], [w^2x]}
                     //So the proper translates are wx, w^2x
 
-                    pair<complex<double>, char> tup (theta*x, nonsquareUnitSign);
+                    pair<complex<double>, short> tup (theta*x, nonsquareUnitSign);
                     orbit.properTranslatesModSign.push_back(tup);
 
                     get<0>(tup) = theta*theta*x;
@@ -656,7 +656,7 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
             double testPointTerm = cos(pi/A * traceProduct(-I* m.getComplex(d), x));
             for (const auto& tup : testPointOrbit.properTranslatesModSign) {
                 complex<double> etaX = tup.first;
-                char sign = tup.second;
+                short sign = tup.second;
                 testPointTerm += sign * cos(pi/A * traceProduct(-I* m.getComplex(d), etaX));
             }
             term *= testPointTerm;
@@ -687,7 +687,7 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
             double testPointTerm = sin(pi/A * traceProduct(-I* m.getComplex(d), x));
             for (const auto& tup : testPointOrbit.properTranslatesModSign) {
                 complex<double> etaX = get<0>(tup);
-                char sign = get<1>(tup);
+                short sign = get<1>(tup);
                 testPointTerm += sign * sin(pi/A * traceProduct(-I* m.getComplex(d), etaX));
             }
             term *= testPointTerm;
@@ -1181,7 +1181,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         }
         if (solutionAndCondition.second > conditionGoal) {
             Y2 = Y1 + (Y2 - Y1) * 0.99;
-            tries;
+            tries++;
             goto restartY1Y2Search;//uh oh, not well conditioned. Start over!
         }
         //compute leftG vector

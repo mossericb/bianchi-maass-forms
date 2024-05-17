@@ -20,7 +20,7 @@ using std::vector, std::pair, std::map;
 struct TestPointOrbitData {
     complex<double> representativeComplex;
     Quaternion representativePullback;
-    vector<pair<complex<double>, char>> properTranslatesModSign;
+    vector<pair<complex<double>, short>> properTranslatesModSign;
 };
 #endif
 

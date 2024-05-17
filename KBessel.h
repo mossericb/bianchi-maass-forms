@@ -33,7 +33,6 @@ public:
 
 private:
     double relativeError(double exact, double approx, double x = 0.0);
-    double slidingError(double x);
 
     void setUpChunkSplineComputation(int indexOfLastNewChunk, int previouslyComputedChunks);
     void computeChunkSplines(int indexOfLastNewChunk, int previouslyComputedChunks);
@@ -48,7 +47,6 @@ private:
     double r;
 
     int numberOfShrinkingChunks;
-    double shrinkingChunkFirstWidth;
     double chunkWidth;
     double firstChunkLeftEndpoint;
     static constexpr int SPLINE_KNOT_COUNT = 128;

@@ -54,9 +54,6 @@ double KBessel::exactKBessel(double x) {
 }
 
 double KBessel::approxKBessel(const double x) {
-    //TODO: Bake in logic for when K evaluates to 0, and also throw errors when it is evaluated below
-    //the specified bound. Make this logic reflect in the precompute routine.0
-
     if (x >= zeroCutoff) {
         return 0;
     } else if (x < precomputedRegionLeftBound) {
@@ -64,31 +61,29 @@ double KBessel::approxKBessel(const double x) {
     } else if (x < firstChunkLeftEndpoint) { /* 2*pi/A*1*Y0 <= x < firstChunkLeftEndpoint */
         /*
          * The scheme here is that the interval [2*pi/A*1*Y0, firstChunkLeftEndpoint) = [a,b) is divided
-         * into n exponentially shrinking pieces. The value w is chosen so that endpoints
-         * a, a + w, a + 2w, a + 2^2w, ..., a + 2^(n-1)w = b
-         * define the "shrinking chunks".
-         * The 0th shrinking chunk is [a,a+w)
-         * The (n-1)st shrinking chunk is [a + 2^(n-2)w, a + 2^(n-1)w = b)
+         * into k shrinking pieces in the following way
+         * a = a + (b-a)(0/k)^2, a + (b-a)(1/k)^2, a + (b-a)(2/k)^2, ... , a + (b-a)(k/k)^2 = b
          *
-         * y is in the kth shrinking chunk if only if
-         * y < a + 2^k w,  where k>= 0 is the smallest such k
-         * This is equivalent to
-         * log_2((y-a)/w) < k
-         *
-         * So we calculate k = next(log_2((y-a)/w)), and if k is less than 0 we make it 0
+         * we have
+         * a + (b-a)(l/k)^2 <= x < a + (b-a)((l+1)/k)^2
+         * iff
+         * l <= k sqrt((x-a)/(b-a)) < l + 1
          */
 
-        /*Do this branch first to avoid weirdness with log being negative*/
-        if (x < precomputedRegionLeftBound + shrinkingChunkFirstWidth) {
-            int subIndex = floor(
-                    (x - precomputedRegionLeftBound) //distance from x to the left endpoint of it shrinking chunk
-                    /((SPLINE_KNOT_COUNT - 1) * shrinkingChunkStepSize[0])); //width of spline interval
-            return shrinkingChunks[0][subIndex](x);
-        }
+        int shrinkingChunkIndex = floor(
+            numberOfShrinkingChunks
+            * sqrt(
+                (x - precomputedRegionLeftBound)
+                /(firstChunkLeftEndpoint - precomputedRegionLeftBound)
+            )
+        );
 
-        int shrinkingChunkIndex = Auxiliary::next(log2((x - precomputedRegionLeftBound)/shrinkingChunkFirstWidth));
+        double distToLeftEndpoint = x
+            - (precomputedRegionLeftBound
+                + (firstChunkLeftEndpoint - precomputedRegionLeftBound)
+                * pow(((1. * shrinkingChunkIndex)/numberOfShrinkingChunks), 2)
+              );
 
-        double distToLeftEndpoint = x - (precomputedRegionLeftBound + pow(2, shrinkingChunkIndex - 1) * shrinkingChunkFirstWidth);
         double widthOfSpline = (SPLINE_KNOT_COUNT - 1) * shrinkingChunkStepSize[shrinkingChunkIndex];
         int subIndex = floor(distToLeftEndpoint/widthOfSpline);
 
@@ -129,8 +124,11 @@ void KBessel::setRAndClear(double newR) {
     int n = std::max(threads * 2, 2);
 
     while (true) {
-        double firstWidth = (firstChunkLeftEndpoint - precomputedRegionLeftBound)/pow(2, n - 1);
-        double lastWidth = firstChunkLeftEndpoint - precomputedRegionLeftBound - pow(2,n - 2) * firstWidth;
+        double lastWidth = firstChunkLeftEndpoint
+                - (precomputedRegionLeftBound
+                    + (firstChunkLeftEndpoint - precomputedRegionLeftBound)
+                    * pow((n - 1)/(1.*n), 2)
+                 );
         if (lastWidth > shrinkingChunkMaxLastWidth) {
             ++n;
         } else {
@@ -139,8 +137,6 @@ void KBessel::setRAndClear(double newR) {
     }
 
     numberOfShrinkingChunks = n;
-
-    shrinkingChunkFirstWidth = (firstChunkLeftEndpoint - precomputedRegionLeftBound)/pow(2, numberOfShrinkingChunks - 1);
 
     zeroCutoff = (1136 + PI*r/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
 
@@ -177,7 +173,6 @@ void KBessel::setRAndClear(double newR) {
  * @param newUpperBound Positive number, usually large, on the order 10^3 to 10^4
  */
 void KBessel::extendPrecomputedRange(double newUpperBound) {
-
     /* ********************************************************************
      *
      * Precompute chunks, meaning values in the range [chunkWidth, newUpperBound]
@@ -251,29 +246,6 @@ void KBessel::runTest() {
 
 double KBessel::relativeError(double exact, double approx, double x) {
     return abs(exact - approx)/(pow(10,-30) + abs(exact));
-    /*
-     *
-     * Error close to zero is very tricky.
-     * It simultaneously matters and does not matter.
-     *
-     * I decided that for the values which were within a few orders of magnitude of the smallest doubles,
-     * then just being within an order of magnitude was sufficient. Being too strict caused precompute methods
-     * to blow up.
-     *
-     * Otherwise, I use the standard formula for relative error.
-     */
-    if (abs(exact) < pow(10, -300)) {
-        if (exact == 0) {
-            bool isTiny = abs(approx) < pow(10, -312);
-            return (double)(!isTiny);
-        }
-        bool withinOrderOfMagnitude = approx/exact <= 10 && approx/exact >= 0.1;
-        return (double)(!withinOrderOfMagnitude);
-    } else {
-        double error = abs((approx-exact)/exact);
-        error *= slidingError(exact);
-        return error;
-    }
 }
 
 double KBessel::approxDerivativeKBessel(double x) {
@@ -430,12 +402,11 @@ void KBessel::setUpShrinkingChunkSplineComputation() {
             }
         }
 
-        double left;
-        if (newShrinkingChunk == 0) {
-            left = precomputedRegionLeftBound;
-        } else {
-            left = precomputedRegionLeftBound + pow(2, newShrinkingChunk - 1) * shrinkingChunkFirstWidth;
-        }
+        double left = precomputedRegionLeftBound
+                + (firstChunkLeftEndpoint - precomputedRegionLeftBound)
+                * pow((1. * newShrinkingChunk)/numberOfShrinkingChunks, 2);
+
+        CubicSpline testSpline;
 
         bool errorIsSatisfactory = false;
         while (!errorIsSatisfactory) {
@@ -449,7 +420,7 @@ void KBessel::setUpShrinkingChunkSplineComputation() {
             }
             double right = left + (SPLINE_KNOT_COUNT - 1) * spacing;
 
-            CubicSpline testSpline(precompute.begin(),
+            testSpline = CubicSpline(precompute.begin(),
                                    precompute.end(),
                                    left,
                                    spacing,
@@ -477,6 +448,18 @@ void KBessel::setUpShrinkingChunkSplineComputation() {
             spacing /= 2.0;
         }
         shrinkingChunkStepSize[newShrinkingChunk] = spacing;
+
+        double subIntervalWidth = (SPLINE_KNOT_COUNT - 1) * spacing;
+        int numberOfSubIntervals = ceil(
+                (firstChunkLeftEndpoint - precomputedRegionLeftBound)
+                * (pow((1. * newShrinkingChunk + 1)/numberOfShrinkingChunks, 2)
+                - pow((1. * newShrinkingChunk)/numberOfShrinkingChunks, 2)
+                )
+                /subIntervalWidth);
+
+
+        shrinkingChunks[newShrinkingChunk].resize(numberOfSubIntervals);
+        shrinkingChunks[newShrinkingChunk][0] = testSpline;
     }
 }
 
@@ -484,23 +467,22 @@ void KBessel::computeShrinkingChunkSplines() {
 #pragma omp parallel for schedule(dynamic) default(none)
     for (int newShrinkingChunk = 0; newShrinkingChunk < numberOfShrinkingChunks; newShrinkingChunk++) {
 
-        double left;
-        double right;
-        if (newShrinkingChunk == 0) {
-            left = precomputedRegionLeftBound;
-            right = precomputedRegionLeftBound + shrinkingChunkFirstWidth;
-        } else {
-            left = precomputedRegionLeftBound + pow(2, newShrinkingChunk - 1) * shrinkingChunkFirstWidth;
-            right = precomputedRegionLeftBound + pow(2, newShrinkingChunk) * shrinkingChunkFirstWidth;
-        }
+        double left = precomputedRegionLeftBound + (firstChunkLeftEndpoint - precomputedRegionLeftBound)
+                * pow((1. * newShrinkingChunk)/numberOfShrinkingChunks, 2);
 
         double spacing = shrinkingChunkStepSize[newShrinkingChunk];
 
         double subIntervalWidth = (SPLINE_KNOT_COUNT - 1) * spacing;
-        int numberOfSubIntervals = ceil((right - left)/subIntervalWidth);
+        int numberOfSubIntervals = ceil(
+                (firstChunkLeftEndpoint - precomputedRegionLeftBound)
+                * (pow((1. * newShrinkingChunk + 1)/numberOfShrinkingChunks, 2)
+                 - pow((1. * newShrinkingChunk)/numberOfShrinkingChunks, 2)
+                )
+                /subIntervalWidth);
 
         shrinkingChunks[newShrinkingChunk].resize(numberOfSubIntervals);
-        for (int i = 0; i < numberOfSubIntervals; i++) {
+        //i = 0 spline was already computed
+        for (int i = 1; i < numberOfSubIntervals; i++) {
             vector<double> precompute(SPLINE_KNOT_COUNT, 0.0);
             double subIntervalLeft = left + i * subIntervalWidth;
             double subIntervalRight = left + (i + 1) * subIntervalWidth;
@@ -522,17 +504,4 @@ void KBessel::computeShrinkingChunkSplines() {
     }
 
 }
-
-double KBessel::slidingError(double x) {
-    x = abs(x);
-    if (x > 1 || x == 0) {
-        return 1;
-    }
-
-    double digits = -log10(x);
-    double scale = (0.1/ABS_ERROR_CUTOFF - 1.)/300. * digits + 1.;
-
-    return scale;
-}
-
 
