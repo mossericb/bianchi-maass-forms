@@ -111,6 +111,9 @@ private:
     void computeIndexData();
     void computeTestPointData();
     vector<double> computeAndGetGVector();
+
+    double minBess(KBessel &K, const vector<Index> &indexTransversal, double Y);
+
     MatrixXd produceMatrix(const vector<Index> &indexTransversal,
                            map<Index, vector<TestPointOrbitData>> &mToTestPointData,
                            map<Index, vector<pair<Index, int>>> &ntoIndexOrbitData,

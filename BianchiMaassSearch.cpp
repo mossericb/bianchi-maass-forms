@@ -763,17 +763,35 @@ double BianchiMaassSearch::findZeroOfLinearInterpolation(double x0, double y0, d
  */
 double BianchiMaassSearch::heckeCheck(map<Index, double>& coeffMap) {
     if (d == 1) {
-        return 1000000;
-        //return coefficientMap[Index(1,1,d)]*coefficientMap[Index(3,0,d)] - coefficientMap[Index(3,3,d)];
-    } else if (d == 2) {
-        return 1000000;
-        //return coefficientMap[Index(0,1,d)]*coefficientMap[Index(1,1,d)] - coefficientMap[Index(-2,1,d)];
-    }
-    else if (d == 19) {
-        std::stringstream ss;
-
-        double hecke =  coeffMap[Index(2,0)] * coeffMap[Index(3,0)] - coeffMap[Index(6,0)];
+        double avgSize = abs(coeffMap[Index(1,1)]);
+        avgSize += abs(coeffMap[Index(3,0)]);
+        avgSize += abs(coeffMap[Index(3,3)]);
+        avgSize += abs(coeffMap[Index(1,2)]);
+        avgSize += abs(coeffMap[Index(-1,3)]);
+        avgSize /= 5;
+        double hecke1 = coeffMap[Index(1,1)] * coeffMap[Index(3,0)] - coeffMap[Index(3,3)];
+        double hecke2 = coeffMap[Index(1,1)] * coeffMap[Index(1,2)] - coeffMap[Index(-1,3)];
+        hecke1 = abs(hecke1);
+        hecke2 = abs(hecke2);
+        double hecke = (hecke1 + hecke2)/avgSize;
         return hecke;
+    } else if (d == 2) {
+        double avgSize = abs(coeffMap[Index(0, 1)]);
+        avgSize += abs(coeffMap[Index(-1, 1)]);
+        avgSize += abs(coeffMap[Index(-2, -1)]);
+        avgSize += abs(coeffMap[Index(5, 0)]);
+        avgSize += abs(coeffMap[Index(0, 5)]);
+        avgSize /= 5;
+        double hecke1 = coeffMap[Index(0, 1)] * coeffMap[Index(-1, 1)] - coeffMap[Index(-2, -1)];
+        double hecke2 = coeffMap[Index(0, 1)] * coeffMap[Index(5, 0)] - coeffMap[Index(0, 5)];
+        hecke1 = abs(hecke1);
+        hecke2 = abs(hecke2);
+        double hecke = (hecke1 + hecke2)/avgSize;
+        return hecke;
+    } else if (d == 19) {
+        double hecke1 =  coeffMap[Index(2,0)] * coeffMap[Index(3,0)] - coeffMap[Index(6,0)];
+        double hecke2 = coeffMap[Index(2, 0)] * coeffMap[Index(-1, 1)] - coeffMap[Index(-2, 2)];
+        return 0;
     } else {
         throw(std::invalid_argument("Hecke check not implemented."));
     }
@@ -794,6 +812,18 @@ bool BianchiMaassSearch::sufficientSignChanges(const vector<double> &v1, const v
         }
     }
     return (answer1 > v1.size()/6.0) && (answer2 > v1.size()/6.0);
+}
+
+double BianchiMaassSearch::minBess(KBessel &K, const vector<Index> &indexTransversal, double Y) {
+    double min = +INFINITY;
+
+    for(const auto index : indexTransversal) {
+        double bess = K.exactKBessel(2 * pi / A * index.getAbs(d) * Y);
+        if (abs(bess) < min) {
+            min = abs(bess);
+        }
+    }
+    return min;
 }
 
 vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenvalues(const double leftR, const double rightR) {
@@ -858,342 +888,127 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     rightG.reserve(indexTransversal.size()*2);
     leftG.reserve(indexTransversal.size()*2);
 
-    bool hadToStartOver = false;
+    //double upperY = 2.0 * max(1.0, rightR)/(2*pi/A*M0);
+    //double lowerY = 1.7 * max(1.0, rightR)/(2*pi/A*M0);
+    double c = max(1.0, rightR)/(2*pi/A*M0);
+    double upperY = Y0;
+    double lowerY = 0.5 * max(1.0, rightR)/(2*pi/A*M0);
 
-    if (computeAllConditionNumbers) {
-        double upperY = 2.0 * max(1.0, rightR)/(2*pi/A*M0);
-        double lowerY = 1.7 * max(1.0, rightR)/(2*pi/A*M0);
+    vector<double> heightsToTry;
 
-        vector<double> heightsToTry;
+    double tempY = upperY;
+    while (tempY > lowerY) {
+        heightsToTry.push_back(tempY);
+        tempY *= 0.99;
+    }
+    std::sort(heightsToTry.begin(), heightsToTry.end());
 
-        double tempY = upperY;
-        while (tempY > lowerY) {
-            heightsToTry.push_back(tempY);
-            tempY *= 0.98;
-        }
-        std::sort(heightsToTry.begin(), heightsToTry.end());
+    vector<double> r1ConditionNumbers;
+    vector<double> r2ConditionNumbers;
 
-        vector<double> r1ConditionNumbers;
-        vector<double> r2ConditionNumbers;
+    vector<double> r1MinDiag(heightsToTry.size(), 0);
+    vector<double> r2MinDiag(heightsToTry.size(), 0);
 
-        //compute Y1R2 matrix for all Y
-        K.setRAndClear(rightR);
-        for (const auto& Y : heightsToTry) {
-            Y1 = Y;
+    //compute Y1R2 matrix for all Y
+    K.setRAndClear(rightR);
+#pragma omp parallel for default(none) shared(heightsToTry, indexTransversal, r2MinDiag, K)
+    for (int i = 0; i < heightsToTry.size(); i++) {
+        double Y = heightsToTry[i];
+        r2MinDiag[i] = minBess(K, indexTransversal, Y);
+    }
 
-            MY1 = computeMYGeneral(M0, Y1);
+    K.setRAndClear(leftR);
+#pragma omp parallel for default(none) shared(heightsToTry, indexTransversal, r1MinDiag, K)
+    for (int i = 0; i < heightsToTry.size(); i++) {
+        double Y = heightsToTry[i];
+        r1MinDiag[i] = minBess(K, indexTransversal, Y);
+    }
 
-            mToY1TestPointOrbits.clear();
-            maxYStar = 0;
 
-
-#pragma omp parallel for default(none) shared(indexTransversal, mToY1TestPointOrbits, Y1, MY1)
-            for (int i = 0; i < indexTransversal.size(); i++) {
-                Index m = indexTransversal[i];
-                auto orbits = getPointPullbackOrbits(m, Y1, MY1);
-#pragma omp critical
-                {
-                    mToY1TestPointOrbits[m] = orbits;
-                }
-            }
-
-            for (const auto& m : indexTransversal) {
-                for (const auto& itr : mToY1TestPointOrbits[m]) {
-                    if (maxYStar < itr.representativePullback.getJ()) {
-                        maxYStar = itr.representativePullback.getJ();
-                    }
-                }
-            }
-
-            K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-
-            matrixY1 = produceMatrix(indexTransversal,
-                                     mToY1TestPointOrbits,
-                                     indexOrbitDataModSign,
-                                     Y1, K);
-            auto solutionAndCondition = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
-            solutionY1 = solutionAndCondition.first;
-            r2ConditionNumbers.push_back(solutionAndCondition.second);
-        }
-
-        K.setRAndClear(leftR);
-        for (const auto& Y : heightsToTry) {
-            Y1 = Y;
-            MY1 = computeMYGeneral(M0, Y1);
-
-            mToY1TestPointOrbits.clear();
-            maxYStar = 0;
-
-            for (const auto& m : indexTransversal) {
-                mToY1TestPointOrbits[m] = vector<TestPointOrbitData> ();
-            }
-
-#pragma omp parallel for default(none) shared(indexTransversal, mToY1TestPointOrbits, Y1, MY1)
-            for (int i = 0; i < indexTransversal.size(); i++) {
-                Index m = indexTransversal[i];
-                auto orbits = getPointPullbackOrbits(m, Y1, MY1);
-#pragma omp critical
-                mToY1TestPointOrbits[m] = orbits;
-            }
-
-            for (const auto& m : indexTransversal) {
-                for (const auto& itr : mToY1TestPointOrbits[m]) {
-                    if (maxYStar < itr.representativePullback.getJ()) {
-                        maxYStar = itr.representativePullback.getJ();
-                    }
-                }
-            }
-
-            K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-
-            matrixY1 = produceMatrix(indexTransversal,
-                                     mToY1TestPointOrbits,
-                                     indexOrbitDataModSign,
-                                     Y1, K);
-            auto solutionAndCondition = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
-            solutionY1 = solutionAndCondition.first;
-            r1ConditionNumbers.push_back(solutionAndCondition.second);
-        }
-
-        double ansY1 = 0;
-        double ansY2 = 0;
-        double min = +INFINITY;
-        //heightsToTry is sorted smallest to largest
-        for (int i = 0; i <= heightsToTry.size() - 2; i++) {//end i at second to last because Y2 has to be greater
-            for (int j = i + 1; j < heightsToTry.size(); j++) {//j is always less than i, so j indexes a larger Y
-                double maxCond = max({r1ConditionNumbers[i],
-                                      r1ConditionNumbers[j],
-                                      r2ConditionNumbers[i],
-                                      r2ConditionNumbers[j]});
-                if (maxCond < min) {
-                    min = maxCond;
-                    ansY1 = heightsToTry[i];
-                    ansY2 = heightsToTry[j];
-                }
+    double ansY1 = 0;
+    double ansY2 = 0;
+    double max = 0;
+    //heightsToTry is sorted smallest to largest
+    for (int i = 0; i <= heightsToTry.size() - 2; i++) {//end i at second to last because Y2 has to be greater
+        for (int j = i + 1; j < heightsToTry.size(); j++) {//j is always less than i, so j indexes a larger Y
+            double maxMinBess = std::min({r1MinDiag[i],
+                                  r1MinDiag[j],
+                                  r2MinDiag[i],
+                                  r2MinDiag[j]});
+            if (max < maxMinBess) {
+                max = maxMinBess;
+                ansY1 = heightsToTry[i];
+                ansY2 = heightsToTry[j];
             }
         }
+    }
 
-        argminY1 = ansY1;
-        argminY2 = ansY2;
-        computeAllConditionNumbers = false;
-        conditionGoal = Auxiliary::nextWithinOrderOfMag(min);
+    argminY1 = ansY1;
+    argminY2 = ansY2;
+    computeAllConditionNumbers = false;
+    conditionGoal = 0;
 
-        //compute the matrices again :)
-        Y1 = argminY1;
-        Y2 = argminY2;
-        MY1 = computeMYGeneral(M0, Y1);
-        MY2 = computeMYGeneral(M0, Y2);
+    //compute the matrices again :)
+    Y1 = argminY1;
+    Y2 = argminY2;
+    MY1 = computeMYGeneral(M0, Y1);
+    MY2 = computeMYGeneral(M0, Y2);
 
-        mToY1TestPointOrbits.clear();
-        mToY2TestPointOrbits.clear();
-        maxYStar = 0;
+    mToY1TestPointOrbits.clear();
+    mToY2TestPointOrbits.clear();
+    maxYStar = 0;
 
 
 #pragma omp parallel for default(none) shared(indexTransversal, mToY1TestPointOrbits, mToY2TestPointOrbits, Y1, MY1, Y2, MY2)
-        for (int i = 0; i < indexTransversal.size(); i++) {
-            Index m = indexTransversal[i];
-            auto orbitsY1 = getPointPullbackOrbits(m, Y1, MY1);
-            auto orbitsY2 = getPointPullbackOrbits(m, Y2, MY2);
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        Index m = indexTransversal[i];
+        auto orbitsY1 = getPointPullbackOrbits(m, Y1, MY1);
+        auto orbitsY2 = getPointPullbackOrbits(m, Y2, MY2);
 #pragma omp critical
-            {
-                mToY1TestPointOrbits[m] = orbitsY1;
-                mToY2TestPointOrbits[m] = orbitsY2;
-            }
+        {
+            mToY1TestPointOrbits[m] = orbitsY1;
+            mToY2TestPointOrbits[m] = orbitsY2;
         }
-
-        for (const auto& m : indexTransversal) {
-            for (const auto& itr : mToY1TestPointOrbits[m]) {
-                if (maxYStar < itr.representativePullback.getJ()) {
-                    maxYStar = itr.representativePullback.getJ();
-                }
-            }
-        }
-
-        //Right now K is set to leftR
-        K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-
-        matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, K);
-        matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, K);
-
-        solutionY1 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization).first;
-        solutionY2 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization).first;
-
-        gY1 = matrixY1 * solutionY2;
-        gY2 = matrixY2 * solutionY1;
-
-        leftG = mergeToVector(gY1, gY2);
-
-        K.setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
-
-        matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, K);
-        matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, K);
-
-        solutionY1 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization).first;
-        solutionY2 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization).first;
-
-        gY1 = matrixY1 * solutionY2;
-        gY2 = matrixY2 * solutionY1;
-
-        rightG = mergeToVector(gY1, gY2);
-
-    } else {
-        //start with good guesses for Y1 and Y2
-        //compute the matrices
-        //if the condition numbers are good enough, then we are happy
-        //if the condition numbers are not good enough, adjust Y1 or Y2 down as needed
-        int tries = 0;
-
-        Y1 = argminY1;
-        Y2 = argminY2;
-
-        restartY1Y2Search:
-        //Get Y1 rightR set first
-        K.setRAndClear(rightR);
-
-        bool wellConditioned = false;
-        while (true) {
-            MY1 = computeMYGeneral(M0, Y1);
-
-            mToY1TestPointOrbits.clear();
-            maxYStar = 0;
-
-            for (const auto& m : indexTransversal) {
-                mToY1TestPointOrbits[m] = vector<TestPointOrbitData> ();
-            }
-
-#pragma omp parallel for default(none) shared(indexTransversal, mToY1TestPointOrbits, Y1, MY1)
-            for (int i = 0; i < indexTransversal.size(); i++) {
-                Index m = indexTransversal[i];
-                auto orbits = getPointPullbackOrbits(m, Y1, MY1);
-#pragma omp critical
-                mToY1TestPointOrbits[m] = orbits;
-            }
-
-            for (const auto& m : indexTransversal) {
-                for (const auto& itr : mToY1TestPointOrbits[m]) {
-                    if (maxYStar < itr.representativePullback.getJ()) {
-                        maxYStar = itr.representativePullback.getJ();
-                    }
-                }
-            }
-
-            K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-
-            matrixY1 = produceMatrix(indexTransversal,
-                                     mToY1TestPointOrbits,
-                                     indexOrbitDataModSign,
-                                     Y1, K);
-
-            auto solutionAndCondition = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
-            solutionY1 = solutionAndCondition.first;
-
-            if (solutionAndCondition.second > conditionGoal) {
-                Y1 *= .99;
-                continue;
-            }
-
-            //Then get Y2 rightR right
-            while (true) {
-                MY2 = computeMYGeneral(M0, Y2);
-
-                mToY2TestPointOrbits.clear();
-
-                for (const auto &m: indexTransversal) {
-                    mToY2TestPointOrbits[m] = vector<TestPointOrbitData>();
-                }
-
-#pragma omp parallel for default(none) shared(indexTransversal, mToY2TestPointOrbits, Y2, MY2)
-                for (int i = 0; i < indexTransversal.size(); i++) {
-                    Index m = indexTransversal[i];
-                    auto orbits = getPointPullbackOrbits(m, Y2, MY2);
-#pragma omp critical
-                    mToY2TestPointOrbits[m] = orbits;
-                }
-
-                matrixY2 = produceMatrix(indexTransversal,
-                                         mToY2TestPointOrbits,
-                                         indexOrbitDataModSign,
-                                         Y2, K);
-
-                solutionAndCondition = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
-                solutionY2 = solutionAndCondition.first;
-
-                if (tries > 10) {
-                    computeAllConditionNumbers = true;
-                    std::cout << "--condition search started over" << std::endl;
-                    hadToStartOver = true;
-                    goto startOver;
-                }
-                if (solutionAndCondition.second > conditionGoal) {
-                    Y2 = Y1 + (Y2 - Y1) * 0.99;
-                    tries++;
-                    continue;
-                }
-                wellConditioned = true;
-                break;
-            }
-            if (wellConditioned) {
-                break;
-            }
-        }
-
-        //If you are here, then choices for Y1 and Y2 are well conditioned for rightR
-        //The matrices and so on are also already computed
-        //Set the rightG vector!
-        gY1 = matrixY1 * solutionY2;
-        gY2 = matrixY2 * solutionY1;
-        rightG = mergeToVector(gY1, gY2);
-
-        //Then get leftR Y1 set
-        //The test points are already computed
-        K.setRAndClear(leftR);
-        K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-
-        matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, K);
-        auto solutionAndCondition = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
-        solutionY1 = solutionAndCondition.first;
-
-
-        if (tries > 10) {
-            computeAllConditionNumbers = true;
-            std::cout << "--condition search started over" << std::endl;
-            hadToStartOver = true;
-            goto startOver;
-        }
-        if (solutionAndCondition.second > conditionGoal) {
-            Y1 *= .99;
-            tries++;
-            wellConditioned = false;
-            goto restartY1Y2Search;//uh oh, not well conditioned. Start over!
-        }
-
-
-        matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, K);
-        solutionAndCondition = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
-        solutionY2 = solutionAndCondition.first;
-
-
-        if (tries > 10) {
-            computeAllConditionNumbers = true;
-            std::cout << "--condition search started over" << std::endl;
-            hadToStartOver = true;
-            goto startOver;
-        }
-        if (solutionAndCondition.second > conditionGoal) {
-            Y2 = Y1 + (Y2 - Y1) * 0.99;
-            tries++;
-            goto restartY1Y2Search;//uh oh, not well conditioned. Start over!
-        }
-        //compute leftG vector
-        gY1 = matrixY1 * solutionY2;
-        gY2 = matrixY2 * solutionY1;
-        leftG = mergeToVector(gY1, gY2);
-
-        if (tries > 0) {
-            std::cout << "--condition search ended after " << tries << " retries" << std::endl;
-        }
-
     }
+
+    for (const auto& m : indexTransversal) {
+        for (const auto& itr : mToY1TestPointOrbits[m]) {
+            if (maxYStar < itr.representativePullback.getJ()) {
+                maxYStar = itr.representativePullback.getJ();
+            }
+        }
+    }
+
+    K.setRAndClear(leftR);
+    K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
+
+    matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, K);
+    matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, K);
+
+    auto data1 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
+    auto data2 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
+
+    std::cout << data1.second << " " << data2.second << " ";
+
+    gY1 = matrixY1 * data2.first;
+    gY2 = matrixY2 * data1.first;
+
+    leftG = mergeToVector(gY1, gY2);
+
+    K.setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
+
+    matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, K);
+    matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, K);
+
+    data1 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
+    data2 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
+
+    std::cout << data1.second << " " << data2.second << std::endl;
+
+    gY1 = matrixY1 * data2.first;
+    gY2 = matrixY2 * data1.first;
+
+    rightG = mergeToVector(gY1, gY2);
 
     /*
      * When you have to start over, for whatever reason, this means that condition numbers
@@ -1202,9 +1017,6 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
      * it sets this flag to signal that next time it should re-restart over to make the condition
      * search goal lower again.
      */
-    if (hadToStartOver) {
-        computeAllConditionNumbers = true;
-    }
 
     int searchPossibleSignChanges = indexTransversal.size() * 2;
 
