@@ -789,9 +789,19 @@ double BianchiMaassSearch::heckeCheck(map<Index, double>& coeffMap) {
         double hecke = (hecke1 + hecke2)/avgSize;
         return hecke;
     } else if (d == 19) {
+        double avgSize = abs(coeffMap[Index(2,0)]);
+        avgSize += abs(coeffMap[Index(3,0)]);
+        avgSize += abs(coeffMap[Index(6,0)]);
+        avgSize += abs(coeffMap[Index(-1, 1)]);
+        avgSize += abs(coeffMap[Index(-2, 2)]);
+        avgSize /= 5;
         double hecke1 =  coeffMap[Index(2,0)] * coeffMap[Index(3,0)] - coeffMap[Index(6,0)];
         double hecke2 = coeffMap[Index(2, 0)] * coeffMap[Index(-1, 1)] - coeffMap[Index(-2, 2)];
-        return 0;
+        hecke1 = abs(hecke1);
+        hecke2 = abs(hecke2);
+        return hecke1 + hecke2;
+        double hecke = (hecke1 + hecke2)/avgSize;
+        return hecke;
     } else {
         throw(std::invalid_argument("Hecke check not implemented."));
     }
@@ -818,11 +828,21 @@ double BianchiMaassSearch::minBess(KBessel &K, const vector<Index> &indexTransve
     double min = +INFINITY;
 
     for(const auto index : indexTransversal) {
-        double bess = K.exactKBessel(2 * pi / A * index.getAbs(d) * Y);
+        double arg = 2 * pi / A * index.getAbs(d) * Y;
+        if (arg > K.getR()) {
+            break;
+        }
+        double bess = Y * K.exactKBessel(arg);
         if (abs(bess) < min) {
             min = abs(bess);
         }
     }
+    double arg = 2 * pi / A * indexTransversal[indexTransversal.size() - 1].getAbs(d) * Y;
+    double bess = Y * K.exactKBessel(arg);
+    if (abs(bess) < min) {
+        min = abs(bess);
+    }
+
     return min;
 }
 
@@ -850,6 +870,18 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     vector<Index> indexTransversal = get<0>(data);
     map<Index, vector<pair<Index, int>>> indexOrbitDataModSign = get<1>(data);
 
+    auto indexComparator = [this](const Index& index1, const Index& index2) -> bool {
+        if (index1.getAbs(d) < index2.getAbs(d)) {
+            return true;
+        } else if (index1.getAbs(d) == index2.getAbs(d) && index1.getAngle(d) < index2.getAngle(d)) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    std::sort(indexTransversal.begin(), indexTransversal.end(), indexComparator);
+
     int indexOfNormalization = 0;
     for (int i = 0; i < indexTransversal.size(); i++) {
         if (indexTransversal[i] == Index(1,0)) {
@@ -871,9 +903,6 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 
     MatrixXd matrixY1;
     MatrixXd matrixY2;
-
-    MatrixXd solutionY1;
-    MatrixXd solutionY2;
 
     MatrixXd bY1;
     MatrixXd bY2;
@@ -945,12 +974,75 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 
     argminY1 = ansY1;
     argminY2 = ansY2;
+
+    /*Do it all over again but finer
+     *and in a narrower range
+     */
+
+    upperY = ansY2 + 0.5 * c;
+    lowerY = ansY1 - 0.5 * c;
+
+    heightsToTry.clear();
+
+    tempY = upperY;
+    while (tempY > lowerY) {
+        heightsToTry.push_back(tempY);
+        tempY *= 0.9995;
+    }
+    std::sort(heightsToTry.begin(), heightsToTry.end());
+
+    r1MinDiag.clear();
+    r2MinDiag.clear();
+
+    r1MinDiag.resize(heightsToTry.size(), 0);
+    r2MinDiag.resize(heightsToTry.size(), 0);
+
+    //compute Y1R2 matrix for all Y
+    K.setRAndClear(rightR);
+#pragma omp parallel for default(none) shared(heightsToTry, indexTransversal, r2MinDiag, K)
+    for (int i = 0; i < heightsToTry.size(); i++) {
+        double Y = heightsToTry[i];
+        r2MinDiag[i] = minBess(K, indexTransversal, Y);
+    }
+
+    K.setRAndClear(leftR);
+#pragma omp parallel for default(none) shared(heightsToTry, indexTransversal, r1MinDiag, K)
+    for (int i = 0; i < heightsToTry.size(); i++) {
+        double Y = heightsToTry[i];
+        r1MinDiag[i] = minBess(K, indexTransversal, Y);
+    }
+
+
+    ansY1 = 0;
+    ansY2 = 0;
+    max = 0;
+    //heightsToTry is sorted smallest to largest
+    for (int i = 0; i <= heightsToTry.size() - 2; i++) {//end i at second to last because Y2 has to be greater
+        for (int j = i + 1; j < heightsToTry.size(); j++) {//j is always less than i, so j indexes a larger Y
+            double maxMinBess = std::min({r1MinDiag[i],
+                                          r1MinDiag[j],
+                                          r2MinDiag[i],
+                                          r2MinDiag[j]});
+            if (max < maxMinBess) {
+                max = maxMinBess;
+                ansY1 = heightsToTry[i];
+                ansY2 = heightsToTry[j];
+            }
+        }
+    }
+
+    argminY1 = ansY1;
+    argminY2 = ansY2;
+
     computeAllConditionNumbers = false;
     conditionGoal = 0;
 
     //compute the matrices again :)
     Y1 = argminY1;
     Y2 = argminY2;
+
+    std::cout << Y1/c << " " << Y2/c << std::endl;
+
     MY1 = computeMYGeneral(M0, Y1);
     MY2 = computeMYGeneral(M0, Y2);
 
@@ -1022,12 +1114,21 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 
     int signChanges = countSignChanges(leftG, rightG);
 
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        Index n = indexTransversal[i];
+        double coeff = data1.first(i);
+        coeffMap[n] = coeff;
+    }
+
+    double hecke = heckeCheck(coeffMap);
+    std::cout << "hecke " << hecke << std::endl;
+
     /* We expect most eigenvalues to appear like this
      */
     if (signChanges >= searchPossibleSignChanges * 0.975 && rightR - leftR < 0.001) {
         for (int i = 0; i < indexTransversal.size(); i++) {
             Index n = indexTransversal[i];
-            double coeff = solutionY1(i);
+            double coeff = data1.first(i);
             coeffMap[n] = coeff;
         }
 
@@ -1050,7 +1151,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
             //Compute the coeffMap
             for (int i = 0; i < indexTransversal.size(); i++) {
                 Index n = indexTransversal[i];
-                double coeff = solutionY1(i);
+                double coeff = data1.first(i);
                 coeffMap[n] = coeff;
             }
 
