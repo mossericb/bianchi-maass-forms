@@ -38,6 +38,38 @@ ImaginaryQuadraticIntegers::ImaginaryQuadraticIntegers(int d) {
         Y0 = .75 - pow(this->getTheta().imag(),2)/4;
         Y0 = sqrt(Y0);
     }
+
+    /*This is dedekind zeta evaluated at 2*/
+    double zeta;
+    if (d == 1) {
+        zeta = 1.5067030099229850308865650481820713960;
+    } else if (d == 2) {
+        zeta = 1.7514175100868651336396195126387907309;
+    } else if (d == 3) {
+        zeta = 1.2851909554841494029175117986995746040;
+    } else if (d == 7) {
+        zeta = 1.8948414489688065289713480740538331492;
+    } else if (d == 11) {
+        zeta = 1.4961318594779133782134911190388079488;
+    } else if (d == 19) {
+        zeta = 1.2647096535989942122797948409268317789;
+    } else if (d == 43) {
+        zeta = 1.1358945342612301928961639825045561389;
+    } else if (d == 67) {
+        zeta = 1.1098669595372758949465033028279158184;
+    } else { /*d == 163*/
+        zeta = 1.0895818440717603415286502713820700886;
+    }
+
+    double discriminantToPower;
+    if (Auxiliary::mod(-d,4) == 3) {
+        discriminantToPower = pow(abs(4.0 * d), 1.5);
+    } else {
+        discriminantToPower = pow(d, 1.5);
+    }
+
+    //volume is |disc|^3/2 * zeta/(4 * pi^2)
+    volumeOfFD = discriminantToPower * zeta / 39.4784176043574344753379639995046045412;
 }
 
 ImaginaryQuadraticIntegers::ImaginaryQuadraticIntegers() {
@@ -164,8 +196,36 @@ ImaginaryQuadraticIntegers::indexOrbitQuotientData(vector<Index> indices, const 
         }
     }
 
+    auto indexComparator = [this](const Index& index1, const Index& index2) -> bool {
+        if (index1.getAbs(d) < index2.getAbs(d)) {
+            return true;
+        } else if (index1.getAbs(d) == index2.getAbs(d) && index1.getAngle(d) < index2.getAngle(d)) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    std::sort(indexTransversal.begin(), indexTransversal.end(), indexComparator);
+
     return {indexTransversal, orbitDataModSign};
 }
 
+double ImaginaryQuadraticIntegers::weylLaw(double r) {
+    //weyl law is vol * r^3/ (24 * pi^2)
+    double weyl = volumeOfFD * pow(r,3) / 236.87050562614460685202778399702762724;
+    return weyl;
+}
+
+double ImaginaryQuadraticIntegers::eigenvalueIntervalRightEndpoint(double leftEndpoint, double numEigenvalues) {
+    double weylLeft = weylLaw(leftEndpoint);
+
+    double rightEndpoint = (numEigenvalues + weylLeft) / (volumeOfFD / 236.87050562614460685202778399702762724);
+    rightEndpoint = pow(rightEndpoint, 1.0/3);
+    if (rightEndpoint - leftEndpoint > 0.125) {
+        return leftEndpoint + 0.125;
+    }
+    return rightEndpoint;
+}
 
 

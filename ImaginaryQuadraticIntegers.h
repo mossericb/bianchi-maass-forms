@@ -33,6 +33,10 @@ public:
     [[nodiscard]] std::complex<double> getTheta() const { return theta; };
     [[nodiscard]] double getA() const { return A; };
     [[nodiscard]] double getY0() const { return Y0; };
+    [[nodiscard]] double getVolumeOfFD() const { return volumeOfFD; };
+
+    double weylLaw(double r);
+    double eigenvalueIntervalRightEndpoint(double leftEndpoint, double numEigenvalues);
 
     vector<Index> indicesUpToM(const double M);
     pair<vector<Index>, map<Index, vector<pair<Index, int>>>>
@@ -43,6 +47,7 @@ private:
     std::complex<double> theta;
     double A;
     double Y0;
+    double volumeOfFD;
 };
 
 

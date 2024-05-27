@@ -130,6 +130,8 @@ private:
 
     int countSignChanges(const vector<double> &v1, const vector<double> &v2);
 
+    double phi(map<Index, double> &coeffMap1, map<Index, double> &coeffMap2, vector<int> &signs);
+
     bool signChangeVectorIsIncreasing(vector<int> &v);
 
     double findZeroOfLinearInterpolation(double x0, double y0, double x1, double y1);

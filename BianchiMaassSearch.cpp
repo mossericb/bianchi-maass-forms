@@ -106,12 +106,14 @@ void BianchiMaassSearch::searchForEigenvalues(const double leftR, const double r
     outputFile << "leftEndpoint = " << leftR << '\n';
     outputFile << "rightEndpoint = " << rightR << std::endl;
 
-    double SPACING = 1.0 / 8;
+    //Magic number
+    double numEigenValues = 0.5;
+
     vector<double> endpoints;
     double endpoint = leftR;
     while (endpoint < rightR) {
         endpoints.push_back(endpoint);
-        endpoint += SPACING;
+        endpoint = Od.eigenvalueIntervalRightEndpoint(endpoint, numEigenValues);
     }
     endpoints.push_back(rightR);
 
@@ -789,18 +791,11 @@ double BianchiMaassSearch::heckeCheck(map<Index, double>& coeffMap) {
         double hecke = (hecke1 + hecke2)/avgSize;
         return hecke;
     } else if (d == 19) {
-        double avgSize = abs(coeffMap[Index(2,0)]);
-        avgSize += abs(coeffMap[Index(3,0)]);
-        avgSize += abs(coeffMap[Index(6,0)]);
-        avgSize += abs(coeffMap[Index(-1, 1)]);
-        avgSize += abs(coeffMap[Index(-2, 2)]);
-        avgSize /= 5;
-        double hecke1 =  coeffMap[Index(2,0)] * coeffMap[Index(3,0)] - coeffMap[Index(6,0)];
-        double hecke2 = coeffMap[Index(2, 0)] * coeffMap[Index(-1, 1)] - coeffMap[Index(-2, 2)];
+        double hecke1 = coeffMap[Index(2,0)] * coeffMap[Index(3,0)] - coeffMap[Index(6,0)];
+        double hecke2 = coeffMap[Index(2, 0)] * coeffMap[Index(0, 1)] - coeffMap[Index(0, 2)];
         hecke1 = abs(hecke1);
         hecke2 = abs(hecke2);
-        return hecke1 + hecke2;
-        double hecke = (hecke1 + hecke2)/avgSize;
+        double hecke = hecke1 + hecke2;
         return hecke;
     } else {
         throw(std::invalid_argument("Hecke check not implemented."));
@@ -856,8 +851,6 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     std::cout << std::setprecision(16)
               << "[" << leftR << ", " << rightR << "]" << std::endl;
 
-    startOver:
-
     double M0 = computeM0General(rightR);
 
     KBessel K = KBessel(2 * pi / A /*usual factor*/
@@ -869,18 +862,6 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
     vector<Index> indexTransversal = get<0>(data);
     map<Index, vector<pair<Index, int>>> indexOrbitDataModSign = get<1>(data);
-
-    auto indexComparator = [this](const Index& index1, const Index& index2) -> bool {
-        if (index1.getAbs(d) < index2.getAbs(d)) {
-            return true;
-        } else if (index1.getAbs(d) == index2.getAbs(d) && index1.getAngle(d) < index2.getAngle(d)) {
-            return true;
-        } else {
-            return false;
-        }
-    };
-
-    std::sort(indexTransversal.begin(), indexTransversal.end(), indexComparator);
 
     int indexOfNormalization = 0;
     for (int i = 0; i < indexTransversal.size(); i++) {
@@ -907,15 +888,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     MatrixXd bY1;
     MatrixXd bY2;
 
-    MatrixXd gY1;
-    MatrixXd gY2;
-
     map<Index, double> coeffMap;
-
-    vector<double> rightG;
-    vector<double> leftG;
-    rightG.reserve(indexTransversal.size()*2);
-    leftG.reserve(indexTransversal.size()*2);
 
     //double upperY = 2.0 * max(1.0, rightR)/(2*pi/A*M0);
     //double lowerY = 1.7 * max(1.0, rightR)/(2*pi/A*M0);
@@ -1031,15 +1004,13 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         }
     }
 
-    argminY1 = ansY1;
-    argminY2 = ansY2;
+    Y1 = ansY1;
+    Y2 = ansY2;
 
     computeAllConditionNumbers = false;
     conditionGoal = 0;
 
     //compute the matrices again :)
-    Y1 = argminY1;
-    Y2 = argminY2;
 
     std::cout << Y1/c << " " << Y2/c << std::endl;
 
@@ -1082,11 +1053,6 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 
     std::cout << data1.second << " " << data2.second << " ";
 
-    gY1 = matrixY1 * data2.first;
-    gY2 = matrixY2 * data1.first;
-
-    leftG = mergeToVector(gY1, gY2);
-
     K.setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
 
     matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, K);
@@ -1096,11 +1062,6 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     data2 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
 
     std::cout << data1.second << " " << data2.second << std::endl;
-
-    gY1 = matrixY1 * data2.first;
-    gY2 = matrixY2 * data1.first;
-
-    rightG = mergeToVector(gY1, gY2);
 
     /*
      * When you have to start over, for whatever reason, this means that condition numbers
@@ -1112,7 +1073,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
 
     int searchPossibleSignChanges = indexTransversal.size() * 2;
 
-    int signChanges = countSignChanges(leftG, rightG);
+    int signChanges = 0;
 
     for (int i = 0; i < indexTransversal.size(); i++) {
         Index n = indexTransversal[i];
@@ -1266,5 +1227,19 @@ void BianchiMaassSearch::secantMethod(double r1, double r2) {
     //compute hecke check for r2
     //secant
     //loop until
+}
+
+double BianchiMaassSearch::phi(map<Index, double> &coeffMap1, map<Index, double> &coeffMap2, vector<int> &signs) {
+    if (d == 19) {
+        double check1 = coeffMap1[Index(2,0)] - coeffMap2[Index(2,0)];
+        double check2 = coeffMap1[Index(3,0)] - coeffMap2[Index(3,0)];
+        double check3 = coeffMap1[Index(0,1)] - coeffMap2[Index(0,1)];
+        check1 = abs(check1);
+        check2 = abs(check2);
+        check3 = abs(check3);
+        return signs[0]*check1 + signs[1]*check2 + signs[2]*check3;
+    } else {
+        throw std::invalid_argument("not implemented for this d");
+    }
 }
 
