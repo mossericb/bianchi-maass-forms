@@ -10,35 +10,324 @@
 #include <vector>
 
 const SL2C Quaternion::S = {0,-1,1,0};
-const std::vector<std::complex<double>> Quaternion::d19Alphas = {{0,0},
-                                                                 {0.25, getTheta(19).imag()/2},
-                                                                 {-0.25, getTheta(19).imag()/2}};
-const std::vector<SL2C> Quaternion::d19MAlphas = {{0,-1,1,0},
-                                                  {-getTheta(19)+ 1.0, -2, -2, getTheta(19)},
-                                                  {-getTheta(19), -2, -2, getTheta(19) - 1.0}};
-const std::vector<std::complex<double>> Quaternion::d19Translators = {{0,0},
-                                                                      {1,0},
-                                                                      {-1,0},
+const vector<complex<double>> Quaternion::d19Alphas = {(0.0)/(1.0),
+                                                                 (getTheta(19))/(2.0),
+                                                                 (getTheta(19) - 1.0)/(2.0)};
+const vector<SL2C> Quaternion::d19MAlphas = {{0.0, 1.0, -1.0, 0.0},
+                                                  {-getTheta(19) + 1.0, -2.0, -2.0, getTheta(19)},
+                                                  {-getTheta(19), -2.0, -2.0, getTheta(19) - 1.0}};
+const vector<complex<double>> Quaternion::d19Translators = {0.0,
+                                                                      1.0,
+                                                                      -1.0,
                                                                       getTheta(19),
                                                                       -getTheta(19),
-                                                                      getTheta(19)-1.0,
-                                                                      -getTheta(19)+1.0};
+                                                                      getTheta(19) - 1.0,
+                                                                      -getTheta(19) + 1.0};
 
-const std::vector<std::complex<double>> Quaternion::d43Alphas = {};
-const std::vector<SL2C> Quaternion::d43MAlphas = {};
-const std::vector<std::complex<double>> Quaternion::d43Translators = {};
+const vector<complex<double>> Quaternion::d43Alphas = {(0.0)/(1.0),
+                                                                 (getTheta(43))/(2.0),
+                                                                 (getTheta(43) - 1.0)/(2.0),
+                                                                 (getTheta(43))/(3.0),
+                                                                 (-getTheta(43))/(3.0),
+                                                                 (-getTheta(43) + 1.0)/(3.0),
+                                                                 (getTheta(43) - 1.0)/(3.0),
+                                                                 (getTheta(43) + 1.0)/(3.0),
+                                                                 (-getTheta(43) - 1.0)/(3.0)};
+const vector<SL2C> Quaternion::d43MAlphas = {{0.0, 1.0, -1.0, 0.0},
+                                                  {-getTheta(43) + 1.0, -5.0, -2.0, getTheta(43)},
+                                                  {-getTheta(43), -5.0, -2.0, getTheta(43) - 1.0},
+                                                  {getTheta(43) - 1.0, 4.0, -3.0, getTheta(43)},
+                                                  {-getTheta(43) + 1.0, 4.0, -3.0, -getTheta(43)},
+                                                  {-getTheta(43), 4.0, -3.0, -getTheta(43) + 1.0},
+                                                  {getTheta(43), 4.0, -3.0, getTheta(43) - 1.0},
+                                                  {-getTheta(43) - 1.0, getTheta(43) - 3.0, -3.0, getTheta(43) + 1.0},
+                                                  {getTheta(43) + 1.0, getTheta(43) - 3.0, -3.0, -getTheta(43) - 1.0}};
+const vector<complex<double>> Quaternion::d43Translators = {0.0,
+                                                                      1.0,
+                                                                      -1.0,
+                                                                      getTheta(43),
+                                                                      -getTheta(43),
+                                                                      getTheta(43) - 1.0,
+                                                                      -getTheta(43) + 1.0};
 
-const std::vector<std::complex<double>> Quaternion::d67Alphas = {};
-const std::vector<SL2C> Quaternion::d67MAlphas = {};
-const std::vector<std::complex<double>> Quaternion::d67Translators = {};
+const vector<complex<double>> Quaternion::d67Alphas = {(0.0)/(1.0),
+                                                                 (getTheta(67))/(2.0),
+                                                                 (getTheta(67) - 1.0)/(2.0),
+                                                                 (getTheta(67))/(3.0),
+                                                                 (-getTheta(67))/(3.0),
+                                                                 (-getTheta(67) + 1.0)/(3.0),
+                                                                 (getTheta(67) - 1.0)/(3.0),
+                                                                 (getTheta(67) + 1.0)/(3.0),
+                                                                 (-getTheta(67) - 1.0)/(3.0),
+                                                                 (getTheta(67) + 1.0)/(4.0),
+                                                                 (-getTheta(67) - 1.0)/(4.0),
+                                                                 (-getTheta(67) + 2.0)/(4.0),
+                                                                 (getTheta(67) - 2.0)/(4.0),
+                                                                 (getTheta(67) - 1.0)/(4.0),
+                                                                 (-getTheta(67) + 1.0)/(4.0),
+                                                                 (getTheta(67))/(4.0),
+                                                                 (-getTheta(67))/(4.0),
+                                                                 (getTheta(67) - 3.0)/(getTheta(67) + 2.0),
+                                                                 (-getTheta(67) + 3.0)/(getTheta(67) + 2.0),
+                                                                 (getTheta(67) - 7.0)/(getTheta(67) + 2.0),
+                                                                 (-getTheta(67) + 7.0)/(getTheta(67) + 2.0),
+                                                                 (-getTheta(67) - 2.0)/(-getTheta(67) + 3.0),
+                                                                 (getTheta(67) + 2.0)/(-getTheta(67) + 3.0),
+                                                                 (-getTheta(67) - 6.0)/(-getTheta(67) + 3.0),
+                                                                 (getTheta(67) + 6.0)/(-getTheta(67) + 3.0)};
+const vector<SL2C> Quaternion::d67MAlphas = {{0.0, 1.0, -1.0, 0.0},
+                                                  {-getTheta(67) + 1.0, -8.0, -2.0, getTheta(67)},
+                                                  {-getTheta(67), -8.0, -2.0, getTheta(67) - 1.0},
+                                                  {getTheta(67) - 1.0, 6.0, -3.0, getTheta(67)},
+                                                  {-getTheta(67) + 1.0, 6.0, -3.0, -getTheta(67)},
+                                                  {-getTheta(67), 6.0, -3.0, -getTheta(67) + 1.0},
+                                                  {getTheta(67), 6.0, -3.0, getTheta(67) - 1.0},
+                                                  {-getTheta(67) - 1.0, getTheta(67) - 5.0, -3.0, getTheta(67) + 1.0},
+                                                  {getTheta(67) + 1.0, getTheta(67) - 5.0, -3.0, -getTheta(67) - 1.0},
+                                                  {getTheta(67) - 2.0, 5.0, -4.0, getTheta(67) + 1.0},
+                                                  {-getTheta(67) + 2.0, 5.0, -4.0, -getTheta(67) - 1.0},
+                                                  {-getTheta(67) - 1.0, 5.0, -4.0, -getTheta(67) + 2.0},
+                                                  {getTheta(67) + 1.0, 5.0, -4.0, getTheta(67) - 2.0},
+                                                  {-getTheta(67), -4.0, -4.0, getTheta(67) - 1.0},
+                                                  {getTheta(67), -4.0, -4.0, -getTheta(67) + 1.0},
+                                                  {-getTheta(67) + 1.0, -4.0, -4.0, getTheta(67)},
+                                                  {getTheta(67) - 1.0, -4.0, -4.0, -getTheta(67)},
+                                                  {-getTheta(67) + 7.0, -getTheta(67) - 6.0, -getTheta(67) - 2.0, getTheta(67) - 3.0},
+                                                  {getTheta(67) - 7.0, -getTheta(67) - 6.0, -getTheta(67) - 2.0, -getTheta(67) + 3.0},
+                                                  {-getTheta(67) + 3.0, -getTheta(67) - 6.0, -getTheta(67) - 2.0, getTheta(67) - 7.0},
+                                                  {getTheta(67) - 3.0, -getTheta(67) - 6.0, -getTheta(67) - 2.0, -getTheta(67) + 7.0},
+                                                  {-getTheta(67) - 6.0, -getTheta(67) + 7.0, -getTheta(67) + 3.0, getTheta(67) + 2.0},
+                                                  {getTheta(67) + 6.0, -getTheta(67) + 7.0, -getTheta(67) + 3.0, -getTheta(67) - 2.0},
+                                                  {-getTheta(67) - 2.0, -getTheta(67) + 7.0, -getTheta(67) + 3.0, getTheta(67) + 6.0},
+                                                  {getTheta(67) + 2.0, -getTheta(67) + 7.0, -getTheta(67) + 3.0, -getTheta(67) - 6.0}};
+const vector<complex<double>> Quaternion::d67Translators = {0.0,
+                                                                      1.0,
+                                                                      -1.0,
+                                                                      getTheta(67),
+                                                                      -getTheta(67),
+                                                                      getTheta(67) - 1.0,
+                                                                      -getTheta(67) + 1.0};
 
-const std::vector<std::complex<double>> Quaternion::d163Alphas = {};
-const std::vector<SL2C> Quaternion::d163MAlphas = {};
-const std::vector<std::complex<double>> Quaternion::d163Translators = {};
+const vector<complex<double>> Quaternion::d163Alphas = {(0.0)/(1.0),
+                                                                  (getTheta(163))/(2.0),
+                                                                  (getTheta(163) - 1.0)/(2.0),
+                                                                  (getTheta(163))/(3.0),
+                                                                  (-getTheta(163))/(3.0),
+                                                                  (-getTheta(163) + 1.0)/(3.0),
+                                                                  (getTheta(163) - 1.0)/(3.0),
+                                                                  (getTheta(163) + 1.0)/(3.0),
+                                                                  (-getTheta(163) - 1.0)/(3.0),
+                                                                  (3.0*getTheta(163) + 2.0)/(7.0),
+                                                                  (-3.0*getTheta(163) - 2.0)/(7.0),
+                                                                  (getTheta(163) + 1.0)/(4.0),
+                                                                  (-getTheta(163) - 1.0)/(4.0),
+                                                                  (-getTheta(163) + 2.0)/(4.0),
+                                                                  (getTheta(163) - 2.0)/(4.0),
+                                                                  (getTheta(163) - 1.0)/(4.0),
+                                                                  (-getTheta(163) + 1.0)/(4.0),
+                                                                  (getTheta(163))/(4.0),
+                                                                  (-getTheta(163))/(4.0),
+                                                                  (2.0*getTheta(163) - 3.0)/(5.0),
+                                                                  (-2.0*getTheta(163) + 3.0)/(5.0),
+                                                                  (getTheta(163) - 2.0)/(5.0),
+                                                                  (-getTheta(163) + 2.0)/(5.0),
+                                                                  (getTheta(163) + 2.0)/(5.0),
+                                                                  (-getTheta(163) - 2.0)/(5.0),
+                                                                  (-2.0*getTheta(163) + 1.0)/(5.0),
+                                                                  (2.0*getTheta(163) - 1.0)/(5.0),
+                                                                  (2.0*getTheta(163) - 2.0)/(5.0),
+                                                                  (-2.0*getTheta(163) + 2.0)/(5.0),
+                                                                  (-2.0*getTheta(163))/(5.0),
+                                                                  (2.0*getTheta(163))/(5.0),
+                                                                  (2.0*getTheta(163) + 1.0)/(5.0),
+                                                                  (-2.0*getTheta(163) - 1.0)/(5.0),
+                                                                  (getTheta(163) + 1.0)/(5.0),
+                                                                  (-getTheta(163) - 1.0)/(5.0),
+                                                                  (getTheta(163) - 1.0)/(5.0),
+                                                                  (-getTheta(163) + 1.0)/(5.0),
+                                                                  (getTheta(163))/(5.0),
+                                                                  (-getTheta(163))/(5.0),
+                                                                  (getTheta(163) + 2.0)/(6.0),
+                                                                  (-getTheta(163) - 2.0)/(6.0),
+                                                                  (-getTheta(163) + 3.0)/(6.0),
+                                                                  (getTheta(163) - 3.0)/(6.0),
+                                                                  (getTheta(163) - 2.0)/(6.0),
+                                                                  (-getTheta(163) + 2.0)/(6.0),
+                                                                  (getTheta(163) + 1.0)/(6.0),
+                                                                  (-getTheta(163) - 1.0)/(6.0),
+                                                                  (getTheta(163) - 1.0)/(6.0),
+                                                                  (-getTheta(163) + 1.0)/(6.0),
+                                                                  (-getTheta(163))/(6.0),
+                                                                  (getTheta(163))/(6.0),
+                                                                  (-17.0)/(-getTheta(163) + 1.0),
+                                                                  (17.0)/(-getTheta(163) + 1.0),
+                                                                  (-12.0)/(-getTheta(163) + 1.0),
+                                                                  (12.0)/(-getTheta(163) + 1.0),
+                                                                  (17.0)/(getTheta(163)),
+                                                                  (-17.0)/(getTheta(163)),
+                                                                  (12.0)/(getTheta(163)),
+                                                                  (-12.0)/(getTheta(163)),
+                                                                  (-getTheta(163) - 16.0)/(-getTheta(163) + 2.0),
+                                                                  (getTheta(163) + 16.0)/(-getTheta(163) + 2.0),
+                                                                  (12.0)/(-getTheta(163) + 2.0),
+                                                                  (-12.0)/(-getTheta(163) + 2.0),
+                                                                  (12.0)/(getTheta(163) + 1.0),
+                                                                  (-12.0)/(getTheta(163) + 1.0),
+                                                                  (getTheta(163) - 17.0)/(getTheta(163) + 1.0),
+                                                                  (-getTheta(163) + 17.0)/(getTheta(163) + 1.0),
+                                                                  (-getTheta(163) - 10.0)/(-getTheta(163) + 3.0),
+                                                                  (getTheta(163) + 10.0)/(-getTheta(163) + 3.0),
+                                                                  (-getTheta(163) - 15.0)/(-getTheta(163) + 3.0),
+                                                                  (getTheta(163) + 15.0)/(-getTheta(163) + 3.0),
+                                                                  (-7.0)/(-getTheta(163) + 3.0),
+                                                                  (7.0)/(-getTheta(163) + 3.0),
+                                                                  (-getTheta(163) - 17.0)/(-getTheta(163) + 3.0),
+                                                                  (getTheta(163) + 17.0)/(-getTheta(163) + 3.0),
+                                                                  (7.0)/(getTheta(163) + 2.0),
+                                                                  (-7.0)/(getTheta(163) + 2.0),
+                                                                  (-getTheta(163) + 18.0)/(getTheta(163) + 2.0),
+                                                                  (getTheta(163) - 18.0)/(getTheta(163) + 2.0),
+                                                                  (getTheta(163) - 11.0)/(getTheta(163) + 2.0),
+                                                                  (-getTheta(163) + 11.0)/(getTheta(163) + 2.0),
+                                                                  (getTheta(163) - 16.0)/(getTheta(163) + 2.0),
+                                                                  (-getTheta(163) + 16.0)/(getTheta(163) + 2.0),
+                                                                  (getTheta(163) + 3.0)/(7.0),
+                                                                  (-getTheta(163) - 3.0)/(7.0),
+                                                                  (2.0*getTheta(163) - 1.0)/(7.0),
+                                                                  (-2.0*getTheta(163) + 1.0)/(7.0),
+                                                                  (2.0*getTheta(163) - 3.0)/(7.0),
+                                                                  (-2.0*getTheta(163) + 3.0)/(7.0),
+                                                                  (-2.0*getTheta(163) - 1.0)/(7.0),
+                                                                  (2.0*getTheta(163) + 1.0)/(7.0),
+                                                                  (-getTheta(163) - 4.0)/(-getTheta(163) + 4.0),
+                                                                  (getTheta(163) + 4.0)/(-getTheta(163) + 4.0),
+                                                                  (getTheta(163) + 16.0)/(-getTheta(163) + 4.0),
+                                                                  (-getTheta(163) - 16.0)/(-getTheta(163) + 4.0),
+                                                                  (getTheta(163) - 5.0)/(getTheta(163) + 3.0),
+                                                                  (-getTheta(163) + 5.0)/(getTheta(163) + 3.0),
+                                                                  (-getTheta(163) + 17.0)/(getTheta(163) + 3.0),
+                                                                  (getTheta(163) - 17.0)/(getTheta(163) + 3.0)};
+const vector<SL2C> Quaternion::d163MAlphas = {{0.0, 1.0, -1.0, 0.0},
+                                                   {-getTheta(163) + 1.0, -20.0, -2.0, getTheta(163)},
+                                                   {-getTheta(163), -20.0, -2.0, getTheta(163) - 1.0},
+                                                   {getTheta(163) - 1.0, 14.0, -3.0, getTheta(163)},
+                                                   {-getTheta(163) + 1.0, 14.0, -3.0, -getTheta(163)},
+                                                   {-getTheta(163), 14.0, -3.0, -getTheta(163) + 1.0},
+                                                   {getTheta(163), 14.0, -3.0, getTheta(163) - 1.0},
+                                                   {-getTheta(163) - 1.0, getTheta(163) - 13.0, -3.0, getTheta(163) + 1.0},
+                                                   {getTheta(163) + 1.0, getTheta(163) - 13.0, -3.0, -getTheta(163) - 1.0},
+                                                   {-3.0*getTheta(163) - 2.0, 3.0*getTheta(163) - 52.0, -7.0, 3.0*getTheta(163) + 2.0},
+                                                   {3.0*getTheta(163) + 2.0, 3.0*getTheta(163) - 52.0, -7.0, -3.0*getTheta(163) - 2.0},
+                                                   {getTheta(163) - 2.0, 11.0, -4.0, getTheta(163) + 1.0},
+                                                   {-getTheta(163) + 2.0, 11.0, -4.0, -getTheta(163) - 1.0},
+                                                   {-getTheta(163) - 1.0, 11.0, -4.0, -getTheta(163) + 2.0},
+                                                   {getTheta(163) + 1.0, 11.0, -4.0, getTheta(163) - 2.0},
+                                                   {-getTheta(163), -10.0, -4.0, getTheta(163) - 1.0},
+                                                   {getTheta(163), -10.0, -4.0, -getTheta(163) + 1.0},
+                                                   {-getTheta(163) + 1.0, -10.0, -4.0, getTheta(163)},
+                                                   {getTheta(163) - 1.0, -10.0, -4.0, -getTheta(163)},
+                                                   {-getTheta(163) + 2.0, -getTheta(163) - 15.0, -5.0, 2.0*getTheta(163) - 3.0},
+                                                   {getTheta(163) - 2.0, -getTheta(163) - 15.0, -5.0, -2.0*getTheta(163) + 3.0},
+                                                   {-2.0*getTheta(163) + 3.0, -getTheta(163) - 15.0, -5.0, getTheta(163) - 2.0},
+                                                   {2.0*getTheta(163) - 3.0, -getTheta(163) - 15.0, -5.0, -getTheta(163) + 2.0},
+                                                   {2.0*getTheta(163) - 1.0, -getTheta(163) + 17.0, -5.0, getTheta(163) + 2.0},
+                                                   {-2.0*getTheta(163) + 1.0, -getTheta(163) + 17.0, -5.0, -getTheta(163) - 2.0},
+                                                   {-getTheta(163) - 2.0, -getTheta(163) + 17.0, -5.0, -2.0*getTheta(163) + 1.0},
+                                                   {getTheta(163) + 2.0, -getTheta(163) + 17.0, -5.0, 2.0*getTheta(163) - 1.0},
+                                                   {2.0*getTheta(163), 33.0, -5.0, 2.0*getTheta(163) - 2.0},
+                                                   {-2.0*getTheta(163), 33.0, -5.0, -2.0*getTheta(163) + 2.0},
+                                                   {-2.0*getTheta(163) + 2.0, 33.0, -5.0, -2.0*getTheta(163)},
+                                                   {2.0*getTheta(163) - 2.0, 33.0, -5.0, 2.0*getTheta(163)},
+                                                   {-getTheta(163) - 1.0, getTheta(163) - 16.0, -5.0, 2.0*getTheta(163) + 1.0},
+                                                   {getTheta(163) + 1.0, getTheta(163) - 16.0, -5.0, -2.0*getTheta(163) - 1.0},
+                                                   {-2.0*getTheta(163) - 1.0, getTheta(163) - 16.0, -5.0, getTheta(163) + 1.0},
+                                                   {2.0*getTheta(163) + 1.0, getTheta(163) - 16.0, -5.0, -getTheta(163) - 1.0},
+                                                   {-getTheta(163), -8.0, -5.0, getTheta(163) - 1.0},
+                                                   {getTheta(163), -8.0, -5.0, -getTheta(163) + 1.0},
+                                                   {-getTheta(163) + 1.0, -8.0, -5.0, getTheta(163)},
+                                                   {getTheta(163) - 1.0, -8.0, -5.0, -getTheta(163)},
+                                                   {getTheta(163) - 3.0, 8.0, -6.0, getTheta(163) + 2.0},
+                                                   {-getTheta(163) + 3.0, 8.0, -6.0, -getTheta(163) - 2.0},
+                                                   {-getTheta(163) - 2.0, 8.0, -6.0, -getTheta(163) + 3.0},
+                                                   {getTheta(163) + 2.0, 8.0, -6.0, getTheta(163) - 3.0},
+                                                   {-getTheta(163) - 1.0, -7.0, -6.0, getTheta(163) - 2.0},
+                                                   {getTheta(163) + 1.0, -7.0, -6.0, -getTheta(163) + 2.0},
+                                                   {-getTheta(163) + 2.0, -7.0, -6.0, getTheta(163) + 1.0},
+                                                   {getTheta(163) - 2.0, -7.0, -6.0, -getTheta(163) - 1.0},
+                                                   {getTheta(163), 7.0, -6.0, getTheta(163) - 1.0},
+                                                   {-getTheta(163), 7.0, -6.0, -getTheta(163) + 1.0},
+                                                   {-getTheta(163) + 1.0, 7.0, -6.0, -getTheta(163)},
+                                                   {getTheta(163) - 1.0, 7.0, -6.0, getTheta(163)},
+                                                   {-12.0, -5.0*getTheta(163), -getTheta(163) + 1.0, 17.0},
+                                                   {12.0, -5.0*getTheta(163), -getTheta(163) + 1.0, -17.0},
+                                                   {-17.0, -5.0*getTheta(163), -getTheta(163) + 1.0, 12.0},
+                                                   {17.0, -5.0*getTheta(163), -getTheta(163) + 1.0, -12.0},
+                                                   {-12.0, -5.0*getTheta(163) + 5.0, -getTheta(163), 17.0},
+                                                   {12.0, -5.0*getTheta(163) + 5.0, -getTheta(163), -17.0},
+                                                   {-17.0, -5.0*getTheta(163) + 5.0, -getTheta(163), 12.0},
+                                                   {17.0, -5.0*getTheta(163) + 5.0, -getTheta(163), -12.0},
+                                                   {12.0, 5.0*getTheta(163) - 7.0, -getTheta(163) + 2.0, getTheta(163) + 16.0},
+                                                   {-12.0, 5.0*getTheta(163) - 7.0, -getTheta(163) + 2.0, -getTheta(163) - 16.0},
+                                                   {-getTheta(163) - 16.0, 5.0*getTheta(163) - 7.0, -getTheta(163) + 2.0, -12.0},
+                                                   {getTheta(163) + 16.0, 5.0*getTheta(163) - 7.0, -getTheta(163) + 2.0, 12.0},
+                                                   {-getTheta(163) + 17.0, 5.0*getTheta(163) + 2.0, -getTheta(163) - 1.0, 12.0},
+                                                   {getTheta(163) - 17.0, 5.0*getTheta(163) + 2.0, -getTheta(163) - 1.0, -12.0},
+                                                   {-12.0, 5.0*getTheta(163) + 2.0, -getTheta(163) - 1.0, getTheta(163) - 17.0},
+                                                   {12.0, 5.0*getTheta(163) + 2.0, -getTheta(163) - 1.0, -getTheta(163) + 17.0},
+                                                   {-getTheta(163) - 15.0, -4.0*getTheta(163) + 18.0, -getTheta(163) + 3.0, getTheta(163) + 10.0},
+                                                   {getTheta(163) + 15.0, -4.0*getTheta(163) + 18.0, -getTheta(163) + 3.0, -getTheta(163) - 10.0},
+                                                   {-getTheta(163) - 10.0, -4.0*getTheta(163) + 18.0, -getTheta(163) + 3.0, getTheta(163) + 15.0},
+                                                   {getTheta(163) + 10.0, -4.0*getTheta(163) + 18.0, -getTheta(163) + 3.0, -getTheta(163) - 15.0},
+                                                   {-getTheta(163) - 17.0, -3.0*getTheta(163) + 1.0, -getTheta(163) + 3.0, 7.0},
+                                                   {getTheta(163) + 17.0, -3.0*getTheta(163) + 1.0, -getTheta(163) + 3.0, -7.0},
+                                                   {-7.0, -3.0*getTheta(163) + 1.0, -getTheta(163) + 3.0, getTheta(163) + 17.0},
+                                                   {7.0, -3.0*getTheta(163) + 1.0, -getTheta(163) + 3.0, -getTheta(163) - 17.0},
+                                                   {getTheta(163) - 18.0, -3.0*getTheta(163) + 2.0, -getTheta(163) - 2.0, 7.0},
+                                                   {-getTheta(163) + 18.0, -3.0*getTheta(163) + 2.0, -getTheta(163) - 2.0, -7.0},
+                                                   {-7.0, -3.0*getTheta(163) + 2.0, -getTheta(163) - 2.0, -getTheta(163) + 18.0},
+                                                   {7.0, -3.0*getTheta(163) + 2.0, -getTheta(163) - 2.0, getTheta(163) - 18.0},
+                                                   {-getTheta(163) + 16.0, -4.0*getTheta(163) - 14.0, -getTheta(163) - 2.0, getTheta(163) - 11.0},
+                                                   {getTheta(163) - 16.0, -4.0*getTheta(163) - 14.0, -getTheta(163) - 2.0, -getTheta(163) + 11.0},
+                                                   {-getTheta(163) + 11.0, -4.0*getTheta(163) - 14.0, -getTheta(163) - 2.0, getTheta(163) - 16.0},
+                                                   {getTheta(163) - 11.0, -4.0*getTheta(163) - 14.0, -getTheta(163) - 2.0, -getTheta(163) + 16.0},
+                                                   {-2.0*getTheta(163) + 1.0, getTheta(163) - 12.0, -7.0, getTheta(163) + 3.0},
+                                                   {2.0*getTheta(163) - 1.0, getTheta(163) - 12.0, -7.0, -getTheta(163) - 3.0},
+                                                   {-getTheta(163) - 3.0, getTheta(163) - 12.0, -7.0, 2.0*getTheta(163) - 1.0},
+                                                   {getTheta(163) + 3.0, getTheta(163) - 12.0, -7.0, -2.0*getTheta(163) + 1.0},
+                                                   {2.0*getTheta(163) + 1.0, 24.0, -7.0, 2.0*getTheta(163) - 3.0},
+                                                   {-2.0*getTheta(163) - 1.0, 24.0, -7.0, -2.0*getTheta(163) + 3.0},
+                                                   {-2.0*getTheta(163) + 3.0, 24.0, -7.0, -2.0*getTheta(163) - 1.0},
+                                                   {2.0*getTheta(163) - 3.0, 24.0, -7.0, 2.0*getTheta(163) + 1.0},
+                                                   {getTheta(163) + 16.0, 2.0*getTheta(163) - 15.0, -getTheta(163) + 4.0, getTheta(163) + 4.0},
+                                                   {-getTheta(163) - 16.0, 2.0*getTheta(163) - 15.0, -getTheta(163) + 4.0, -getTheta(163) - 4.0},
+                                                   {-getTheta(163) - 4.0, 2.0*getTheta(163) - 15.0, -getTheta(163) + 4.0, -getTheta(163) - 16.0},
+                                                   {getTheta(163) + 4.0, 2.0*getTheta(163) - 15.0, -getTheta(163) + 4.0, getTheta(163) + 16.0},
+                                                   {getTheta(163) - 17.0, 2.0*getTheta(163) + 13.0, -getTheta(163) - 3.0, getTheta(163) - 5.0},
+                                                   {-getTheta(163) + 17.0, 2.0*getTheta(163) + 13.0, -getTheta(163) - 3.0, -getTheta(163) + 5.0},
+                                                   {-getTheta(163) + 5.0, 2.0*getTheta(163) + 13.0, -getTheta(163) - 3.0, -getTheta(163) + 17.0},
+                                                   {getTheta(163) - 5.0, 2.0*getTheta(163) + 13.0, -getTheta(163) - 3.0, getTheta(163) - 17.0}};
+const vector<complex<double>> Quaternion::d163Translators = {0.0,
+                                                             1.0,
+                                                             -1.0,
+                                                             getTheta(163),
+                                                             -getTheta(163),
+                                                             getTheta(163) - 1.0,
+                                                             -getTheta(163) + 1.0};
 
-//TODO write down alphas, MAlphas, Translators for d = 43, 67, 163, write
+const map<int, vector<complex<double>>> Quaternion::alphas = {{19, d19Alphas},
+                                                              {43, d43Alphas},
+                                                              {67, d67Alphas},
+                                                              {163, d163Alphas}};
 
+const map<int, vector<SL2C>> Quaternion::MAlphas = {{19, d19MAlphas},
+                                                    {43, d43MAlphas},
+                                                    {67, d67MAlphas},
+                                                    {163, d163MAlphas}};
 
+const map<int, vector<complex<double>>> Quaternion::translators = {{19, d19Translators},
+                                                                   {43, d43Translators},
+                                                                   {67, d67Translators},
+                                                                   {163, d163Translators}};
 
 Quaternion::Quaternion(double x, double y, double z, double w) {
     this->x = x;
@@ -92,7 +381,7 @@ Quaternion operator*(const double &c, const Quaternion& q) {
     return {c*q.x, c*q.y, c*q.z, c*q.w};
 }
 
-std::complex<double> Quaternion::getComplex() const {
+complex<double> Quaternion::getComplex() const {
     return {this->x, this->y};
 }
 
@@ -135,7 +424,7 @@ void Quaternion::operator*=(const Quaternion& rhs) {
 }
 
 void Quaternion::reduceModT() {
-    this->vectorReduce(std::complex<double> {1,0});
+    this->vectorReduce(complex<double> {1,0});
 }
 
 bool Quaternion::reduceModInversion(int d) {
@@ -148,49 +437,52 @@ bool Quaternion::reduceModInversion(int d) {
         } else {
             return false;
         }
-    } else if (d == 19) {
-        /*[ 0  1]  [-w + 1     -2]  [   -w    -2]
-        [-1  0], [    -2      w], [   -2    w - 1]*/
-        //compute the image wrt each of these matrices
-        //compare the j part of each 3 images to the j part of doing nothing
+    } else {
+        //compute the image wrt each MAlpha
+        //compare the j part of each image to the j part of doing nothing
         //the answer is the one with greatest j part
+
+        auto dAlphas = alphas.at(d);
+        auto dMAlphas = MAlphas.at(d);
+        auto dTranslators = translators.at(d);
+
         Quaternion largestSoFar = Quaternion(*this);
-        for (int i = 0; i < d19MAlphas.size(); i++) {
-            auto alpha = d19Alphas[i];
-            auto M_alpha = d19MAlphas[i];
-            auto tempThis = Quaternion(*this);
-            auto tempThisComplex = this->getComplex();
+        SL2C inverter = {1,0,0,1};
+        complex<double> translator = 0.0;
+
+        auto tempComplex = this->getComplex();
+        double leastDenominator = 1.0;
+        for (int i = 0; i < dAlphas.size(); i++) {
+            auto alpha = dAlphas[i];
+            auto mAlpha = dMAlphas[i];
 
             //find nearest element of OK to *this and translate by that
-            double minDistance = 100;
-            std::complex<double> toTranslate;
+            auto minDistance = (double)+INFINITY;
+            complex<double> toTranslate;
 
-            for (auto n : d19Translators) {
-                if (std::abs((tempThisComplex - n) - alpha) < minDistance) {
-                    minDistance = std::abs((tempThisComplex - n) - alpha);
+            for (auto n : dTranslators) {
+                if (std::abs((tempComplex - n) - alpha) < minDistance) {
+                    minDistance = std::abs((tempComplex - n) - alpha);
                     toTranslate = n;
                 }
             }
 
-            auto translated = tempThisComplex - toTranslate;
-            tempThis.x = translated.real();
-            tempThis.y = translated.imag();
+            //height of point under the map MAlpha is height/(|cz+d|^2 + |c|^2*height^2)
+            //The point is only raised if the denominator is less than 1
+            double denominator = norm(mAlpha.c * (tempComplex - toTranslate) + mAlpha.d) + norm(mAlpha.c * z);
 
-            tempThis = M_alpha * tempThis;
-
-            if (tempThis.getJ() > largestSoFar.getJ()) {
-                largestSoFar = tempThis;
+            if (denominator < leastDenominator) {
+                translator = toTranslate;
+                inverter = mAlpha;
+                leastDenominator = denominator;
             }
         }
-        if (*this == largestSoFar) {
+        if (leastDenominator == 1) {
             return false;
         } else {
-            *this = largestSoFar;
+            *this  = inverter * (*this - Quaternion(translator));
             return true;
         }
-
-    } else {
-        throw(std::invalid_argument("not implemented for this d"));
     }
 }
 
@@ -199,17 +491,17 @@ void Quaternion::reduceThetaGeneral(int d) {
         double minDistance = 100;
 
         auto theta = getTheta(d);
-        std::complex<double> othertheta = {-theta.real(), theta.imag()};
+        complex<double> othertheta = {-theta.real(), theta.imag()};
 
-        std::complex<double> temp1 = this->getComplex();
+        complex<double> temp1 = this->getComplex();
 
-        std::complex<double> translated = {0,0};
+        complex<double> translated = {0,0};
 
         int horizbound = std::ceil(std::abs(temp1.real()));
         int verbound = std::ceil(std::abs(temp1.imag()/theta.imag()));
         for (int a = -horizbound; a <= horizbound; a++) {
             for (int b = -verbound; b <= verbound; b++) {
-                std::complex<double> latticePoint = (double)a + (double)b*theta;
+                complex<double> latticePoint = (double)a + (double)b*theta;
                 double thisDistance = std::abs(temp1 - latticePoint);
                 if (thisDistance < minDistance) {
                     minDistance = thisDistance;
@@ -279,14 +571,14 @@ int Quaternion::mod(int a, int n) {
     }
 }
 
-std::complex<double> Quaternion::getTheta(int d) {
-    std::complex<double> theta;
+complex<double> Quaternion::getTheta(int d) {
+    complex<double> theta;
     if (mod(-d,4) == 1) {
-        theta = std::complex<double> {1.0/2, sqrt(d)/2};
+        theta = complex<double> {1.0/2, sqrt(d)/2};
     } else if (mod(-d,4) == 0) {
         throw(std::invalid_argument("d should be squarefree"));
     } else {
-        theta = std::complex<double> {0, sqrt(d)};
+        theta = complex<double> {0, sqrt(d)};
     }
     return theta;
 }
@@ -296,8 +588,8 @@ std::complex<double> Quaternion::getTheta(int d) {
  * @tparam T
  * @param v
  */
-void Quaternion::vectorReduce(const std::complex<double> v) {
-    std::complex<double> complex = this->getComplex();
+void Quaternion::vectorReduce(const complex<double> v) {
+    complex<double> complex = this->getComplex();
     double modifiedScalarProjection = complex.real()*v.real() + complex.imag()*v.imag();
     modifiedScalarProjection /= pow(v.real(),2) + pow(v.imag(),2);
     modifiedScalarProjection = floor(modifiedScalarProjection + 1.0/2);
@@ -310,18 +602,18 @@ void Quaternion::operator/=(const Quaternion &rhs) {
 }
 
 Quaternion operator*(const SL2C &gamma, const Quaternion &q) {
-    Quaternion a = Quaternion(gamma.a);
-    Quaternion b = Quaternion(gamma.b);
-    Quaternion c = Quaternion(gamma.c);
-    Quaternion d = Quaternion(gamma.d);
+    complex<double> z = q.getComplex();
 
-    Quaternion answer = a*q + b;
-    answer /= (c*q + d);
-    //answer.w = 0; //mitigate relativeError propagation
+    double denominator = norm(gamma.c * z + gamma.d) + norm(gamma.c * q.z);
+
+    complex<double> newComplex = (gamma.a * z + gamma.b) * conj((gamma.c * z + gamma.d)) + gamma.a * conj((gamma.c)) * (q.z) * (q.z);
+
+    Quaternion answer = {newComplex.real()/denominator, newComplex.imag()/denominator, q.z/denominator, 0};
+
     return answer;
 }
 
-Quaternion::Quaternion(std::complex<double> z) {
+Quaternion::Quaternion(complex<double> z) {
     this->x = z.real();
     this->y = z.imag();
     this->z = 0.0;
@@ -336,7 +628,7 @@ bool operator==(const Quaternion& q1, const Quaternion& q2) {
     }
 }
 
-std::complex<double> Quaternion::vectorReduce(const std::complex<double> &u, const std::complex<double> &v) {
+complex<double> Quaternion::vectorReduce(const complex<double> &u, const complex<double> &v) {
     double modifiedScalarProjection = u.real()*v.real() + u.imag()*v.imag();
     modifiedScalarProjection /= pow(v.real(),2) + pow(v.imag(),2);
     modifiedScalarProjection = floor(modifiedScalarProjection + 1.0/2);
@@ -349,6 +641,8 @@ Quaternion::Quaternion() {
     z = 0;
     w = 0;
 }
+
+
 
 
 //

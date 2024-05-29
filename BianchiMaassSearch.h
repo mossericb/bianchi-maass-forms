@@ -97,6 +97,7 @@ private:
     Auxiliary Aux;
 
     map<double, KBessel> rToKBess;
+    map<int, vector<Index>> dToPrimes;
     /***************************************************
      * Private methods used in SEARCH calculations.
      ***************************************************/

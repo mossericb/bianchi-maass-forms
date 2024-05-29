@@ -100,4 +100,19 @@ int Index::getB() const {
     return b;
 }
 
+Index Index::mul(const Index &index, int d) const {
+    int a1 = a;
+    int b1 = b;
+    int a2 = index.a;
+    int b2 = index.b;
+
+    if (Auxiliary::mod(-d, 4) == 1) {
+        Index newIndex = Index(a1*a2 + b1*b2 * ((-1-d)/4), a1*b2 + a2*b1 + b1*b2);
+        return newIndex;
+    } else {
+        Index newIndex = Index(a1*a2 + b1*b2 * (-d), a1*b2 + a2*b1);
+        return newIndex;
+    }
+}
+
 

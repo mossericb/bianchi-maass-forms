@@ -15,26 +15,28 @@ class Index {
 public:
     Index(int a, int b);
 
-    std::complex<double> getComplex(int d) const;
-    double getAbs(int d) const;
-    double getAngle(int d) const;
+    [[nodiscard]] std::complex<double> getComplex(int d) const;
+    [[nodiscard]] double getAbs(int d) const;
+    [[nodiscard]] double getAngle(int d) const;
 
-    Index rotate(int d) const;
-    Index conj(int d) const;
+    [[nodiscard]] Index rotate(int d) const;
+    [[nodiscard]] Index conj(int d) const;
     std::string to_string() const;
 
-    int getA() const;
-    int getB() const;
+    Index mul(const Index& index, int d) const;
 
-private:
-    int a;
-    int b;
+    [[nodiscard]] int getA() const;
+    [[nodiscard]] int getB() const;
 
     friend std::ostream& operator<<(std::ostream&, const Index&);
     friend bool operator==(const Index& index1, const Index& index2);
     friend bool operator!=(const Index& index1, const Index& index2);
     friend Index operator-(const Index& lhs, const Index& rhs);
     friend bool operator<(const Index& index1, const Index& index2);
+
+private:
+    int a;
+    int b;
 };
 
 template<>
