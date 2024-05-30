@@ -219,11 +219,12 @@ double ImaginaryQuadraticIntegers::weylLaw(double r) {
 
 double ImaginaryQuadraticIntegers::eigenvalueIntervalRightEndpoint(double leftEndpoint, double numEigenvalues) {
     double weylLeft = weylLaw(leftEndpoint);
+    double minStep = 0.1;
 
     double rightEndpoint = (numEigenvalues + weylLeft) / (volumeOfFD / 236.87050562614460685202778399702762724);
     rightEndpoint = pow(rightEndpoint, 1.0/3);
-    if (rightEndpoint - leftEndpoint > 0.125) {
-        return leftEndpoint + 0.125;
+    if (rightEndpoint - leftEndpoint > minStep) {
+        return leftEndpoint + minStep;
     }
     return rightEndpoint;
 }

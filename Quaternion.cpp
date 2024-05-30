@@ -460,9 +460,11 @@ bool Quaternion::reduceModInversion(int d) {
             auto minDistance = (double)+INFINITY;
             complex<double> toTranslate;
 
+            //TODO: Should be possible to calculate this directly. Is it faster than the loop?
             for (auto n : dTranslators) {
-                if (std::abs((tempComplex - n) - alpha) < minDistance) {
-                    minDistance = std::abs((tempComplex - n) - alpha);
+                double dist = std::abs((tempComplex - n) - alpha);
+                if (dist < minDistance) {
+                    minDistance = dist;
                     toTranslate = n;
                 }
             }

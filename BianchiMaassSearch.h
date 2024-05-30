@@ -39,7 +39,8 @@ public:
      * spit out intervals where they think an eigenvalue lives.
      ***************************************************/
 
-    void searchForEigenvalues(const double leftR, const double rightR);
+    void coarseSearchForEigenvalues(const double leftR, const double rightR);
+    void refineEigenvalueIntervals();
     void clearSearchData();
 
     /***************************************************
@@ -108,7 +109,7 @@ private:
                                        vector<double>& leftG,
                                        vector<double>& rightG);
     */
-    vector<pair<double, double>> conditionedSearchForEigenvalues(const double leftR, const double rightR);
+    bool possiblyContainsEigenvalue(const double leftR, const double rightR);
     void computeIndexData();
     void computeTestPointData();
     vector<double> computeAndGetGVector();

@@ -16,6 +16,7 @@
 #include <chrono>
 #include <filesystem>
 #include <eigen3/Eigen/SVD>
+#include <fstream>
 #include "archtKBessel.h"
 //#include "Plotter.h"
 //#include "PlotWindow.h"
@@ -90,15 +91,15 @@ BianchiMaassSearch::BianchiMaassSearch(int d, int D, char symClass) {
         std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
     }
 
-    map<int, vector<Index>> dToPrimes = {{1, {Index(1,1), Index(2,1), Index(3,0)}},
-                                         {2, {Index(0,1), Index(1,1), Index(3,1)}},
-                                         {3, {Index(1,1), Index(2,0), Index(2,1)}},
-                                         {7, {Index(0,1), Index(-1,2), Index(3,0)}},
-                                         {11, {Index(0,1), Index(2,0), Index(1,1)}},
-                                         {19, {Index(2,0), Index(0,1), Index(1,1)}},
-                                         {43, {Index(2,0), Index(3,0), Index(0,1)}},
-                                         {67, {Index(2,0), Index(3,0), Index(0,1)}},
-                                         {163, {Index(2,0), Index(3,0), Index(5,0)}}};
+    dToPrimes[1] = {Index(1,1), Index(2,1), Index(3,0)};
+    dToPrimes[2] = {Index(0,1), Index(1,1), Index(3,1)};
+    dToPrimes[3] = {Index(1,1), Index(2,0), Index(2,1)};
+    dToPrimes[7] = {Index(0,1), Index(-1,2), Index(3,0)};
+    dToPrimes[11] = {Index(0,1), Index(2,0), Index(1,1)};
+    dToPrimes[19] = {Index(2,0), Index(0,1), Index(1,1)};
+    dToPrimes[43] = {Index(2,0), Index(3,0), Index(0,1)};
+    dToPrimes[67] = {Index(2,0), Index(3,0), Index(0,1)};
+    dToPrimes[163] = {Index(2,0), Index(3,0), Index(5,0)};
 }
 
 
@@ -109,7 +110,7 @@ BianchiMaassSearch::~BianchiMaassSearch() {
 
 
 
-void BianchiMaassSearch::searchForEigenvalues(const double leftR, const double rightR) {
+void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const double rightR) {
     if (leftR >= rightR) {
         throw(std::invalid_argument("leftR should be less than rightR"));
     }
@@ -139,10 +140,7 @@ void BianchiMaassSearch::searchForEigenvalues(const double leftR, const double r
         while (!intervalsToSearch.empty()) {
             pair<double,double> nextInterval = intervalsToSearch.top();
             intervalsToSearch.pop();
-            vector<pair<double,double>> intervals = conditionedSearchForEigenvalues(nextInterval.first, nextInterval.second);
-            for (auto itr = intervals.crbegin(); itr != intervals.crend(); itr++) {
-                intervalsToSearch.emplace(itr->first, itr->second);
-            }
+            possiblyContainsEigenvalue(nextInterval.first, nextInterval.second);
         }
         outputFile << "Complete up to " << endpoints[i + 1] << endl;
     }
@@ -825,7 +823,7 @@ double BianchiMaassSearch::minBess(KBessel &K, const vector<Index> &indexTransve
     return min;
 }
 
-vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenvalues(const double leftR, const double rightR) {
+bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const double rightR) {
     //Assume that I will have to recompute everything multiple times here, so don't bother checking otherwise
 
     //First time through, compute the condition number everywhere to get an idea of how low you can go
@@ -1058,15 +1056,13 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     double proportion = ((double)signChanges)/possibleSignChanges;
     if (proportion >=  0.5) {
         outputFile << setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
+        return true;
     }
-    return {};
+    return false;
+
+
 
     /*
-     *
-     *
-     *
-     *
-     */
     for (int i = 0; i < indexTransversal.size(); i++) {
         if (i == indexOfNormalization) {
             continue;
@@ -1103,7 +1099,9 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
     std::cout << "hecke " << hecke << std::endl;
 
     /* We expect most eigenvalues to appear like this
-     */
+    */
+
+    /*
     if (signChanges >= searchPossibleSignChanges * 0.975 && rightR - leftR < 0.001) {
         std::cout << "--very high sign change count, eigenvalue probable\n";
         std::cout << "--sign changes " << signChanges << "/" << searchPossibleSignChanges << '\n';
@@ -1116,6 +1114,8 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
      * Also provides a way to catch some eigenvalues that might not appear as clearly.
      *
      */
+
+    /*
     if (signChanges > searchPossibleSignChanges/4.0) {
         double heckeThreshold = 0.0001;
         if (rightR - leftR < heckeThreshold) {
@@ -1133,7 +1133,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
          * sensible! If you forge on past this point you start detecting fewer sign changes
          * than are really there, and the distinction between an interval having the eigenvalue
          * or not becomes blurry.
-         */
+         *//*
         double stop = pow(10, -D + 2);
         bool finalPrecisionReached = (rightR - leftR) < stop;
         if (finalPrecisionReached && signChanges > searchPossibleSignChanges/2.0) {
@@ -1162,7 +1162,7 @@ vector<std::pair<double, double>> BianchiMaassSearch::conditionedSearchForEigenv
         << "/" << searchPossibleSignChanges << std::endl;
         return {};
     }
-
+    */
 }
 
 
@@ -1243,5 +1243,466 @@ double BianchiMaassSearch::phi(map<Index, double> &coeffMap1, map<Index, double>
     } else {
         throw std::invalid_argument("not implemented for this d");
     }
+}
+
+void BianchiMaassSearch::refineEigenvalueIntervals() {
+    std::cout << "Begun refining potential eigenvalue intervals." << std::endl;
+
+    const std::string directory = "Output/"; // Change this to the desired directory
+    const std::string prefix = "output_"
+                               + to_string(d) + "_"
+                               + symClass + "_";
+    int maxNumber = findMaxFileNumber(directory, prefix);
+    std::string filename = directory
+                                 + prefix
+                                 + std::to_string(maxNumber)
+                                 + ".txt";
+
+    std::ifstream inputFile;
+    inputFile.open(filename);
+
+    if (!inputFile.is_open()) {
+        std::cerr << "Error opening file \"" << filename << "\"" << std::endl;
+    }
+
+    vector<pair<double, double>> intervalsFromFile;
+    string line;
+    while (std::getline(inputFile, line)) {
+        if (line[0] == '[') {
+            //remove brackets
+            string numbers = line.substr(1, line.size() - 2);
+            int comma = numbers.find(',');
+            string leftStr = numbers.substr(0,comma);
+            string rightStr = numbers.substr(comma + 2);
+            double left = std::stod(leftStr);
+            double right = std::stod(rightStr);
+            intervalsFromFile.emplace_back(left,right);
+        }
+    }
+
+    stack<pair<double, double>> intervals;
+    for (auto itr = intervalsFromFile.rbegin(); itr != intervalsFromFile.rend(); itr++) {
+        intervals.push(*itr);
+    }
+
+
+    /*
+     *
+     *
+     * refine likely intervals down to a specified narrowness
+     *
+     *
+     */
+
+    stack<pair<double, double>> finalIntervals;
+
+    //Magic number!
+    double weylEigenvalueCount = 0.0005;
+
+    while (!intervals.empty()) {
+        auto interval = intervals.top();
+        intervals.pop();
+
+        bool zoomIn = true;
+        double weylRightEndpoint = Od.eigenvalueIntervalRightEndpoint(interval.first, weylEigenvalueCount);
+        weylRightEndpoint = min(weylRightEndpoint, interval.first + 0.001);
+        if (interval.second <= weylRightEndpoint) {
+            finalIntervals.push(interval);
+        } else {
+            double left = interval.first;
+            double right = interval.second;
+            double center = (left + right) / 2;
+
+            bool leftInterval = possiblyContainsEigenvalue(left, center);
+            bool rightInterval = possiblyContainsEigenvalue(center, right);
+            if (!leftInterval && !rightInterval) {
+                continue;
+            } else if (leftInterval && !rightInterval) {
+                intervals.emplace(left, center);
+                continue;
+            } else if (!leftInterval && rightInterval) {
+                intervals.emplace(center, right);
+                continue;
+            } else {
+                intervals.emplace(left, center);
+                intervals.emplace(center, right);
+                continue;
+            }
+        }
+    }
+
+    std::cout << "Narrow intervals with likely eigenvalues now obtained. Beginning higher-precision searching." << std::endl;
+
+    D = 8;
+    truncation = pow(10.0, -D);
+
+    //Searches for zero using a hybrid of regula falsi and bisection
+    while (!finalIntervals.empty()) {
+        auto interval = finalIntervals.top();
+        finalIntervals.pop();
+
+        double leftR = interval.first;
+        double rightR = interval.second;
+        std::cout << "Starting final refinement." << std::endl;
+        std::cout << std::setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
+
+        int maxIterations = 30;
+        int iterations = 0;
+        bool convergence = true;
+        while (abs(rightR - leftR) > pow(10,-8) || iterations >= maxIterations) {
+
+            double M0 = computeM0General(rightR);
+
+            KBessel K = KBessel(2 * pi / A /*usual factor*/
+                                * 1 /*smallest magnitude of an index*/
+                                * Y0 /*smallest height of a pullback*/
+                    , rightR);
+
+            vector<Index> indicesM0 = Od.indicesUpToM(M0);
+            auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
+            vector<Index> indexTransversal = get<0>(data);
+            map<Index, vector<pair<Index, int>>> indexOrbitDataModSign = get<1>(data);
+
+            int indexOfNormalization = 0;
+            for (int i = 0; i < indexTransversal.size(); i++) {
+                if (indexTransversal[i] == Index(1,0)) {
+                    indexOfNormalization = i;
+                    break;
+                }
+            }
+
+            //double upperY = 2.0 * max(1.0, rightR)/(2*pi/A*M0);
+            //double lowerY = 1.7 * max(1.0, rightR)/(2*pi/A*M0);
+            double c = max(1.0, rightR)/(2*pi/A*M0);
+            double upperY = Y0;
+            double lowerY = 0.5 * max(1.0, rightR)/(2*pi/A*M0);
+
+            vector<double> heightsToTry;
+
+            double tempY = upperY;
+            while (tempY > lowerY) {
+                heightsToTry.push_back(tempY);
+                tempY *= 0.99;
+            }
+            std::sort(heightsToTry.begin(), heightsToTry.end());
+
+            vector<double> r1ConditionNumbers;
+            vector<double> r2ConditionNumbers;
+
+            vector<double> r1MinDiag(heightsToTry.size(), 0);
+            vector<double> r2MinDiag(heightsToTry.size(), 0);
+
+            //compute Y1R2 matrix for all Y
+            K.setRAndClear(rightR);
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, K)
+            for (int i = 0; i < heightsToTry.size(); i++) {
+                double Y = heightsToTry[i];
+                r2MinDiag[i] = minBess(K, indexTransversal, Y);
+            }
+
+            K.setRAndClear(leftR);
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, K)
+            for (int i = 0; i < heightsToTry.size(); i++) {
+                double Y = heightsToTry[i];
+                r1MinDiag[i] = minBess(K, indexTransversal, Y);
+            }
+
+
+            double Y = 0;
+            double maxSoFar = 0;
+            //heightsToTry is sorted smallest to largest
+            for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
+                double maxMinBess = std::min({r1MinDiag[i],
+                                              r2MinDiag[i]});
+                if (maxSoFar < maxMinBess) {
+                    maxSoFar = maxMinBess;
+                    Y = heightsToTry[i];
+                }
+            }
+
+            /*Do it all over again but finer
+             *and in a narrower range
+             */
+
+            upperY = Y + 0.5 * c;
+            lowerY = Y - 0.5 * c;
+
+            heightsToTry.clear();
+
+            tempY = upperY;
+            while (tempY > lowerY) {
+                heightsToTry.push_back(tempY);
+                tempY *= 0.9995;
+            }
+            std::sort(heightsToTry.begin(), heightsToTry.end());
+
+            r1MinDiag.clear();
+            r2MinDiag.clear();
+
+            r1MinDiag.resize(heightsToTry.size(), 0);
+            r2MinDiag.resize(heightsToTry.size(), 0);
+
+            //compute Y1R2 matrix for all Y
+            K.setRAndClear(rightR);
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, K)
+            for (int i = 0; i < heightsToTry.size(); i++) {
+                double Y = heightsToTry[i];
+                r2MinDiag[i] = minBess(K, indexTransversal, Y);
+            }
+
+            K.setRAndClear(leftR);
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, K)
+            for (int i = 0; i < heightsToTry.size(); i++) {
+                double Y = heightsToTry[i];
+                r1MinDiag[i] = minBess(K, indexTransversal, Y);
+            }
+
+
+            Y = 0;
+            maxSoFar = 0;
+            //heightsToTry is sorted smallest to largest
+            for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
+                double maxMinBess = std::min({r1MinDiag[i],
+                                              r2MinDiag[i]});
+                if (maxSoFar < maxMinBess) {
+                    maxSoFar = maxMinBess;
+                    Y = heightsToTry[i];
+                }
+            }
+
+            std::cout << Y/c << std::endl;
+
+            /*
+             * Y1 and Y2 have been computed. Proceed with computing the actual matrices
+             */
+            double MY = computeMYGeneral(M0, Y);
+
+            double maxYStar = 0;
+
+            map<Index, vector<TestPointOrbitData>> mToYTestPointOrbits;
+
+            mToYTestPointOrbits.clear();
+
+
+#pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
+            for (int i = 0; i < indexTransversal.size(); i++) {
+                Index m = indexTransversal[i];
+                auto orbitsY = getPointPullbackOrbits(m, Y, MY);
+#pragma omp critical
+                {
+                    mToYTestPointOrbits[m] = orbitsY;
+                }
+            }
+
+            for (const auto& m : indexTransversal) {
+                for (const auto& itr : mToYTestPointOrbits[m]) {
+                    if (maxYStar < itr.representativePullback.getJ()) {
+                        maxYStar = itr.representativePullback.getJ();
+                    }
+                }
+            }
+
+            K.setRAndPrecompute(leftR, 2 * pi / A * M0 * maxYStar);
+            MatrixXd matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
+            auto solAndCondYR1 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+
+            K.setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
+            matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
+            auto solAndCondYR2 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+
+            std::cout << solAndCondYR1.second << " " << solAndCondYR2.second << std::endl;
+
+
+            map<Index, double> coeffMapR1, coeffMapR2;
+
+            for (int i = 0; i < indexTransversal.size(); i++) {
+                Index index = indexTransversal[i];
+                coeffMapR1[index] = solAndCondYR1.first(i);
+                coeffMapR2[index] = solAndCondYR2.first(i);
+            }
+
+            //We have the solutions from everything, now we cook up the phi function
+
+            double coeff0R1 = coeffMapR1.at(dToPrimes.at(d)[0]);
+            double coeff1R1 = coeffMapR1.at(dToPrimes.at(d)[1]);
+            double coeff2R1 = coeffMapR1.at(dToPrimes.at(d)[2]);
+
+            double coeff0R2 = coeffMapR2.at(dToPrimes.at(d)[0]);
+            double coeff1R2 = coeffMapR2.at(dToPrimes.at(d)[1]);
+            double coeff2R2 = coeffMapR2.at(dToPrimes.at(d)[2]);
+
+            Index prod01 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[1], d);
+            Index prod02 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[2], d);
+
+            double hecke1R1 = coeff0R1 * coeff1R1 - coeffMapR1.at(prod01);
+            double hecke2R1 = coeff0R1 * coeff2R1 - coeffMapR1.at(prod02);
+            hecke1R1 = abs(hecke1R1);
+            hecke2R1 = abs(hecke2R1);
+
+            double hecke1R2 = coeff0R2 * coeff1R2 - coeffMapR2.at(prod01);
+            double hecke2R2 = coeff0R2 * coeff2R2 - coeffMapR2.at(prod02);
+            hecke1R2 = abs(hecke1R2);
+            hecke2R2 = abs(hecke2R2);
+
+
+            double phi1;
+            double phi2;
+            double eps1;
+            double eps2;
+            bool signChange = false;
+            int n = 1;
+            while (!signChange) {
+                vector<double> epsilon;
+                for (int i = -n; i <= n; i++) {
+                    if (i == 0) {
+                        continue;
+                    }
+                    epsilon.push_back(i);
+                }
+
+                for (auto epsItr1 : epsilon) {
+                    for (auto epsItr2 : epsilon) {
+                        phi1 = epsItr1*hecke1R1 + epsItr2*hecke2R1;
+                        phi2 = epsItr1*hecke1R2 + epsItr2*hecke2R2;
+                        if (areDifferentSign(phi1, phi2)) {
+                            signChange = true;
+                            eps1 = epsItr1;
+                            eps2 = epsItr2;
+                            break;
+                        }
+                    }
+                    if (signChange) {
+                        break;
+                    }
+                }
+                n++;
+            }
+
+
+
+
+
+            double guessR = findZeroOfLinearInterpolation(leftR, phi1, rightR, phi2);
+            double closerEndpoint;
+            double closerPhi;
+            double guessIntervalWidth;
+            double newEndpoint;
+            double guessEndpoint;
+            bool checkIfRootHasSignChange;
+            if (abs(guessR - leftR) < abs(guessR - rightR)) {
+                closerEndpoint = leftR;
+                closerPhi = phi1;
+                guessIntervalWidth = abs(guessR - leftR) * 2;
+                guessEndpoint = leftR + guessIntervalWidth;
+            } else {
+                closerEndpoint = rightR;
+                closerPhi = rightR;
+                guessIntervalWidth = abs(guessR - rightR) * 2;
+                guessIntervalWidth = rightR - guessIntervalWidth;
+            }
+
+
+            if (guessIntervalWidth > (rightR - leftR)/2) {
+                newEndpoint = (leftR + rightR)/2;
+                checkIfRootHasSignChange = false;
+            } else {
+                newEndpoint = guessEndpoint;
+                checkIfRootHasSignChange = true;
+            }
+
+            if (checkIfRootHasSignChange) {
+                //do it
+                //if there is a sign change
+                //continue
+                //if not, don't continue
+
+                K.setRAndPrecompute(guessR, 2*pi/A * M0 * maxYStar);
+                matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
+                auto solAndCondYnextR = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+
+                map<Index, double> coeffMapGuessR;
+
+                for (int i = 0; i < indexTransversal.size(); i++) {
+                    Index index = indexTransversal[i];
+                    coeffMapGuessR[index] = solAndCondYnextR.first(i);
+                }
+
+                double coeff0GuessR = coeffMapGuessR.at(dToPrimes.at(d)[0]);
+                double coeff1GuessR = coeffMapGuessR.at(dToPrimes.at(d)[1]);
+                double coeff2GuessR = coeffMapGuessR.at(dToPrimes.at(d)[2]);
+
+                double hecke1GuessR = coeff0GuessR * coeff1GuessR - coeffMapGuessR.at(prod01);
+                double hecke2GuessR = coeff0GuessR * coeff2GuessR - coeffMapGuessR.at(prod02);
+                hecke1GuessR = abs(hecke1GuessR);
+                hecke2GuessR = abs(hecke2GuessR);
+                double guessPhi = eps1*hecke1GuessR + eps2*hecke2GuessR;
+
+                if (areDifferentSign(guessPhi, closerPhi)) {
+                    leftR = min(guessR, closerEndpoint);
+                    rightR = max(guessR, closerEndpoint);
+                    std::cout << std::setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
+                    continue;
+                }
+            }
+
+            //compute sign at endpoint
+            double centerR = (leftR + rightR)/2;
+            K.setRAndPrecompute(centerR, 2*pi/A * M0 * maxYStar);
+            matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
+            auto solAndCondYnextR = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+
+            map<Index, double> coeffMapCenterR;
+
+            for (int i = 0; i < indexTransversal.size(); i++) {
+                Index index = indexTransversal[i];
+                coeffMapCenterR[index] = solAndCondYnextR.first(i);
+            }
+
+            double coeff0CenterR = coeffMapCenterR.at(dToPrimes.at(d)[0]);
+            double coeff1CenterR = coeffMapCenterR.at(dToPrimes.at(d)[1]);
+            double coeff2CenterR = coeffMapCenterR.at(dToPrimes.at(d)[2]);
+
+            double hecke1CenterR = coeff0CenterR * coeff1CenterR - coeffMapCenterR.at(prod01);
+            double hecke2CenterR = coeff0CenterR * coeff2CenterR - coeffMapCenterR.at(prod02);
+            hecke1CenterR = abs(hecke1CenterR);
+            hecke2CenterR = abs(hecke2CenterR);
+            double centerPhi = eps1*hecke1CenterR + eps2*hecke2CenterR;
+
+            if (areDifferentSign(centerPhi, phi1)) {
+                //This means that there is a sign change between the left endpoint and center point
+                double temp1 = leftR;
+                double temp2 = centerR;
+                leftR = min(temp1, temp2);
+                rightR = max(temp1, temp2);
+            } else {
+                //This means that there is a sign change between the center point and right endpoint
+                double temp1 = centerR;
+                double temp2 = rightR;
+                leftR = min(temp1, temp2);
+                rightR = max(temp1, temp2);
+            }
+            std::cout << std::setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
+
+            iterations++;
+        }
+
+        if (iterations >= maxIterations) {
+            convergence = false;
+        }
+
+        if (convergence) {
+            //log success
+        } else {
+            //log failure or do nothing
+        }
+
+    }
+
+
+
+
+    //if that doesn't work, I will make it zoom in some more using binary search, and then
+    //do the secant method
+
 }
 

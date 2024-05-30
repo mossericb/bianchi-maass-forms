@@ -42,7 +42,8 @@ int main(int argc, char *argv[]) {
     std::cout << "rightEndpoint = " << rightEndpoint << '\n';
 
     BianchiMaassSearch bms = BianchiMaassSearch(d, D, symClass);
-    bms.searchForEigenvalues(leftEndpoint, rightEndpoint);
+    bms.coarseSearchForEigenvalues(leftEndpoint, rightEndpoint);
+    bms.refineEigenvalueIntervals();
 
 
     //BianchiMaassPointwise bmp = BianchiMaassPointwise(d, D, symClass);
