@@ -65,8 +65,8 @@ BianchiMaassSearch::BianchiMaassSearch(int d, int D, char symClass) {
     theta = Od.getTheta();
     Y0 = Od.getY0();
 
-    truncation = pow(10,-D);
-    tolerance = pow(10,-(D+6));
+    truncation = pow(10.0,-D);
+    tolerance = pow(10.0,-(D+6));
 
     //open file
     const std::string directory = "Output/"; // Change this to the desired directory
@@ -1336,7 +1336,7 @@ void BianchiMaassSearch::refineEigenvalueIntervals() {
     D = 8;
     truncation = pow(10.0, -D);
 
-    //Searches for zero using a hybrid of regula falsi and bisection
+    //Searches for zero using the secant method
     while (!finalIntervals.empty()) {
         auto interval = finalIntervals.top();
         finalIntervals.pop();
@@ -1349,353 +1349,480 @@ void BianchiMaassSearch::refineEigenvalueIntervals() {
         int maxIterations = 30;
         int iterations = 0;
         bool convergence = true;
-        while (abs(rightR - leftR) > pow(10,-8) || iterations >= maxIterations) {
 
-            double M0 = computeM0General(rightR);
+        double M0 = computeM0General(rightR);
 
-            KBessel K = KBessel(2 * pi / A /*usual factor*/
-                                * 1 /*smallest magnitude of an index*/
-                                * Y0 /*smallest height of a pullback*/
-                    , rightR);
+        KBessel K = KBessel(2 * pi / A /*usual factor*/
+                            * 1 /*smallest magnitude of an index*/
+                            * Y0 /*smallest height of a pullback*/
+                , rightR);
 
-            vector<Index> indicesM0 = Od.indicesUpToM(M0);
-            auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
-            vector<Index> indexTransversal = get<0>(data);
-            map<Index, vector<pair<Index, int>>> indexOrbitDataModSign = get<1>(data);
+        vector<Index> indicesM0 = Od.indicesUpToM(M0);
+        auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
+        vector<Index> indexTransversal = get<0>(data);
+        map<Index, vector<pair<Index, int>>> indexOrbitDataModSign = get<1>(data);
 
-            int indexOfNormalization = 0;
-            for (int i = 0; i < indexTransversal.size(); i++) {
-                if (indexTransversal[i] == Index(1,0)) {
-                    indexOfNormalization = i;
-                    break;
-                }
+        int indexOfNormalization = 0;
+        for (int i = 0; i < indexTransversal.size(); i++) {
+            if (indexTransversal[i] == Index(1,0)) {
+                indexOfNormalization = i;
+                break;
             }
+        }
 
-            //double upperY = 2.0 * max(1.0, rightR)/(2*pi/A*M0);
-            //double lowerY = 1.7 * max(1.0, rightR)/(2*pi/A*M0);
-            double c = max(1.0, rightR)/(2*pi/A*M0);
-            double upperY = Y0;
-            double lowerY = 0.5 * max(1.0, rightR)/(2*pi/A*M0);
+        //double upperY = 2.0 * max(1.0, rightR)/(2*pi/A*M0);
+        //double lowerY = 1.7 * max(1.0, rightR)/(2*pi/A*M0);
+        double c = max(1.0, rightR)/(2*pi/A*M0);
+        double upperY = Y0;
+        double lowerY = 0.5 * max(1.0, rightR)/(2*pi/A*M0);
 
-            vector<double> heightsToTry;
+        vector<double> heightsToTry;
 
-            double tempY = upperY;
-            while (tempY > lowerY) {
-                heightsToTry.push_back(tempY);
-                tempY *= 0.99;
-            }
-            std::sort(heightsToTry.begin(), heightsToTry.end());
+        double tempY = upperY;
+        while (tempY > lowerY) {
+            heightsToTry.push_back(tempY);
+            tempY *= 0.99;
+        }
+        std::sort(heightsToTry.begin(), heightsToTry.end());
 
-            vector<double> r1ConditionNumbers;
-            vector<double> r2ConditionNumbers;
+        vector<double> r1MinDiag(heightsToTry.size(), 0);
+        vector<double> r2MinDiag(heightsToTry.size(), 0);
 
-            vector<double> r1MinDiag(heightsToTry.size(), 0);
-            vector<double> r2MinDiag(heightsToTry.size(), 0);
-
-            //compute Y1R2 matrix for all Y
-            K.setRAndClear(rightR);
+        //compute Y1R2 matrix for all Y
+        K.setRAndClear(rightR);
 #pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, K)
-            for (int i = 0; i < heightsToTry.size(); i++) {
-                double Y = heightsToTry[i];
-                r2MinDiag[i] = minBess(K, indexTransversal, Y);
-            }
+        for (int i = 0; i < heightsToTry.size(); i++) {
+            double Y = heightsToTry[i];
+            r2MinDiag[i] = minBess(K, indexTransversal, Y);
+        }
 
-            K.setRAndClear(leftR);
+        K.setRAndClear(leftR);
 #pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, K)
-            for (int i = 0; i < heightsToTry.size(); i++) {
-                double Y = heightsToTry[i];
-                r1MinDiag[i] = minBess(K, indexTransversal, Y);
+        for (int i = 0; i < heightsToTry.size(); i++) {
+            double Y = heightsToTry[i];
+            r1MinDiag[i] = minBess(K, indexTransversal, Y);
+        }
+
+
+        double Y = 0;
+        double maxSoFar = 0;
+        //heightsToTry is sorted smallest to largest
+        for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
+            double maxMinBess = std::min({r1MinDiag[i],
+                                          r2MinDiag[i]});
+            if (maxSoFar < maxMinBess) {
+                maxSoFar = maxMinBess;
+                Y = heightsToTry[i];
             }
+        }
 
+        /*Do it all over again but finer
+         *and in a narrower range
+         */
 
-            double Y = 0;
-            double maxSoFar = 0;
-            //heightsToTry is sorted smallest to largest
-            for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
-                double maxMinBess = std::min({r1MinDiag[i],
-                                              r2MinDiag[i]});
-                if (maxSoFar < maxMinBess) {
-                    maxSoFar = maxMinBess;
-                    Y = heightsToTry[i];
-                }
-            }
+        upperY = Y + 0.5 * c;
+        lowerY = Y - 0.5 * c;
 
-            /*Do it all over again but finer
-             *and in a narrower range
-             */
+        heightsToTry.clear();
 
-            upperY = Y + 0.5 * c;
-            lowerY = Y - 0.5 * c;
+        tempY = upperY;
+        while (tempY > lowerY) {
+            heightsToTry.push_back(tempY);
+            tempY *= 0.9995;
+        }
+        std::sort(heightsToTry.begin(), heightsToTry.end());
 
-            heightsToTry.clear();
+        r1MinDiag.clear();
+        r2MinDiag.clear();
 
-            tempY = upperY;
-            while (tempY > lowerY) {
-                heightsToTry.push_back(tempY);
-                tempY *= 0.9995;
-            }
-            std::sort(heightsToTry.begin(), heightsToTry.end());
+        r1MinDiag.resize(heightsToTry.size(), 0);
+        r2MinDiag.resize(heightsToTry.size(), 0);
 
-            r1MinDiag.clear();
-            r2MinDiag.clear();
-
-            r1MinDiag.resize(heightsToTry.size(), 0);
-            r2MinDiag.resize(heightsToTry.size(), 0);
-
-            //compute Y1R2 matrix for all Y
-            K.setRAndClear(rightR);
+        //compute Y1R2 matrix for all Y
+        K.setRAndClear(rightR);
 #pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, K)
-            for (int i = 0; i < heightsToTry.size(); i++) {
-                double Y = heightsToTry[i];
-                r2MinDiag[i] = minBess(K, indexTransversal, Y);
-            }
+        for (int i = 0; i < heightsToTry.size(); i++) {
+            double testY = heightsToTry[i];
+            r2MinDiag[i] = minBess(K, indexTransversal, testY);
+        }
 
-            K.setRAndClear(leftR);
+        K.setRAndClear(leftR);
 #pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, K)
-            for (int i = 0; i < heightsToTry.size(); i++) {
-                double Y = heightsToTry[i];
-                r1MinDiag[i] = minBess(K, indexTransversal, Y);
+        for (int i = 0; i < heightsToTry.size(); i++) {
+            double testY = heightsToTry[i];
+            r1MinDiag[i] = minBess(K, indexTransversal, testY);
+        }
+
+
+        Y = 0;
+        maxSoFar = 0;
+        //heightsToTry is sorted smallest to largest
+        for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
+            double maxMinBess = std::min({r1MinDiag[i],
+                                          r2MinDiag[i]});
+            if (maxSoFar < maxMinBess) {
+                maxSoFar = maxMinBess;
+                Y = heightsToTry[i];
             }
+        }
 
+        std::cout << Y/c << std::endl;
 
-            Y = 0;
-            maxSoFar = 0;
-            //heightsToTry is sorted smallest to largest
-            for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
-                double maxMinBess = std::min({r1MinDiag[i],
-                                              r2MinDiag[i]});
-                if (maxSoFar < maxMinBess) {
-                    maxSoFar = maxMinBess;
-                    Y = heightsToTry[i];
-                }
-            }
+        /*
+         * Y1 and Y2 have been computed. Proceed with computing the actual matrices
+         */
+        double MY = computeMYGeneral(M0, Y);
 
-            std::cout << Y/c << std::endl;
+        double maxYStar = 0;
 
-            /*
-             * Y1 and Y2 have been computed. Proceed with computing the actual matrices
-             */
-            double MY = computeMYGeneral(M0, Y);
+        map<Index, vector<TestPointOrbitData>> mToYTestPointOrbits;
 
-            double maxYStar = 0;
-
-            map<Index, vector<TestPointOrbitData>> mToYTestPointOrbits;
-
-            mToYTestPointOrbits.clear();
+        mToYTestPointOrbits.clear();
 
 
 #pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
-            for (int i = 0; i < indexTransversal.size(); i++) {
-                Index m = indexTransversal[i];
-                auto orbitsY = getPointPullbackOrbits(m, Y, MY);
+        for (int i = 0; i < indexTransversal.size(); i++) {
+            Index m = indexTransversal[i];
+            auto orbitsY = getPointPullbackOrbits(m, Y, MY);
 #pragma omp critical
-                {
-                    mToYTestPointOrbits[m] = orbitsY;
+            {
+                mToYTestPointOrbits[m] = orbitsY;
+            }
+        }
+
+        for (const auto& m : indexTransversal) {
+            for (const auto& itr : mToYTestPointOrbits[m]) {
+                if (maxYStar < itr.representativePullback.getJ()) {
+                    maxYStar = itr.representativePullback.getJ();
                 }
             }
+        }
 
-            for (const auto& m : indexTransversal) {
-                for (const auto& itr : mToYTestPointOrbits[m]) {
-                    if (maxYStar < itr.representativePullback.getJ()) {
-                        maxYStar = itr.representativePullback.getJ();
+        K.setRAndPrecompute(leftR, 2 * pi / A * M0 * maxYStar);
+        MatrixXd matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
+        auto solAndCondYR1 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+
+        K.setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
+        matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
+        auto solAndCondYR2 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+
+        std::cout << solAndCondYR1.second << " " << solAndCondYR2.second << std::endl;
+
+
+        map<Index, double> coeffMapR1, coeffMapR2;
+
+        for (int i = 0; i < indexTransversal.size(); i++) {
+            Index index = indexTransversal[i];
+            coeffMapR1[index] = solAndCondYR1.first(i);
+            coeffMapR2[index] = solAndCondYR2.first(i);
+        }
+
+        //We have the solutions from everything, now we cook up the phi function
+
+        double coeff0R1 = coeffMapR1.at(dToPrimes.at(d)[0]);
+        double coeff1R1 = coeffMapR1.at(dToPrimes.at(d)[1]);
+        double coeff2R1 = coeffMapR1.at(dToPrimes.at(d)[2]);
+
+        double coeff0R2 = coeffMapR2.at(dToPrimes.at(d)[0]);
+        double coeff1R2 = coeffMapR2.at(dToPrimes.at(d)[1]);
+        double coeff2R2 = coeffMapR2.at(dToPrimes.at(d)[2]);
+
+        Index prod01 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[1], d);
+        Index prod02 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[2], d);
+
+        double hecke1R1 = coeff0R1 * coeff1R1 - coeffMapR1.at(prod01);
+        double hecke2R1 = coeff0R1 * coeff2R1 - coeffMapR1.at(prod02);
+        hecke1R1 = abs(hecke1R1);
+        hecke2R1 = abs(hecke2R1);
+
+        double hecke1R2 = coeff0R2 * coeff1R2 - coeffMapR2.at(prod01);
+        double hecke2R2 = coeff0R2 * coeff2R2 - coeffMapR2.at(prod02);
+        hecke1R2 = abs(hecke1R2);
+        hecke2R2 = abs(hecke2R2);
+
+
+        double phi1;
+        double phi2;
+        double eps1;
+        double eps2;
+        bool signChange = false;
+        int n = 1;
+        while (!signChange) {
+            vector<double> epsilon;
+            for (int i = -n; i <= n; i++) {
+                if (i == 0) {
+                    continue;
+                }
+                epsilon.push_back(i);
+            }
+
+            for (auto epsItr1 : epsilon) {
+                for (auto epsItr2 : epsilon) {
+                    phi1 = epsItr1*hecke1R1 + epsItr2*hecke2R1;
+                    phi2 = epsItr1*hecke1R2 + epsItr2*hecke2R2;
+                    if (areDifferentSign(phi1, phi2)) {
+                        signChange = true;
+                        eps1 = epsItr1;
+                        eps2 = epsItr2;
+                        break;
                     }
                 }
+                if (signChange) {
+                    break;
+                }
+            }
+            n++;
+        }
+
+        double thisR = rightR;
+        double thisPhi = phi2;
+        double nextR = findZeroOfLinearInterpolation(leftR, phi1, rightR, phi2);
+        double nextPhi;
+
+        std::cout << std::setprecision(16) << "r = " << leftR << std::endl;
+        std::cout << std::setprecision(16) << "r = " << rightR << std::endl;
+        std::cout << std::setprecision(16) << "r = " << nextR << std::endl;
+
+        vector<pair<double, double>> eigenvalueHeckePairs;
+        bool recomputeTruncation = false;
+        int attemptsSinceRecompute = 0;
+        int finalPrecision = 16;
+
+        while (true) {
+            iterations++;
+            if (recomputeTruncation) {
+                truncation = pow(10.0,-D);
+                M0 = computeM0General(rightR);
+
+                indicesM0 = Od.indicesUpToM(M0);
+                data = Od.indexOrbitQuotientData(indicesM0, symClass);
+                indexTransversal = get<0>(data);
+                indexOrbitDataModSign = get<1>(data);
+
+                indexOfNormalization = 0;
+                for (int i = 0; i < indexTransversal.size(); i++) {
+                    if (indexTransversal[i] == Index(1,0)) {
+                        indexOfNormalization = i;
+                        break;
+                    }
+                }
+
+                c = max(1.0, rightR)/(2*pi/A*M0);
+                upperY = Y0;
+                lowerY = 0.5 * max(1.0, rightR)/(2*pi/A*M0);
+
+                heightsToTry.clear();
+
+                tempY = upperY;
+                while (tempY > lowerY) {
+                    heightsToTry.push_back(tempY);
+                    tempY *= 0.99;
+                }
+                std::sort(heightsToTry.begin(), heightsToTry.end());
+
+                r1MinDiag.clear();
+                r2MinDiag.clear();
+
+                r1MinDiag.resize(heightsToTry.size());
+                r2MinDiag.resize(heightsToTry.size());
+
+                //compute Y1R2 matrix for all Y
+                K.setRAndClear(rightR);
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, K)
+                for (int i = 0; i < heightsToTry.size(); i++) {
+                    double testY = heightsToTry[i];
+                    r2MinDiag[i] = minBess(K, indexTransversal, testY);
+                }
+
+                K.setRAndClear(leftR);
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, K)
+                for (int i = 0; i < heightsToTry.size(); i++) {
+                    double testY = heightsToTry[i];
+                    r1MinDiag[i] = minBess(K, indexTransversal, testY);
+                }
+
+
+                Y = 0;
+                maxSoFar = 0;
+                //heightsToTry is sorted smallest to largest
+                for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
+                    double maxMinBess = std::min({r1MinDiag[i],
+                                                  r2MinDiag[i]});
+                    if (maxSoFar < maxMinBess) {
+                        maxSoFar = maxMinBess;
+                        Y = heightsToTry[i];
+                    }
+                }
+
+                /*Do it all over again but finer
+                 *and in a narrower range
+                 */
+
+                upperY = Y + 0.5 * c;
+                lowerY = Y - 0.5 * c;
+
+                heightsToTry.clear();
+
+                tempY = upperY;
+                while (tempY > lowerY) {
+                    heightsToTry.push_back(tempY);
+                    tempY *= 0.9995;
+                }
+                std::sort(heightsToTry.begin(), heightsToTry.end());
+
+                r1MinDiag.clear();
+                r2MinDiag.clear();
+
+                r1MinDiag.resize(heightsToTry.size(), 0);
+                r2MinDiag.resize(heightsToTry.size(), 0);
+
+                //compute Y1R2 matrix for all Y
+                K.setRAndClear(rightR);
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, K)
+                for (int i = 0; i < heightsToTry.size(); i++) {
+                    double testY = heightsToTry[i];
+                    r2MinDiag[i] = minBess(K, indexTransversal, testY);
+                }
+
+                K.setRAndClear(leftR);
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, K)
+                for (int i = 0; i < heightsToTry.size(); i++) {
+                    double testY = heightsToTry[i];
+                    r1MinDiag[i] = minBess(K, indexTransversal, testY);
+                }
+
+
+                Y = 0;
+                maxSoFar = 0;
+                //heightsToTry is sorted smallest to largest
+                for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
+                    double maxMinBess = std::min({r1MinDiag[i],
+                                                  r2MinDiag[i]});
+                    if (maxSoFar < maxMinBess) {
+                        maxSoFar = maxMinBess;
+                        Y = heightsToTry[i];
+                    }
+                }
+
+                MY = computeMYGeneral(M0, Y);
+
+                maxYStar = 0;
+
+                mToYTestPointOrbits.clear();
+
+
+#pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
+                for (int i = 0; i < indexTransversal.size(); i++) {
+                    Index m = indexTransversal[i];
+                    auto orbitsY = getPointPullbackOrbits(m, Y, MY);
+#pragma omp critical
+                    {
+                        mToYTestPointOrbits[m] = orbitsY;
+                    }
+                }
+
+                for (const auto& m : indexTransversal) {
+                    for (const auto& itr : mToYTestPointOrbits[m]) {
+                        if (maxYStar < itr.representativePullback.getJ()) {
+                            maxYStar = itr.representativePullback.getJ();
+                        }
+                    }
+                }
+                recomputeTruncation = false;
             }
 
-            K.setRAndPrecompute(leftR, 2 * pi / A * M0 * maxYStar);
-            MatrixXd matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
-            auto solAndCondYR1 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+            attemptsSinceRecompute++;
 
-            K.setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
+            K.setRAndPrecompute(nextR, 2 * pi / A * M0 * maxYStar);
             matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
-            auto solAndCondYR2 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+            auto solAndCondYNextR = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
 
-            std::cout << solAndCondYR1.second << " " << solAndCondYR2.second << std::endl;
+            std::cout << solAndCondYNextR.second << " " << solAndCondYNextR.second << std::endl;
 
-
-            map<Index, double> coeffMapR1, coeffMapR2;
+            map<Index, double> coeffMapNextR;
 
             for (int i = 0; i < indexTransversal.size(); i++) {
                 Index index = indexTransversal[i];
-                coeffMapR1[index] = solAndCondYR1.first(i);
-                coeffMapR2[index] = solAndCondYR2.first(i);
+                coeffMapNextR[index] = solAndCondYNextR.first(i);
             }
 
             //We have the solutions from everything, now we cook up the phi function
 
-            double coeff0R1 = coeffMapR1.at(dToPrimes.at(d)[0]);
-            double coeff1R1 = coeffMapR1.at(dToPrimes.at(d)[1]);
-            double coeff2R1 = coeffMapR1.at(dToPrimes.at(d)[2]);
+            double coeff0NextR = coeffMapNextR.at(dToPrimes.at(d)[0]);
+            double coeff1NextR = coeffMapNextR.at(dToPrimes.at(d)[1]);
+            double coeff2NextR = coeffMapNextR.at(dToPrimes.at(d)[2]);
 
-            double coeff0R2 = coeffMapR2.at(dToPrimes.at(d)[0]);
-            double coeff1R2 = coeffMapR2.at(dToPrimes.at(d)[1]);
-            double coeff2R2 = coeffMapR2.at(dToPrimes.at(d)[2]);
+            double hecke1NextR = coeff0NextR * coeff1NextR - coeffMapNextR.at(prod01);
+            double hecke2NextR = coeff0NextR * coeff2NextR - coeffMapNextR.at(prod02);
+            hecke1NextR = abs(hecke1NextR);
+            hecke2NextR = abs(hecke2NextR);
 
-            Index prod01 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[1], d);
-            Index prod02 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[2], d);
+            nextPhi = eps1 * hecke1NextR + eps2 * hecke2NextR;
 
-            double hecke1R1 = coeff0R1 * coeff1R1 - coeffMapR1.at(prod01);
-            double hecke2R1 = coeff0R1 * coeff2R1 - coeffMapR1.at(prod02);
-            hecke1R1 = abs(hecke1R1);
-            hecke2R1 = abs(hecke2R1);
+            double tempR = nextR;
+            double tempPhi = nextPhi;
 
-            double hecke1R2 = coeff0R2 * coeff1R2 - coeffMapR2.at(prod01);
-            double hecke2R2 = coeff0R2 * coeff2R2 - coeffMapR2.at(prod02);
-            hecke1R2 = abs(hecke1R2);
-            hecke2R2 = abs(hecke2R2);
+            nextR = findZeroOfLinearInterpolation(thisR, thisPhi, nextR, nextPhi);
+            thisR = tempR;
+            thisPhi = nextPhi;
+
+            std::cout << std::setprecision(16) << "r = " << nextR << std::endl;
+
+            double hecke = heckeCheck(coeffMapNextR);
+            eigenvalueHeckePairs.emplace_back(nextR, hecke);
+            if (hecke > 1) {
+                std::cout << "hecke check failed " << std::setprecision(16) << hecke << std::endl;
+                convergence = false;
+                break;
+            } else if (D <= finalPrecision) {
+                std::cout << "hecke " << std::setprecision(16) << hecke << std::endl;
+
+                if ((eigenvalueHeckePairs.size() >= 3 && attemptsSinceRecompute >= 3) || nextR == thisR) {
+                    int size = eigenvalueHeckePairs.size();
+                    double ultimate = eigenvalueHeckePairs[size - 1].second;
+                    double penultimate = eigenvalueHeckePairs[size - 2].second;
+                    double antepenultimate = eigenvalueHeckePairs[size - 3].second;
+                    if ((ultimate > antepenultimate && penultimate > antepenultimate) || nextR == thisR) {
+                        if (D == finalPrecision || nextR == thisR) {
+                            const std::string directory = "Output/Final/"; // Change this to the desired directory
+                            const std::string prefix = to_string(d) + "_"
+                                                       + symClass + "_";
+                            createOutputDirectory(directory);
+                            int maxNumber = findMaxFileNumber(directory, prefix);
+                            std::string outputFilename = directory
+                                                         + prefix
+                                                         + std::to_string(maxNumber + 1)
+                                                         + ".txt";
+
+                            ofstream out;
+                            out.open(outputFilename);
 
 
-            double phi1;
-            double phi2;
-            double eps1;
-            double eps2;
-            bool signChange = false;
-            int n = 1;
-            while (!signChange) {
-                vector<double> epsilon;
-                for (int i = -n; i <= n; i++) {
-                    if (i == 0) {
+                            for (auto p : eigenvalueHeckePairs) {
+                                out << std::setprecision(16) << p.first << ", " << p.second << '\n';
+                            }
+                            out.close();
+                        }
+                        //two values in a row that are larger than the one previous to both
+                        recomputeTruncation = true;
+                        attemptsSinceRecompute = 0;
+                        D = finalPrecision;
+                        std::cout << "increasing precision: D = " << D << std::endl;
                         continue;
                     }
-                    epsilon.push_back(i);
                 }
-
-                for (auto epsItr1 : epsilon) {
-                    for (auto epsItr2 : epsilon) {
-                        phi1 = epsItr1*hecke1R1 + epsItr2*hecke2R1;
-                        phi2 = epsItr1*hecke1R2 + epsItr2*hecke2R2;
-                        if (areDifferentSign(phi1, phi2)) {
-                            signChange = true;
-                            eps1 = epsItr1;
-                            eps2 = epsItr2;
-                            break;
-                        }
-                    }
-                    if (signChange) {
-                        break;
-                    }
-                }
-                n++;
             }
 
+            if (iterations >= maxIterations) {
+                convergence = false;
+            }
 
-
-
-
-            double guessR = findZeroOfLinearInterpolation(leftR, phi1, rightR, phi2);
-            double closerEndpoint;
-            double closerPhi;
-            double guessIntervalWidth;
-            double newEndpoint;
-            double guessEndpoint;
-            bool checkIfRootHasSignChange;
-            if (abs(guessR - leftR) < abs(guessR - rightR)) {
-                closerEndpoint = leftR;
-                closerPhi = phi1;
-                guessIntervalWidth = abs(guessR - leftR) * 2;
-                guessEndpoint = leftR + guessIntervalWidth;
+            if (convergence) {
+                //log success
             } else {
-                closerEndpoint = rightR;
-                closerPhi = rightR;
-                guessIntervalWidth = abs(guessR - rightR) * 2;
-                guessIntervalWidth = rightR - guessIntervalWidth;
+                //log failure or do nothing
             }
-
-
-            if (guessIntervalWidth > (rightR - leftR)/2) {
-                newEndpoint = (leftR + rightR)/2;
-                checkIfRootHasSignChange = false;
-            } else {
-                newEndpoint = guessEndpoint;
-                checkIfRootHasSignChange = true;
-            }
-
-            if (checkIfRootHasSignChange) {
-                //do it
-                //if there is a sign change
-                //continue
-                //if not, don't continue
-
-                K.setRAndPrecompute(guessR, 2*pi/A * M0 * maxYStar);
-                matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
-                auto solAndCondYnextR = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
-
-                map<Index, double> coeffMapGuessR;
-
-                for (int i = 0; i < indexTransversal.size(); i++) {
-                    Index index = indexTransversal[i];
-                    coeffMapGuessR[index] = solAndCondYnextR.first(i);
-                }
-
-                double coeff0GuessR = coeffMapGuessR.at(dToPrimes.at(d)[0]);
-                double coeff1GuessR = coeffMapGuessR.at(dToPrimes.at(d)[1]);
-                double coeff2GuessR = coeffMapGuessR.at(dToPrimes.at(d)[2]);
-
-                double hecke1GuessR = coeff0GuessR * coeff1GuessR - coeffMapGuessR.at(prod01);
-                double hecke2GuessR = coeff0GuessR * coeff2GuessR - coeffMapGuessR.at(prod02);
-                hecke1GuessR = abs(hecke1GuessR);
-                hecke2GuessR = abs(hecke2GuessR);
-                double guessPhi = eps1*hecke1GuessR + eps2*hecke2GuessR;
-
-                if (areDifferentSign(guessPhi, closerPhi)) {
-                    leftR = min(guessR, closerEndpoint);
-                    rightR = max(guessR, closerEndpoint);
-                    std::cout << std::setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
-                    continue;
-                }
-            }
-
-            //compute sign at endpoint
-            double centerR = (leftR + rightR)/2;
-            K.setRAndPrecompute(centerR, 2*pi/A * M0 * maxYStar);
-            matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
-            auto solAndCondYnextR = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
-
-            map<Index, double> coeffMapCenterR;
-
-            for (int i = 0; i < indexTransversal.size(); i++) {
-                Index index = indexTransversal[i];
-                coeffMapCenterR[index] = solAndCondYnextR.first(i);
-            }
-
-            double coeff0CenterR = coeffMapCenterR.at(dToPrimes.at(d)[0]);
-            double coeff1CenterR = coeffMapCenterR.at(dToPrimes.at(d)[1]);
-            double coeff2CenterR = coeffMapCenterR.at(dToPrimes.at(d)[2]);
-
-            double hecke1CenterR = coeff0CenterR * coeff1CenterR - coeffMapCenterR.at(prod01);
-            double hecke2CenterR = coeff0CenterR * coeff2CenterR - coeffMapCenterR.at(prod02);
-            hecke1CenterR = abs(hecke1CenterR);
-            hecke2CenterR = abs(hecke2CenterR);
-            double centerPhi = eps1*hecke1CenterR + eps2*hecke2CenterR;
-
-            if (areDifferentSign(centerPhi, phi1)) {
-                //This means that there is a sign change between the left endpoint and center point
-                double temp1 = leftR;
-                double temp2 = centerR;
-                leftR = min(temp1, temp2);
-                rightR = max(temp1, temp2);
-            } else {
-                //This means that there is a sign change between the center point and right endpoint
-                double temp1 = centerR;
-                double temp2 = rightR;
-                leftR = min(temp1, temp2);
-                rightR = max(temp1, temp2);
-            }
-            std::cout << std::setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
-
-            iterations++;
         }
-
-        if (iterations >= maxIterations) {
-            convergence = false;
-        }
-
-        if (convergence) {
-            //log success
-        } else {
-            //log failure or do nothing
-        }
-
     }
 
 
