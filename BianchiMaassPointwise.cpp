@@ -70,7 +70,7 @@ BianchiMaassPointwise::BianchiMaassPointwise(int d, int D, char symClass)
 
     K = KBessel(2 * PI / A * 1 * Y0, 0);
 
-    //outputFile.open("d" + to_string(d) + "_D" + to_string(D) + "_" + symClass + "_" + to_string(Y1Parameter) + ".txt");
+    //coarseOutputFile.open("d" + to_string(d) + "_D" + to_string(D) + "_" + symClass + "_" + to_string(Y1Parameter) + ".txt");
 
     truncation = pow(10,-D);
     tolerance = pow(10,-(D+6));

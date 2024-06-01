@@ -31,31 +31,22 @@ using std::ofstream, std::string;
 
 class BianchiMaassSearch {
 public:
-    BianchiMaassSearch(int d, int D, char symClass);
-    ~BianchiMaassSearch();
-
-    /***************************************************
-     * These functions are for SEARCHING for eigenvalues. They only
-     * spit out intervals where they think an eigenvalue lives.
-     ***************************************************/
+    BianchiMaassSearch(char mode, int d, double D, char symClass);
 
     void coarseSearchForEigenvalues(const double leftR, const double rightR);
-    void refineEigenvalueIntervals();
-    void clearSearchData();
+    void mediumSearchForEigenvalues();
+    void fineSearchForEigenvalues();
 
-    /***************************************************
-     * These functions NARROW an already small interval containing a likely eigenvalue.
-     ***************************************************/
-
-    void narrowLikelyInterval(const double leftR, const double rightR);
 private:
 
     /***************************************************
      * Private members used in ALL calculations.
      ***************************************************/
     int d;
-    int D;
+    double D;
     char symClass;
+    char mode;
+    int finalPrecision;
 
     ImaginaryQuadraticIntegers Od;
 
@@ -63,14 +54,18 @@ private:
     double A;
     double Y0;
 
-    ofstream outputFile;
+    ofstream coarseOutputFile;
+    ofstream mediumOutputFile;
+    ofstream fineOutputFile;
 
     double pi = 3.141592653589793238462643383279502884197;
+    double twoPiOverA;
     complex<double> I = {0,1};
 
     double tolerance;
     double truncation;
     double volumeOfFD;
+
 
     double EIGENVALUE_INTERVAL_CUTOFF = pow(2,-16);
 
@@ -83,38 +78,25 @@ private:
 
     vector<TestPointOrbitData> getPointPullbackOrbits(const Index &m, const double Y, const double MY);
 
-    double traceProduct(const complex<double> &z, const complex<double> &w);
-    bool areDifferentSign(const double &a, const double &b);
-
-    /***************************************************
-     * Private members used in SEARCH calculations.
-     ***************************************************/
-
-    bool computeAllConditionNumbers;
-    double conditionGoal;
-    double argminY1;
-    double argminY2;
+    double traceProduct(complex<double> z, complex<double> w);
+    bool areDifferentSign(double a, double b);
 
     Auxiliary Aux;
 
     map<double, KBessel> rToKBess;
     map<int, vector<Index>> dToPrimes;
-    /***************************************************
-     * Private methods used in SEARCH calculations.
-     ***************************************************/
 
-    int findMaxFileNumber(const string &directory, const string &prefix);
-    void createOutputDirectory(const std::string& directory);
-    /*void recursiveSearchForEigenvalues(const double leftR, const double rightR,
-                                       vector<double>& leftG,
-                                       vector<double>& rightG);
-    */
+    static int findMaxFileNumber(const string &directory, const string &prefix);
+    static void createOutputDirectory(const std::string& directory);
+    static bool isFileEmpty(const string& filename);
+
     bool possiblyContainsEigenvalue(const double leftR, const double rightR);
-    void computeIndexData();
-    void computeTestPointData();
-    vector<double> computeAndGetGVector();
+    pair<double, double> fineSecantMethod(double leftR, double rightR, int secantD);
+    static bool heckeHasConverged(const vector<pair<double, double>>& eigenvalueHeckePairs);
 
     double minBess(KBessel &K, const vector<Index> &indexTransversal, double Y);
+    double computeWellConditionedY(KBessel& leftRK, KBessel& rightRK, double leftR, double rightR, double M0, const vector<Index>& indexTransversal);
+    pair<double, double> computeTwoWellConditionedY(KBessel& leftRK, KBessel& rightRK, double leftR, double rightR, double M0, const vector<Index>& indexTransversal);
 
     MatrixXd produceMatrix(const vector<Index> &indexTransversal,
                            map<Index, vector<TestPointOrbitData>> &mToTestPointData,
@@ -122,26 +104,17 @@ private:
                            double Y,
                            KBessel &K);
     pair<MatrixXd, double> solveMatrix(const MatrixXd &matrix, const vector<Index> &indexTransversal,
-                         const int indexOfNormalization);
-    vector<double> getGVector();
+                         int indexOfNormalization);
+
     double computeEntry(const Index &m, const Index &n, KBessel &K,
                         const vector<TestPointOrbitData> &mTestPointOrbits, const double Y,
                         const vector<pair<Index, int>> &nIndexOrbitDataModSign);
 
-    void secantMethod(double r1, double r2);
-
     int countSignChanges(const vector<double> &v1, const vector<double> &v2);
 
-    double phi(map<Index, double> &coeffMap1, map<Index, double> &coeffMap2, vector<int> &signs);
-
-    bool signChangeVectorIsIncreasing(vector<int> &v);
-
-    double findZeroOfLinearInterpolation(double x0, double y0, double x1, double y1);
+    static double findZeroOfLinearInterpolation(double x0, double y0, double x1, double y1);
 
     double heckeCheck(map<Index, double>& coeffMap);
-    bool sufficientSignChanges(const vector<double>& v1, const vector<double>& v2);
-
-    vector<double> mergeToVector(const MatrixXd& v1, const MatrixXd& v2);
 };
 
 
