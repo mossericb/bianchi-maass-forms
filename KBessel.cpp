@@ -464,7 +464,7 @@ void KBessel::setUpShrinkingChunkSplineComputation() {
 }
 
 void KBessel::computeShrinkingChunkSplines() {
-#pragma omp parallel for schedule(dynamic) default(none)
+//#pragma omp parallel for schedule(dynamic) default(none)
     for (int newShrinkingChunk = 0; newShrinkingChunk < numberOfShrinkingChunks; newShrinkingChunk++) {
 
         double left = precomputedRegionLeftBound + (firstChunkLeftEndpoint - precomputedRegionLeftBound)
@@ -480,8 +480,9 @@ void KBessel::computeShrinkingChunkSplines() {
                 )
                 /subIntervalWidth);
 
-        shrinkingChunks[newShrinkingChunk].resize(numberOfSubIntervals);
+
         //i = 0 spline was already computed
+#pragma omp parallel for default(none) shared(numberOfSubIntervals, left, subIntervalWidth, spacing, newShrinkingChunk)
         for (int i = 1; i < numberOfSubIntervals; i++) {
             vector<double> precompute(SPLINE_KNOT_COUNT, 0.0);
             double subIntervalLeft = left + i * subIntervalWidth;

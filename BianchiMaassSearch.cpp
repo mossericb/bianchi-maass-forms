@@ -114,9 +114,9 @@ void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const do
 
     //Magic number
     //Supposed to reflect that we are dispatching the searcher on intervals that we expect
-    //to have an eigenvalue in them 1/10th of the time. Allows for easier conditioning and
+    //to have an eigenvalue in them 2/10th of the time. Allows for easier conditioning and
     //guards against unusually close eigenvalues, but not conclusively.
-    double numEigenValues = 0.1;
+    double numEigenValues = 0.2;
 
     vector<double> endpoints;
     double endpoint = leftR;
@@ -1499,13 +1499,13 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel &leftRK, KBessel &rightRK
     vector<double> r1MinDiag(heightsToTry.size(), 0);
     vector<double> r2MinDiag(heightsToTry.size(), 0);
 
-#pragma omp parallel for default(none) shared(heightsToTry, indexTransversal, r2MinDiag, rightRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, rightRK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
         r2MinDiag[i] = minBess(rightRK, indexTransversal, Y);
     }
 
-#pragma omp parallel for default(none) shared(heightsToTry, indexTransversal, r1MinDiag, leftRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, leftRK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
         r1MinDiag[i] = minBess(leftRK, indexTransversal, Y);
@@ -1552,13 +1552,13 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel &leftRK, KBessel &rightRK
     r1MinDiag.resize(heightsToTry.size(), 0);
     r2MinDiag.resize(heightsToTry.size(), 0);
 
-#pragma omp parallel for default(none) shared(heightsToTry, indexTransversal, r2MinDiag, rightRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, rightRK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
         r2MinDiag[i] = minBess(rightRK, indexTransversal, Y);
     }
 
-#pragma omp parallel for default(none) shared(heightsToTry, indexTransversal, r1MinDiag, leftRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, leftRK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
         r1MinDiag[i] = minBess(leftRK, indexTransversal, Y);
