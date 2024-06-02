@@ -9,6 +9,7 @@ class archtKBessel {
 public:
     explicit archtKBessel(double r);
     ~archtKBessel();
+    archtKBessel(archtKBessel &&src);
 
     void setR(double r);
     double evaluate(double x);

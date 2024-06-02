@@ -505,4 +505,3 @@ void KBessel::computeShrinkingChunkSplines() {
     }
 
 }
-

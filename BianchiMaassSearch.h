@@ -65,6 +65,7 @@ private:
     double tolerance;
     double truncation;
     double volumeOfFD;
+    map<int, vector<double>> dToDMap;
 
 
     double EIGENVALUE_INTERVAL_CUTOFF = pow(2,-16);
@@ -90,13 +91,13 @@ private:
     static void createOutputDirectory(const std::string& directory);
     static bool isFileEmpty(const string& filename);
 
-    bool possiblyContainsEigenvalue(const double leftR, const double rightR);
+    bool possiblyContainsEigenvalue(const double leftR, const double rightR, KBessel *leftRK, KBessel *rightRK);
     pair<double, double> fineSecantMethod(double leftR, double rightR, int secantD);
     static bool heckeHasConverged(const vector<pair<double, double>>& eigenvalueHeckePairs);
 
-    double minBess(KBessel &K, const vector<Index> &indexTransversal, double Y);
-    double computeWellConditionedY(KBessel& leftRK, KBessel& rightRK, double leftR, double rightR, double M0, const vector<Index>& indexTransversal);
-    pair<double, double> computeTwoWellConditionedY(KBessel& leftRK, KBessel& rightRK, double leftR, double rightR, double M0, const vector<Index>& indexTransversal);
+    double minBess(KBessel *K, const vector<Index> &indexTransversal, double Y);
+    double computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR, double M0, const vector<Index>& indexTransversal);
+    pair<double, double> computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR, double M0, const vector<Index>& indexTransversal);
 
     MatrixXd produceMatrix(const vector<Index> &indexTransversal,
                            map<Index, vector<TestPointOrbitData>> &mToTestPointData,

@@ -43,10 +43,35 @@ BianchiMaassSearch::BianchiMaassSearch(char mode, int d, double D, char symClass
         throw(std::invalid_argument("d should be one of {1,2,3,7,11,19,43,67,163}"));
     }
 
-    //Check that D is valid
-    if (D <= 0) {
-        throw(std::invalid_argument("D should be positive. 10^-D is the truncation relativeError."));
+    /*
+     * These are values that determine what precision the calculation runs at.
+     * Determined experimentally to achieve as good results as possible within
+     * reasonable computation time spans.
+     */
+    dToDMap[1] = {6,6,8,16};
+    dToDMap[2] = {6,6,8,16};
+    dToDMap[3] = {6,6,8,16};
+    dToDMap[7] = {6,6,8,16};
+    dToDMap[11] = {6,6,8,16};
+    dToDMap[19] = {5,5,8,16};
+    dToDMap[43] = {4,4,4,6};
+    dToDMap[67] = {3,3,3,4};
+    dToDMap[163] = {2,2,2,3};
+
+    switch (mode) {
+        case '0':
+            this->D = dToDMap[d][0];
+            break;
+        case '1':
+            this->D = dToDMap[d][1];
+            break;
+        case '2':
+            this->D = dToDMap[d][2];
+            break;
+        default:
+            throw std::invalid_argument("mode incorrect");
     }
+    truncation = pow(10.0, -(this->D));
 
     //Check that symclass is valid
     vector<char> symClasses = {'D','G','C','H'};
@@ -56,12 +81,7 @@ BianchiMaassSearch::BianchiMaassSearch(char mode, int d, double D, char symClass
     }
 
     this->d = d;
-    this->D = D;
     this->symClass = symClass;
-    if (mode == '2') {
-        finalPrecision = D;
-        D = D/2;
-    }
 
     Od = ImaginaryQuadraticIntegers(d);
 
@@ -69,8 +89,6 @@ BianchiMaassSearch::BianchiMaassSearch(char mode, int d, double D, char symClass
     theta = Od.getTheta();
     Y0 = Od.getY0();
     twoPiOverA = 2 * pi / A;
-
-    truncation = pow(10.0,-D);
 
     dToPrimes[1] = {Index(1,1), Index(2,1), Index(3,0)};
     dToPrimes[2] = {Index(0,1), Index(1,1), Index(3,1)};
@@ -126,13 +144,19 @@ void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const do
     }
     endpoints.push_back(rightR);
 
+    KBessel* leftRK = new KBessel(twoPiOverA * 1 * Y0, endpoints[0]);
+    KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, endpoints[1]);
     for (size_t i = 0; i <= endpoints.size() - 2; i++) {
         double left = endpoints[i];
         double right = endpoints[i + 1];
-        possiblyContainsEigenvalue(left, right);
+        rightRK = new KBessel(twoPiOverA * 1 * Y0, right);
+        possiblyContainsEigenvalue(left, right, leftRK, rightRK);
+        delete leftRK;
+        leftRK = rightRK;
 
         coarseOutputFile << std::setprecision(16) << "Complete up to " << right << std::endl;
     }
+    delete rightRK;
 }
 
 void BianchiMaassSearch::mediumSearchForEigenvalues() {
@@ -259,8 +283,14 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
                 double right = interval.second;
                 double center = (left + right) / 2;
 
-                bool leftInterval = possiblyContainsEigenvalue(left, center);
-                bool rightInterval = possiblyContainsEigenvalue(center, right);
+                KBessel* leftRK = new KBessel(twoPiOverA * 1 * Y0, left);
+                KBessel* centerRK = new KBessel(twoPiOverA * 1 * Y0, center);
+                KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, right);
+                bool leftInterval = possiblyContainsEigenvalue(left, center, leftRK, centerRK);
+                bool rightInterval = possiblyContainsEigenvalue(center, right, centerRK, rightRK);
+                delete leftRK;
+                delete centerRK;
+                delete rightRK;
                 if (!leftInterval && !rightInterval) {
                     continue;
                 } else if (leftInterval && !rightInterval) {
@@ -377,19 +407,21 @@ void BianchiMaassSearch::fineSearchForEigenvalues() {
         auto interval = intervals.top();
         intervals.pop();
 
+        truncation = pow(10.0, -dToDMap[d][2]);
         auto firstPassOutput = fineSecantMethod(interval.first, interval.second, D);
         if (firstPassOutput.first == firstPassOutput.second) {
             fineOutputFile << "[" << std::setprecision(16) << interval.first << ", " << interval.second << "]" << std::endl;
             return;
         }
 
+        truncation = pow(10.0, -dToDMap[d][3]);
         auto secondPassOutput = fineSecantMethod(firstPassOutput.first, firstPassOutput.second, finalPrecision);
         fineOutputFile << "[" << std::setprecision(16) << interval.first << ", " << interval.second << "]" << std::endl;
     }
 }
 
 
-bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const double rightR) {
+bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const double rightR, KBessel *leftRK, KBessel *rightRK) {
     //Assume that I will have to recompute everything multiple times here, so don't bother checking otherwise
 
     //First time through, compute the condition number everywhere to get an idea of how low you can go
@@ -400,13 +432,6 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
               << "[" << leftR << ", " << rightR << "]" << std::endl;
 
     double M0 = computeM0General(rightR);
-
-    KBessel rightRK = KBessel(2 * pi / A /*usual factor*/
-                        * 1 /*smallest magnitude of an index*/
-                        * Y0 /*smallest height of a pullback*/
-            , rightR);
-
-    KBessel leftRK = KBessel(twoPiOverA * 1 * Y0, leftR);
 
     vector<Index> indicesM0 = Od.indicesUpToM(M0);
     auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
@@ -462,16 +487,16 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
         }
     }
 
-    leftRK.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-    MatrixXd matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, leftRK);
-    MatrixXd matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, leftRK);
+    leftRK->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
+    MatrixXd matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, *leftRK);
+    MatrixXd matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, *leftRK);
 
     auto solAndCondY1R1 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
     auto solAndCondY2R1 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
 
-    rightRK.setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
-    matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, rightRK);
-    matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, rightRK);
+    rightRK->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
+    matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, *rightRK);
+    matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, *rightRK);
 
     auto solAndCondY1R2 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
     auto solAndCondY2R2 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
@@ -1034,21 +1059,21 @@ double BianchiMaassSearch::heckeCheck(map<Index, double>& coeffMap) {
     return abs(hecke1) + abs(hecke2);
 }
 
-double BianchiMaassSearch::minBess(KBessel &K, const vector<Index> &indexTransversal, double Y) {
+double BianchiMaassSearch::minBess(KBessel *K, const vector<Index> &indexTransversal, double Y) {
     double min = +INFINITY;
 
     for(const auto index : indexTransversal) {
         double arg = 2 * pi / A * index.getAbs(d) * Y;
-        if (arg > K.getR()) {
+        if (arg > K->getR()) {
             break;
         }
-        double bess = Y * K.exactKBessel(arg);
+        double bess = Y * K->exactKBessel(arg);
         if (abs(bess) < min) {
             min = abs(bess);
         }
     }
     double arg = 2 * pi / A * indexTransversal[indexTransversal.size() - 1].getAbs(d) * Y;
-    double bess = Y * K.exactKBessel(arg);
+    double bess = Y * K->exactKBessel(arg);
     if (abs(bess) < min) {
         min = abs(bess);
     }
@@ -1101,12 +1126,12 @@ pair<double, double> BianchiMaassSearch::fineSecantMethod(double leftR, double r
 
     double M0 = computeM0General(rightR);
 
-    KBessel leftRK = KBessel(2 * pi / A /*usual factor*/
+    KBessel* leftRK = new KBessel(2 * pi / A /*usual factor*/
                         * 1 /*smallest magnitude of an index*/
                         * Y0 /*smallest height of a pullback*/
             , leftR);
 
-    KBessel rightRK = KBessel(twoPiOverA * 1 * Y0, rightR);
+    KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, rightR);
 
     vector<Index> indicesM0 = Od.indicesUpToM(M0);
     auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
@@ -1153,12 +1178,12 @@ pair<double, double> BianchiMaassSearch::fineSecantMethod(double leftR, double r
         }
     }
 
-    leftRK.setRAndPrecompute(leftR, 2 * pi / A * M0 * maxYStar);
-    MatrixXd matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, leftRK);
+    leftRK->setRAndPrecompute(leftR, 2 * pi / A * M0 * maxYStar);
+    MatrixXd matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, (*leftRK));
     auto solAndCondYR1 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
 
-    rightRK.setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
-    matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, rightRK);
+    rightRK->setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
+    matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, (*rightRK));
     auto solAndCondYR2 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
 
     std::cout << solAndCondYR1.second << " " << solAndCondYR2.second << std::endl;
@@ -1382,7 +1407,7 @@ bool BianchiMaassSearch::heckeHasConverged(const vector<pair<double, double>> &e
 }
 
 double
-BianchiMaassSearch::computeWellConditionedY(KBessel &leftRK, KBessel &rightRK, double leftR, double rightR, double M0,
+BianchiMaassSearch::computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR, double M0,
                                             const vector<Index> &indexTransversal) {
     //double upperY = 2.0 * max(1.0, rightR)/(2*pi/A*M0);
     //double lowerY = 1.7 * max(1.0, rightR)/(2*pi/A*M0);
@@ -1478,7 +1503,7 @@ BianchiMaassSearch::computeWellConditionedY(KBessel &leftRK, KBessel &rightRK, d
 }
 
 pair<double, double>
-BianchiMaassSearch::computeTwoWellConditionedY(KBessel &leftRK, KBessel &rightRK, double leftR, double rightR,
+BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR,
                                                double M0, const vector<Index> &indexTransversal) {
     double c = max(1.0, rightR)/(2*pi/A*M0);
     double upperY = Y0;
