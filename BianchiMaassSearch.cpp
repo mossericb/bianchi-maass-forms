@@ -336,6 +336,42 @@ void BianchiMaassSearch::fineSearchForEigenvalues() {
         }
         out << std::flush;
 
+        vector<pair<double, double>> combined;
+        for (auto pair : firstPassHecke) {
+            combined.push_back(pair);
+        }
+        for (auto pair : secondPassHecke) {
+            combined.push_back(pair);
+        }
+
+        std::sort(combined.begin(), combined.end(), [](auto &left, auto &right) {
+            return left.second < right.second;
+        });
+
+        string r0;
+        string r1;
+        string r2;
+        out << "Least hecke:\n";
+        for (int i = 0; i < min((int)combined.size(), 3); i++) {
+            out << std::setprecision(16) << combined[i].first << ", " << combined[i].second << std::endl;
+            if (i == 0) {
+                r0 = to_string(combined[i].first);
+            } else if (i == 1) {
+                r1 = to_string(combined[i].first);
+            } else if (i == 2) {
+                r2 = to_string(combined[i].first);
+            }
+        }
+        out << "These digits are correct:\n";
+        int size = r0.length();
+        size = min(size, (int)r1.length());
+        size = min(size, (int)r2.length());
+        for (int n = 0; n < size; n++) {
+            if (r0[n] == r1[n] && r0[n] == r2[n]) {
+                out << r0[n];
+                continue;
+            }
+        }
 
 
         fineOutputFile << "Complete up to " << std::setprecision(16) << interval.second << std::endl;
