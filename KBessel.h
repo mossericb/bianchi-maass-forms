@@ -29,10 +29,9 @@ public:
     double approxDerivativeKBessel(double x);
 
     double getR() { return this->r; }
-    void runTest();
 
 private:
-    double relativeError(double exact, double approx, double x = 0.0);
+    bool withinError(double exact, double approx);
 
     void setUpChunkSplineComputation(int indexOfLastNewChunk, int previouslyComputedChunks);
     void computeChunkSplines(int indexOfLastNewChunk, int previouslyComputedChunks);
@@ -50,7 +49,7 @@ private:
     double chunkWidth;
     double firstChunkLeftEndpoint;
     static constexpr int SPLINE_KNOT_COUNT = 128;
-    static constexpr double ABS_ERROR_CUTOFF = 1e-15;
+    static constexpr double ABS_ERROR_CUTOFF = 5.0e-15;
 
     vector<double> chunkStepSize;
     vector<double> shrinkingChunkStepSize;

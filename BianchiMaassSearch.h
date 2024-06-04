@@ -31,7 +31,7 @@ using std::ofstream, std::string;
 
 class BianchiMaassSearch {
 public:
-    BianchiMaassSearch(char mode, int d, double D, char symClass);
+    BianchiMaassSearch(string mode, int d, double D, char symClass);
 
     void coarseSearchForEigenvalues(const double leftR, const double rightR);
     void mediumSearchForEigenvalues();
@@ -45,7 +45,7 @@ private:
     int d;
     double D;
     char symClass;
-    char mode;
+    string mode;
     int finalPrecision;
 
     ImaginaryQuadraticIntegers Od;
@@ -58,6 +58,12 @@ private:
     ofstream mediumOutputFile;
     ofstream fineOutputFile;
 
+    double coarseComplete = 0.75;
+    double mediumComplete = 0.75;
+    double fineComplete = 0.75;
+
+    int secondsToComputeMatrix = 400;
+
     double pi = 3.141592653589793238462643383279502884197;
     double twoPiOverA;
     complex<double> I = {0,1};
@@ -69,15 +75,20 @@ private:
 
 
     double EIGENVALUE_INTERVAL_CUTOFF = pow(2,-16);
+    double nanosecondsPerTerm = 20;
+    int maxSecondsPerMatrix = 180;
+    bool autoPrecision = true;
 
     /***************************************************
      * Private methods used in ALL calculations.
      ***************************************************/
 
-    double computeM0General(const double r);
-    double computeMYGeneral(const double M0, const double Y);
+    void computeMaximumD(double r, int timeLimitSeconds);
 
-    vector<TestPointOrbitData> getPointPullbackOrbits(const Index &m, const double Y, const double MY);
+    double computeM0General(double r);
+    double computeMYGeneral(double M0, double Y);
+
+    vector<TestPointOrbitData> getPointPullbackOrbits(const Index &m, double Y, double MY);
 
     double traceProduct(complex<double> z, complex<double> w);
     bool areDifferentSign(double a, double b);
@@ -87,15 +98,21 @@ private:
     map<double, KBessel> rToKBess;
     map<int, vector<Index>> dToPrimes;
 
+    void setUpOutputLogFiles();
     static int findMaxFileNumber(const string &directory, const string &prefix);
     static void createOutputDirectory(const std::string& directory);
     static bool isFileEmpty(const string& filename);
 
-    bool possiblyContainsEigenvalue(const double leftR, const double rightR, KBessel *leftRK, KBessel *rightRK);
-    pair<double, double> fineSecantMethod(double leftR, double rightR, int secantD);
-    static bool heckeHasConverged(const vector<pair<double, double>>& eigenvalueHeckePairs);
+    vector<pair<double,double>> getIntervalsForCoarseSearch(double startR, double endR);
+    vector<pair<double,double>> getIntervalsForMediumSearch();
+    vector<pair<double,double>> getIntervalsForFineSearch();
+
+    bool possiblyContainsEigenvalue(double leftR, double rightR, KBessel *leftRK, KBessel *rightRK);
+    tuple<vector<pair<double,double>>, double, double> fineSecantMethod(double leftR, double rightR);
+    static bool heckeHasConverged(const vector<pair<double, double>>& heckeValues);
 
     double minBess(KBessel *K, const vector<Index> &indexTransversal, double Y);
+    double computeWellConditionedY(KBessel *K, double r, double M0, vector<Index> &indexTransversal);
     double computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR, double M0, const vector<Index>& indexTransversal);
     pair<double, double> computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR, double M0, const vector<Index>& indexTransversal);
 
@@ -108,12 +125,13 @@ private:
                          int indexOfNormalization);
 
     double computeEntry(const Index &m, const Index &n, KBessel &K,
-                        const vector<TestPointOrbitData> &mTestPointOrbits, const double Y,
+                        const vector<TestPointOrbitData> &mTestPointOrbits, double Y,
                         const vector<pair<Index, int>> &nIndexOrbitDataModSign);
 
     int countSignChanges(const vector<double> &v1, const vector<double> &v2);
 
     static double findZeroOfLinearInterpolation(double x0, double y0, double x1, double y1);
+    static double andersonBjorck(double x0, double y0, double x1, double y1);
 
     double heckeCheck(map<Index, double>& coeffMap);
 };

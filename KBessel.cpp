@@ -215,37 +215,23 @@ void KBessel::extendPrecomputedRange(double newUpperBound) {
     computeShrinkingChunkSplines();
 }
 
-void KBessel::runTest() {
-    double maxErrorSoFar = 0;
 
-    for (int i = 0; i < 1000; i++) {
-        double x = r - i*(r-precomputedRegionLeftBound)/1000.0;
-        double exact = exactKBessel(x);
-        double approx = approxKBessel(x);
-        double error = relativeError(exact, approx);
-        if (error > maxErrorSoFar && exact != 0 && error > ABS_ERROR_CUTOFF) {
-            maxErrorSoFar = error;
-            watch(maxErrorSoFar);
-            std::cout << x << ", " << exact << std::endl;
-        }
+bool KBessel::withinError(double exact, double approx) {
+    if (exact == 0) {
+        return approx == 0;
     }
+    double ratio = approx/exact;
+    double error = abs(1 - ratio);
 
-    maxErrorSoFar = 0;
-    for (int i = 0; i < 1000; i++) {
-        double x = r + i*(precomputedRegionRightBound - r)/1000.0;
-        double exact = exactKBessel(x);
-        double approx = approxKBessel(x);
-        double error = relativeError(exact, approx);
-        if (error > maxErrorSoFar && exact != 0 && error > ABS_ERROR_CUTOFF) {
-            maxErrorSoFar = error;
-            watch(maxErrorSoFar);
-            std::cout << x << ", " << exact << std::endl;
-        }
+    double size = abs(exact);
+    if (size >= pow(10.0, -15)) {
+        return error < ABS_ERROR_CUTOFF;
+    } else {
+        double exponent = log10(size);
+        double modifiedCutoff = ABS_ERROR_CUTOFF;
+        modifiedCutoff *= (1 - 10/ABS_ERROR_CUTOFF)/(-15 - (-314)) * (exponent - (-15)) + 1;
+        return error < modifiedCutoff;
     }
-}
-
-double KBessel::relativeError(double exact, double approx, double x) {
-    return abs(exact - approx)/(pow(10,-30) + abs(exact));
 }
 
 double KBessel::approxDerivativeKBessel(double x) {
@@ -310,8 +296,7 @@ void KBessel::setUpChunkSplineComputation(int indexOfLastNewChunk, int previousl
                 double exact = exactKBessel(x);
                 double approx = testSpline(x);
 
-                double error = relativeError(exact, approx);
-                if (error > ABS_ERROR_CUTOFF) {
+                if (!withinError(exact, approx)) {
                     errorIsSatisfactory = false;
                     break;
                 }
@@ -433,9 +418,8 @@ void KBessel::setUpShrinkingChunkSplineComputation() {
                 double x = left + spacing * j / 10;
                 double exact = exactKBessel(x);
                 double approx = testSpline(x);
-                double error = relativeError(exact, approx);
 
-                if (error > ABS_ERROR_CUTOFF) {
+                if (!withinError(exact, approx)) {
                     errorIsSatisfactory = false;
                     break;
                 }
@@ -464,26 +448,19 @@ void KBessel::setUpShrinkingChunkSplineComputation() {
 }
 
 void KBessel::computeShrinkingChunkSplines() {
-//#pragma omp parallel for schedule(dynamic) default(none)
+#pragma omp parallel for schedule(dynamic) default(none)
     for (int newShrinkingChunk = 0; newShrinkingChunk < numberOfShrinkingChunks; newShrinkingChunk++) {
+        for (int i = 1; i < shrinkingChunks[newShrinkingChunk].size(); i++) {
+            double left = precomputedRegionLeftBound + (firstChunkLeftEndpoint - precomputedRegionLeftBound)
+                    * pow((1. * newShrinkingChunk)/numberOfShrinkingChunks, 2);
 
-        double left = precomputedRegionLeftBound + (firstChunkLeftEndpoint - precomputedRegionLeftBound)
-                * pow((1. * newShrinkingChunk)/numberOfShrinkingChunks, 2);
+            double spacing = shrinkingChunkStepSize[newShrinkingChunk];
 
-        double spacing = shrinkingChunkStepSize[newShrinkingChunk];
-
-        double subIntervalWidth = (SPLINE_KNOT_COUNT - 1) * spacing;
-        int numberOfSubIntervals = ceil(
-                (firstChunkLeftEndpoint - precomputedRegionLeftBound)
-                * (pow((1. * newShrinkingChunk + 1)/numberOfShrinkingChunks, 2)
-                 - pow((1. * newShrinkingChunk)/numberOfShrinkingChunks, 2)
-                )
-                /subIntervalWidth);
+            double subIntervalWidth = (SPLINE_KNOT_COUNT - 1) * spacing;
 
 
-        //i = 0 spline was already computed
-#pragma omp parallel for default(none) shared(numberOfSubIntervals, left, subIntervalWidth, spacing, newShrinkingChunk)
-        for (int i = 1; i < numberOfSubIntervals; i++) {
+            //i = 0 spline was already computed
+
             vector<double> precompute(SPLINE_KNOT_COUNT, 0.0);
             double subIntervalLeft = left + i * subIntervalWidth;
             double subIntervalRight = left + (i + 1) * subIntervalWidth;

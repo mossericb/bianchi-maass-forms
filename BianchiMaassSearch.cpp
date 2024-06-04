@@ -34,7 +34,13 @@ using std::cout, std::string, std::endl, std::flush, std::setprecision, std::to_
 
 #define watch(x) cout << (#x) << " is " << (x) << endl << flush
 
-BianchiMaassSearch::BianchiMaassSearch(char mode, int d, double D, char symClass) {
+BianchiMaassSearch::BianchiMaassSearch(string mode, int d, double D, char symClass) {
+
+    //Check that mode is valid
+    if (mode != "coarse" && mode != "medium" && mode != "fine") {
+        throw std::invalid_argument("mode should be coarse, medium, or fine");
+    }
+    this->mode = mode;
 
     //Check that d is valid
     vector<int> classNumberOne = {1,2,3,7,11,19,43,67,163};
@@ -42,6 +48,15 @@ BianchiMaassSearch::BianchiMaassSearch(char mode, int d, double D, char symClass
     if (!dIsClassNumberOne) {
         throw(std::invalid_argument("d should be one of {1,2,3,7,11,19,43,67,163}"));
     }
+    this->d = d;
+
+    //Check that symclass is valid
+    vector<char> symClasses = {'D','G','C','H'};
+    bool symClassIsCorrect = find(symClasses.begin(), symClasses.end(), symClass) != symClasses.end();
+    if (!symClassIsCorrect) {
+        throw(std::invalid_argument("symClass should be one of D,G,C,H"));
+    }
+    this->symClass = symClass;
 
     /*
      * These are values that determine what precision the calculation runs at.
@@ -53,38 +68,22 @@ BianchiMaassSearch::BianchiMaassSearch(char mode, int d, double D, char symClass
     dToDMap[3] = {6,6,8,16};
     dToDMap[7] = {6,6,8,16};
     dToDMap[11] = {6,6,8,16};
-    dToDMap[19] = {5,5,8,16};
+    dToDMap[19] = {5,6,8,16};
     dToDMap[43] = {4,4,4,6};
     dToDMap[67] = {3,3,3,4};
     dToDMap[163] = {2,2,2,3};
 
-    switch (mode) {
-        case '0':
-            this->D = dToDMap[d][0];
-            break;
-        case '1':
-            this->D = dToDMap[d][1];
-            break;
-        case '2':
-            this->D = dToDMap[d][2];
-            break;
-        default:
-            throw std::invalid_argument("mode incorrect");
-    }
-    truncation = pow(10.0, -(this->D));
-
-    //Check that symclass is valid
-    vector<char> symClasses = {'D','G','C','H'};
-    bool symClassIsCorrect = find(symClasses.begin(), symClasses.end(), symClass) != symClasses.end();
-    if (!symClassIsCorrect) {
-        throw(std::invalid_argument("symClass should be one of D,G,C,H"));
+    if (D == 0) {
+        autoPrecision = true;
+    } else {
+        autoPrecision = false;
+        this->D = D;
+        truncation = pow(10.0, -(this->D));
     }
 
-    this->d = d;
-    this->symClass = symClass;
+    setUpOutputLogFiles();
 
     Od = ImaginaryQuadraticIntegers(d);
-
     A = Od.getA();
     theta = Od.getTheta();
     Y0 = Od.getY0();
@@ -107,50 +106,39 @@ void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const do
         throw(std::invalid_argument("leftR should be less than rightR"));
     }
 
-    const std::string directory = "Output/Coarse/";
-    const std::string prefix = "coarse_"
-                               + to_string(d) + "_"
-                               + symClass;
-    createOutputDirectory(directory);
+    auto intervalsFromFile = getIntervalsForCoarseSearch(leftR, rightR);
 
-    std::string outputFilename = directory
-                                 + prefix
-                                 + ".txt";
+    stack<pair<double,double>> intervals;
 
-    coarseOutputFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
+    for (auto itr = intervalsFromFile.rbegin(); itr != intervalsFromFile.rend(); itr++) {
+        intervals.push(*itr);
+    }
 
-    if (coarseOutputFile.is_open()) {
-        if (isFileEmpty(outputFilename)) {
-            coarseOutputFile << "d = " << d << '\n';
-            coarseOutputFile << "symClass = " << symClass << '\n';
-            coarseOutputFile << "D = " << D << '\n';
-            coarseOutputFile << "Complete up to " << 0.75 << std::endl;
+    double lastPrecisionRecompute = intervals.top().first;
+    if (autoPrecision) {
+        computeMaximumD(lastPrecisionRecompute, 180);
+        std::cout << "D = " << D << std::endl;
+    }
+
+    KBessel* leftRK = new KBessel(twoPiOverA * 1 * Y0, intervals.top().first);
+    KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, intervals.top().second);
+    while (!intervals.empty()) {
+        double left = intervals.top().first;
+        double right = intervals.top().second;
+        intervals.pop();
+
+        if (autoPrecision) {
+            if (lastPrecisionRecompute + 5 < left) {
+                computeMaximumD(left, 180);
+                lastPrecisionRecompute = left;
+                std::cout << "D = " << D << std::endl;
+            }
         }
-    } else {
-        std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
-    }
 
-    //Magic number
-    //Supposed to reflect that we are dispatching the searcher on intervals that we expect
-    //to have an eigenvalue in them 2/10th of the time. Allows for easier conditioning and
-    //guards against unusually close eigenvalues, but not conclusively.
-    double numEigenValues = 0.2;
-
-    vector<double> endpoints;
-    double endpoint = leftR;
-    while (endpoint < rightR) {
-        endpoints.push_back(endpoint);
-        endpoint = Od.eigenvalueIntervalRightEndpoint(endpoint, numEigenValues);
-    }
-    endpoints.push_back(rightR);
-
-    KBessel* leftRK = new KBessel(twoPiOverA * 1 * Y0, endpoints[0]);
-    KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, endpoints[1]);
-    for (size_t i = 0; i <= endpoints.size() - 2; i++) {
-        double left = endpoints[i];
-        double right = endpoints[i + 1];
         rightRK = new KBessel(twoPiOverA * 1 * Y0, right);
-        possiblyContainsEigenvalue(left, right, leftRK, rightRK);
+        if (possiblyContainsEigenvalue(left, right, leftRK, rightRK)) {
+            coarseOutputFile << std::setprecision(16) << "[" << left << ", " << right << "]" << std::endl;
+        }
         delete leftRK;
         leftRK = rightRK;
 
@@ -177,74 +165,7 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
      */
 
 
-    const std::string directoryOut = "Output/Medium/";
-    const std::string prefixOut = "medium_"
-                               + to_string(d) + "_"
-                               + symClass;
-    createOutputDirectory(directoryOut);
-
-    std::string outputFilename = directoryOut
-                                 + prefixOut
-                                 + ".txt";
-
-    mediumOutputFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
-
-    double mediumComplete = 0.75;
-
-    if (mediumOutputFile.is_open()) {
-        if (isFileEmpty(outputFilename)) {
-            mediumOutputFile << "d = " << d << '\n';
-            mediumOutputFile << "symClass = " << symClass << '\n';
-            mediumOutputFile << "D = " << D << '\n';
-        } else {
-            //scan through and find the last value we're complete to
-            std::ifstream mediumInFile;
-            mediumInFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
-            string line;
-            while (getline(mediumInFile, line)) {
-                if (line.substr(0, 15) == "Complete up to ") {
-                    mediumComplete = std::stod(line.substr(15));
-                }
-            }
-            mediumInFile.close();
-        }
-    } else {
-        std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
-    }
-
-    const std::string directoryIn = "Output/Coarse/"; // Change this to the desired directory
-    const std::string prefixIn = "coarse_"
-                               + to_string(d) + "_"
-                               + symClass;
-
-    std::string filenameIn = directoryIn
-                           + prefixIn
-                           + ".txt";
-
-    std::ifstream inputFile;
-    inputFile.open(filenameIn);
-
-    if (!inputFile.is_open()) {
-        std::cerr << "Error opening file \"" << filenameIn << "\"" << std::endl;
-    }
-
-    vector<pair<double, double>> intervalsFromFile;
-    string line;
-    while (std::getline(inputFile, line)) {
-        if (line[0] == '[') {
-            //remove brackets
-            string numbers = line.substr(1, line.size() - 2);
-            int comma = numbers.find(',');
-            string leftStr = numbers.substr(0,comma);
-            string rightStr = numbers.substr(comma + 2);
-            double left = std::stod(leftStr);
-            double right = std::stod(rightStr);
-            if (mediumComplete < right) {
-                intervalsFromFile.emplace_back(left,right);
-            }
-        }
-    }
-    inputFile.close();
+    auto intervalsFromFile = getIntervalsForMediumSearch();
 
     stack<pair<double, double>> intervals;
     for (auto itr = intervalsFromFile.rbegin(); itr != intervalsFromFile.rend(); itr++) {
@@ -259,8 +180,16 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
      *
      */
 
+    double lastPrecisionRecompute = intervals.top().first;
+    if (autoPrecision) {
+        computeMaximumD(lastPrecisionRecompute, 180);
+        std::cout << "D = " << D << std::endl;
+    }
+
     //Magic number!
     double weylEigenvalueCount = 0.0005;
+
+    map<double, KBessel*> KBessMap;
 
     while (!intervals.empty()) {
         stack<pair<double, double>> spawnedIntervals;
@@ -268,30 +197,49 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
         spawnedIntervals.push(intervals.top());
         intervals.pop();
 
+        if (autoPrecision) {
+            if (lastPrecisionRecompute + 5 < spawnedIntervals.top().first) {
+                computeMaximumD(spawnedIntervals.top().first, 180);
+                lastPrecisionRecompute = spawnedIntervals.top().first;
+                std::cout << "D = " << D << std::endl;
+            }
+        }
+
         while (!spawnedIntervals.empty()) {
             auto interval = spawnedIntervals.top();
             spawnedIntervals.pop();
 
             bool zoomIn = true;
             double weylRightEndpoint = Od.eigenvalueIntervalRightEndpoint(interval.first, weylEigenvalueCount);
+
+            //Cutoff interval should be not wider than 0.001
             weylRightEndpoint = min(weylRightEndpoint, interval.first + 0.001);
+
+            //Cutoff interval should be not narrower than 0.00000001
             weylRightEndpoint = max(weylRightEndpoint, interval.first + 0.00000001);
             if (interval.second <= weylRightEndpoint) {
                 mediumOutputFile << std::setprecision(16) << "[" << interval.first << ", " << interval.second << "]" << std::endl;
+                cout << "Likely eigenvalue " << std::setprecision(16) << "[" << interval.first << ", " << interval.second << "]" << std::endl;
             } else {
                 double left = interval.first;
                 double right = interval.second;
                 double center = (left + right) / 2;
 
-                KBessel* leftRK = new KBessel(twoPiOverA * 1 * Y0, left);
-                KBessel* centerRK = new KBessel(twoPiOverA * 1 * Y0, center);
-                KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, right);
-                bool leftInterval = possiblyContainsEigenvalue(left, center, leftRK, centerRK);
-                bool rightInterval = possiblyContainsEigenvalue(center, right, centerRK, rightRK);
-                delete leftRK;
-                delete centerRK;
-                delete rightRK;
+                if (KBessMap.find(left) == KBessMap.end()) {
+                    KBessMap[left] = new KBessel(twoPiOverA * 1 * Y0, left);
+                }
+                if (KBessMap.find(center) == KBessMap.end()) {
+                    KBessMap[center] = new KBessel(twoPiOverA * 1 * Y0, center);
+                }
+                if (KBessMap.find(right) == KBessMap.end()) {
+                    KBessMap[right] = new KBessel(twoPiOverA * 1 * Y0, right);
+                }
+
+                bool leftInterval = possiblyContainsEigenvalue(left, center, KBessMap[left], KBessMap[center]);
+                bool rightInterval = possiblyContainsEigenvalue(center, right, KBessMap[center], KBessMap[right]);
                 if (!leftInterval && !rightInterval) {
+                    delete KBessMap[center];
+                    KBessMap.erase(center);
                     continue;
                 } else if (leftInterval && !rightInterval) {
                     spawnedIntervals.emplace(left, center);
@@ -306,97 +254,21 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
                 }
             }
         }
+        for (auto itr = KBessMap.begin(); itr != KBessMap.end(); ) {
+            if (itr->first < upper) {
+                delete itr->second;
+                KBessMap.erase(itr++);
+            } else {
+                ++ itr;
+            }
+        }
         mediumOutputFile << "Complete up to " << std::setprecision(16) << upper << std::endl;
     }
-    mediumOutputFile.close();
 }
 
 void BianchiMaassSearch::fineSearchForEigenvalues() {
 
-    const std::string directoryOut = "Output/Fine/";
-    const std::string prefixOut = "fine_"
-                                  + to_string(d) + "_"
-                                  + symClass;
-    createOutputDirectory(directoryOut);
-
-    std::string outputFilename = directoryOut
-                                 + prefixOut
-                                 + ".txt";
-
-    fineOutputFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
-
-    double fineComplete = 0.75;
-
-    if (fineOutputFile.is_open()) {
-        if (isFileEmpty(outputFilename)) {
-            fineOutputFile << "d = " << d << '\n';
-            fineOutputFile << "symClass = " << symClass << '\n';
-        } else {
-            //scan through and find the last value we're complete to
-            std::ifstream fineInFile;
-            fineInFile.open(outputFilename);
-            string line;
-            while (getline(fineInFile, line)) {
-                if (line[0] == '[') {
-                    //remove brackets
-                    string numbers = line.substr(1, line.size() - 2);
-                    int comma = numbers.find(',');
-                    string leftStr = numbers.substr(0,comma);
-                    string rightStr = numbers.substr(comma + 2);
-                    double left = std::stod(leftStr);
-                    double right = std::stod(rightStr);
-                    if (fineComplete < right) {
-                        fineComplete = right;
-                    }
-                }
-            }
-            fineInFile.close();
-        }
-    } else {
-        std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
-    }
-
-
-    /*
-     *
-     * Read in the medium file and collect the intervals there
-     *
-     *
-     */
-
-    const std::string directoryIn = "Output/Medium/"; // Change this to the desired directory
-    const std::string prefixIn = "medium_"
-                                 + to_string(d) + "_"
-                                 + symClass;
-
-    std::string filenameIn = directoryIn
-                             + prefixIn
-                             + ".txt";
-
-    std::ifstream inputFile;
-    inputFile.open(filenameIn);
-
-    if (!inputFile.is_open()) {
-        std::cerr << "Error opening file \"" << filenameIn << "\"" << std::endl;
-    }
-
-    vector<pair<double, double>> intervalsFromFile;
-    string line;
-    while (std::getline(inputFile, line)) {
-        if (line[0] == '[') {
-            //remove brackets
-            string numbers = line.substr(1, line.size() - 2);
-            int comma = numbers.find(',');
-            string leftStr = numbers.substr(0,comma);
-            string rightStr = numbers.substr(comma + 2);
-            double left = std::stod(leftStr);
-            double right = std::stod(rightStr);
-            if (fineComplete < left) {
-                intervalsFromFile.emplace_back(left,right);
-            }
-        }
-    }
-    inputFile.close();
+    auto intervalsFromFile = getIntervalsForFineSearch();
 
     stack<pair<double, double>> intervals;
     for (auto itr = intervalsFromFile.rbegin(); itr != intervalsFromFile.rend(); itr++) {
@@ -407,16 +279,64 @@ void BianchiMaassSearch::fineSearchForEigenvalues() {
         auto interval = intervals.top();
         intervals.pop();
 
-        truncation = pow(10.0, -dToDMap[d][2]);
-        auto firstPassOutput = fineSecantMethod(interval.first, interval.second, D);
-        if (firstPassOutput.first == firstPassOutput.second) {
-            fineOutputFile << "[" << std::setprecision(16) << interval.first << ", " << interval.second << "]" << std::endl;
-            return;
+        if (autoPrecision) {
+            computeMaximumD(intervals.top().first, 180);
+            D *= 3.0/4;
+            truncation = pow(10.0, -D);
+            std::cout << "D = " << D << std::endl;
         }
 
-        truncation = pow(10.0, -dToDMap[d][3]);
-        auto secondPassOutput = fineSecantMethod(firstPassOutput.first, firstPassOutput.second, finalPrecision);
-        fineOutputFile << "[" << std::setprecision(16) << interval.first << ", " << interval.second << "]" << std::endl;
+        auto firstPassOutput = fineSecantMethod(interval.first, interval.second);
+        auto firstPassHecke = get<0>(firstPassOutput);
+        double lastHecke = firstPassHecke[firstPassHecke.size() - 1].second;
+        if (lastHecke > 1) { //not modular
+            fineOutputFile << "Complete up to " << std::setprecision(16) << interval.second << std::endl;
+            continue;
+        }
+
+        double firstR = get<1>(firstPassOutput);
+        double secondR = get<2>(firstPassOutput);
+
+        if (autoPrecision) {
+            computeMaximumD(intervals.top().first, 180);
+            std::cout << "D = " << D << std::endl;
+        }
+
+        auto secondPassOutput = fineSecantMethod(firstR, secondR);
+        auto secondPassHecke = get<0>(secondPassOutput);
+        lastHecke = secondPassHecke[secondPassHecke.size() - 1].second;
+        if (lastHecke > 1) {
+            fineOutputFile << "Complete up to " << std::setprecision(16) << interval.second << std::endl;
+            continue;
+        }
+
+        const std::string directory = "Output/Final/"; // Change this to the desired directory
+        const std::string prefix = to_string(d) + "_"
+                                   + symClass + "_";
+        createOutputDirectory(directory);
+        int number = findMaxFileNumber(directory, prefix);
+        std::string outputFilename = directory
+                                     + prefix
+                                     + to_string(number + 1)
+                                     + ".txt";
+
+        ofstream out;
+        out.open(outputFilename, std::ofstream::out | std::ofstream::app);
+
+        out << "First pass\n";
+
+        for (auto pair : firstPassHecke) {
+            out << std::setprecision(16) << pair.first << ", " << pair.second << '\n';
+        }
+
+        out << "Second pass\n";
+
+        for (auto pair : secondPassHecke) {
+            out << std::setprecision(16) << pair.first << ", " << pair.second << '\n';
+        }
+        out << std::flush;
+
+        fineOutputFile << "Complete up to " << std::setprecision(16) << interval.second << std::endl;
     }
 }
 
@@ -526,10 +446,10 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
     int possibleSignChanges = coeffDiffR1.size() - 1;
     double proportion = ((double)signChanges)/possibleSignChanges;
     if (proportion >=  0.5) {
-        coarseOutputFile << setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
         return true;
+    } else {
+        return false;
     }
-    return false;
 }
 
 double BianchiMaassSearch::computeM0General(const double r) {
@@ -858,7 +778,17 @@ MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal
     MatrixXd answer;
     answer.resize(size, size);
 
-#pragma omp parallel for schedule(dynamic) collapse(2) default(none) shared(indexTransversal, size, answer, mToTestPointData, ntoIndexOrbitData,Y, K)
+    unsigned long long int terms = 0;
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            Index m = indexTransversal[i];
+            terms += mToTestPointData[m].size();
+        }
+    }
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+#pragma omp parallel for default(none) shared(indexTransversal, size, answer, mToTestPointData, ntoIndexOrbitData,Y, K)
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
             Index m = indexTransversal[i];
@@ -868,6 +798,14 @@ MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal
             answer(i,j) = entry;
         }
     }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = end - start;
+    duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+
+    nanosecondsPerTerm = ((double)duration.count())/terms;
+
+    watch(nanosecondsPerTerm);
 
     return answer;
 }
@@ -1117,12 +1055,10 @@ bool BianchiMaassSearch::isFileEmpty(const string &filename) {
     return std::filesystem::is_empty(filename);
 }
 
-pair<double, double> BianchiMaassSearch::fineSecantMethod(double leftR, double rightR, int secantD) {
+
+tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecantMethod(double leftR, double rightR) {
     std::cout << "Starting final refinement." << std::endl;
     std::cout << std::setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
-
-    D = secantD;
-    truncation = pow(10.0, -D);
 
     double M0 = computeM0General(rightR);
 
@@ -1148,17 +1084,11 @@ pair<double, double> BianchiMaassSearch::fineSecantMethod(double leftR, double r
 
     double Y = computeWellConditionedY(leftRK, rightRK, leftR, rightR, M0, indexTransversal);
 
-    /*
-     * Y1 and Y2 have been computed. Proceed with computing the actual matrices
-     */
     double MY = computeMYGeneral(M0, Y);
 
     double maxYStar = 0;
 
     map<Index, vector<TestPointOrbitData>> mToYTestPointOrbits;
-
-    mToYTestPointOrbits.clear();
-
 
 #pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
     for (int i = 0; i < indexTransversal.size(); i++) {
@@ -1254,39 +1184,43 @@ pair<double, double> BianchiMaassSearch::fineSecantMethod(double leftR, double r
         n++;
     }
 
-    double thisR = rightR;
-    double thisPhi = phi2;
-    double nextR = findZeroOfLinearInterpolation(leftR, phi1, rightR, phi2);
-    double nextPhi;
+    double rN = leftR;
+    double phiN = phi1;
+    double rNPlus1 = rightR;
+    double phiNPlus1 = phi2;
 
-    std::cout << std::setprecision(16) << "r = " << leftR << std::endl;
-    std::cout << std::setprecision(16) << "r = " << rightR << std::endl;
-    std::cout << std::setprecision(16) << "r = " << nextR << std::endl;
+    std::cout << std::setprecision(16) << "r = " << leftR << ", " << heckeCheck(coeffMapR1) << std::endl;
+    std::cout << std::setprecision(16) << "r = " << rightR << ", " << heckeCheck(coeffMapR2) << std::endl;
 
-    vector<pair<double, double>> eigenvalueHeckePairs;
-    bool recomputeTruncation = false;
+    vector<pair<double, double>> heckeValues;
+    heckeValues.emplace_back(rN, heckeCheck(coeffMapR1));
+    heckeValues.emplace_back(rNPlus1, heckeCheck(coeffMapR2));
 
+    int minIterations = 4;
     int maxIterations = 30;
     int iterations = 0;
-    bool convergence = true;
-
-    KBessel K = KBessel(twoPiOverA * 1 * Y0, nextR);
 
     while (true) {
         iterations++;
 
-        K.setRAndPrecompute(nextR, 2 * pi / A * M0 * maxYStar);
+        double nextR = findZeroOfLinearInterpolation(rN, phiN, rNPlus1, phiNPlus1);
+
+        KBessel K = KBessel(twoPiOverA * 1 * Y0, nextR);
+        K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
         matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
         auto solAndCondYNextR = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
 
         std::cout << solAndCondYNextR.second << " " << solAndCondYNextR.second << std::endl;
 
         map<Index, double> coeffMapNextR;
-
         for (int i = 0; i < indexTransversal.size(); i++) {
             Index index = indexTransversal[i];
             coeffMapNextR[index] = solAndCondYNextR.first(i);
         }
+
+        double hecke = heckeCheck(coeffMapNextR);
+        heckeValues.emplace_back(nextR, hecke);
+        std::cout << std::setprecision(16) << "r = " << nextR << ", " << hecke << std::endl;
 
         //We have the solutions from everything, now we cook up the phi function
 
@@ -1299,99 +1233,52 @@ pair<double, double> BianchiMaassSearch::fineSecantMethod(double leftR, double r
         hecke1NextR = abs(hecke1NextR);
         hecke2NextR = abs(hecke2NextR);
 
-        nextPhi = eps1 * hecke1NextR + eps2 * hecke2NextR;
+        double nextPhi = eps1 * hecke1NextR + eps2 * hecke2NextR;
 
-        if (thisPhi == nextPhi) { //End right now so we don't get arithmetic errors
-            const std::string directory = "Output/Final/"; // Change this to the desired directory
-            const std::string prefix = to_string(d) + "_"
-                                       + symClass + "_";
-            createOutputDirectory(directory);
+        /*
+         * This is the Anderson-Bjorck bracketed root finding algorithm
+         */
+        if (areDifferentSign(phiNPlus1, nextPhi)) {
+            rN = rNPlus1;
+            phiN = phiNPlus1;
 
-            std::string outputFilename = directory
-                                         + prefix
-                                         + ".txt";
-
-            ofstream out;
-            out.open(outputFilename, std::ofstream::out | std::ofstream::app);
-
-            out << "[" << std::setprecision(16) << leftR << ", " << rightR << "]" << std::endl;
-            for (auto p : eigenvalueHeckePairs) {
-                out << std::setprecision(16) << p.first << ", " << p.second << '\n';
+            rNPlus1 = nextR;
+            phiNPlus1 = nextPhi;
+        } else {
+            double m = 1 - nextPhi/phiNPlus1;
+            if (m <= 0) {
+                m = 0.5;
             }
+            phiN *= m;
 
-            return {min(thisR, nextR), max(thisR, nextR)};
+            rNPlus1 = nextR;
+            phiNPlus1 = nextPhi;
         }
 
-        double tempR = nextR;
-        double tempPhi = nextPhi;
+        if (iterations < minIterations) {
+            continue;
+        }
+        if (hecke > 1 //not modular
+            || heckeHasConverged(heckeValues) //computation succeeded and is complete
+            || iterations > maxIterations //computation not converging as expected
+            || phiN == phiNPlus1 //numerical error incoming, could just be very good convergence
+            || rN == rNPlus1) {
 
-        nextR = findZeroOfLinearInterpolation(thisR, thisPhi, nextR, nextPhi);
-        thisR = tempR;
-        thisPhi = nextPhi;
+            return {heckeValues, rN, rNPlus1};
 
-        double hecke = heckeCheck(coeffMapNextR);
-        std::cout << std::setprecision(16) << "r = " << nextR << std::endl;
-        std::cout << "hecke " << std::setprecision(16) << hecke << std::endl;
-
-        eigenvalueHeckePairs.emplace_back(nextR, hecke);
-
-        if (hecke > 1) {
-            std::cout << "hecke check failed " << std::setprecision(16) << hecke << std::endl;
-            return {0,0};
-        } else if (heckeHasConverged(eigenvalueHeckePairs)) {
-
-            const std::string directory = "Output/Final/"; // Change this to the desired directory
-            const std::string prefix = to_string(d) + "_"
-                                       + symClass + "_";
-            createOutputDirectory(directory);
-
-            std::string outputFilename = directory
-                                         + prefix
-                                         + ".txt";
-
-            ofstream out;
-            out.open(outputFilename, std::ofstream::out | std::ofstream::app);
-
-            out << "[" << std::setprecision(16) << leftR << ", " << rightR << "]" << std::endl;
-            for (auto p : eigenvalueHeckePairs) {
-                out << std::setprecision(16) << p.first << ", " << p.second << '\n';
-            }
-
-            return {min(thisR, nextR), max(thisR, nextR)};
-        } else if (iterations > maxIterations) {
-
-            const std::string directory = "Output/Final/"; // Change this to the desired directory
-            const std::string prefix = to_string(d) + "_"
-                                       + symClass + "_";
-            createOutputDirectory(directory);
-
-            std::string outputFilename = directory
-                                         + prefix
-                                         + ".txt";
-
-            ofstream out;
-            out.open(outputFilename, std::ofstream::out | std::ofstream::app);
-
-            out << "[" << std::setprecision(16) << leftR << ", " << rightR << "]" << std::endl;
-            out << "Did not converge as expected" << std::endl;
-            for (auto p : eigenvalueHeckePairs) {
-                out << std::setprecision(16) << p.first << ", " << p.second << '\n';
-            }
-
-            return {min(thisR, nextR), max(thisR, nextR)};
         }
     }
 }
 
-bool BianchiMaassSearch::heckeHasConverged(const vector<pair<double, double>> &eigenvalueHeckePairs) {
-    int size = eigenvalueHeckePairs.size();
+bool BianchiMaassSearch::heckeHasConverged(const vector<pair<double, double>> &heckeValues) {
+    int size = heckeValues.size();
     if (size < 4) {
         return false;
     }
 
     vector<double> values;
     for (int i = size - 1; i >= size - 4; i--) {
-        values.push_back(eigenvalueHeckePairs[i].second);
+        values.push_back(heckeValues[i].second);
     }
 
     double max = *std::max_element(values.begin(), values.end());
@@ -1404,6 +1291,81 @@ bool BianchiMaassSearch::heckeHasConverged(const vector<pair<double, double>> &e
     } else {
         return false;
     }
+}
+
+double BianchiMaassSearch::computeWellConditionedY(KBessel *K, double r, double M0, vector<Index> &indexTransversal) {
+    double c = max(1.0, r)/(2*pi/A*M0);
+    double upperY = Y0;
+    double lowerY = 0.5 * max(1.0, r)/(2*pi/A*M0);
+
+    vector<double> heightsToTry;
+
+    double tempY = upperY;
+    while (tempY > lowerY) {
+        heightsToTry.push_back(tempY);
+        tempY *= 0.99;
+    }
+    std::sort(heightsToTry.begin(), heightsToTry.end());
+
+    vector<double> minDiag(heightsToTry.size(), 0);
+
+
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, minDiag, K)
+    for (int i = 0; i < heightsToTry.size(); i++) {
+        double Y = heightsToTry[i];
+        minDiag[i] = minBess(K, indexTransversal, Y);
+    }
+
+
+    double Y = 0;
+    double maxSoFar = 0;
+    //heightsToTry is sorted smallest to largest
+    for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
+        double maxMinBess = minDiag[i];
+        if (maxSoFar < maxMinBess) {
+            maxSoFar = maxMinBess;
+            Y = heightsToTry[i];
+        }
+    }
+
+    /*Do it all over again but finer
+     *and in a narrower range
+     */
+
+    upperY = Y + 0.5 * c;
+    lowerY = Y - 0.5 * c;
+
+    heightsToTry.clear();
+
+    tempY = upperY;
+    while (tempY > lowerY) {
+        heightsToTry.push_back(tempY);
+        tempY *= 0.9995;
+    }
+    std::sort(heightsToTry.begin(), heightsToTry.end());
+
+    minDiag.clear();
+
+    minDiag.resize(heightsToTry.size(), 0);
+
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, minDiag, K)
+    for (int i = 0; i < heightsToTry.size(); i++) {
+        double testY = heightsToTry[i];
+        minDiag[i] = minBess(K, indexTransversal, testY);
+    }
+
+
+    Y = 0;
+    maxSoFar = 0;
+    //heightsToTry is sorted smallest to largest
+    for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
+        double maxMinBess = minDiag[i];
+        if (maxSoFar < maxMinBess) {
+            maxSoFar = maxMinBess;
+            Y = heightsToTry[i];
+        }
+    }
+    return Y;
 }
 
 double
@@ -1607,5 +1569,406 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK
         }
     }
     return {min(ansY1, ansY2), max(ansY1, ansY2)};
+}
+
+void BianchiMaassSearch::setUpOutputLogFiles() {
+    if (mode == "coarse") {
+        const std::string directory = "Output/Coarse/";
+        const std::string prefix = "coarse_"
+                                   + to_string(d) + "_"
+                                   + symClass;
+        createOutputDirectory(directory);
+
+        std::string outputFilename = directory
+                                     + prefix
+                                     + ".txt";
+
+        coarseOutputFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
+
+        if (coarseOutputFile.is_open()) {
+            if (isFileEmpty(outputFilename)) {
+                coarseOutputFile << "d = " << d << '\n';
+                coarseOutputFile << "symClass = " << symClass << '\n';
+                coarseOutputFile << "D = " << D << std::endl;
+            }
+        } else {
+            std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
+        }
+    } else if (mode == "medium") {
+
+        const std::string directoryOut = "Output/Medium/";
+        const std::string prefixOut = "medium_"
+                                      + to_string(d) + "_"
+                                      + symClass;
+        createOutputDirectory(directoryOut);
+
+        std::string outputFilename = directoryOut
+                                     + prefixOut
+                                     + ".txt";
+
+        mediumOutputFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
+
+        if (isFileEmpty(outputFilename)) {
+            mediumOutputFile << "d = " << d << '\n';
+            mediumOutputFile << "symClass = " << symClass << '\n';
+            mediumOutputFile << "D = " << D << std::endl;
+        } else {
+            std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
+        }
+
+    } else if (mode == "fine") {
+        const std::string directoryOut = "Output/Fine/";
+        const std::string prefixOut = "fine_"
+                                      + to_string(d) + "_"
+                                      + symClass;
+        createOutputDirectory(directoryOut);
+
+        std::string outputFilename = directoryOut
+                                     + prefixOut
+                                     + ".txt";
+
+        fineOutputFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
+
+        if (isFileEmpty(outputFilename)) {
+            mediumOutputFile << "d = " << d << '\n';
+            mediumOutputFile << "symClass = " << symClass << std::endl;
+        } else {
+            std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
+        }
+    }
+
+}
+
+vector<pair<double, double>> BianchiMaassSearch::getIntervalsForCoarseSearch(double startR, double endR) {
+
+    const std::string directoryIn = "Output/Coarse/";
+    const std::string prefixIn = "coarse_"
+                                  + to_string(d) + "_"
+                                  + symClass;
+
+    std::string inputFilename = directoryIn
+                                 + prefixIn
+                                 + ".txt";
+
+    //scan through and find the last value we're complete to
+    std::ifstream coarseInFile;
+    coarseInFile.open(inputFilename);
+    string line;
+    while (getline(coarseInFile, line)) {
+        if (line.substr(0, 15) == "Complete up to ") {
+            coarseComplete = std::stod(line.substr(15));
+        }
+    }
+
+    //Magic number
+    //Supposed to reflect that we are dispatching the searcher on intervals that we expect
+    //to have an eigenvalue in them 2/10th of the time. Allows for easier conditioning and
+    //guards against unusually close eigenvalues, but not conclusively.
+    double numEigenValues = 0.2;
+
+    vector<double> endpoints;
+    double endpoint = max(startR, coarseComplete);
+    while (endpoint < endR) {
+        endpoints.push_back(endpoint);
+        endpoint = Od.eigenvalueIntervalRightEndpoint(endpoint, numEigenValues);
+    }
+    endpoints.push_back(endR);
+
+    if (endpoints.size() < 2) {
+        return {};
+    }
+
+    vector<pair<double, double>> intervals;
+    for (int i = 0; i <= endpoints.size() - 2; i++) {
+        intervals.emplace_back(endpoints[i], endpoints[i + 1]);
+    }
+
+    return intervals;
+}
+
+vector<pair<double, double>> BianchiMaassSearch::getIntervalsForMediumSearch() {
+
+    /*
+     *
+     * Open the output file and record how far the medium searching has gone
+     *
+     */
+
+    const std::string directoryOut = "Output/Medium/";
+    const std::string prefixOut = "medium_"
+                                  + to_string(d) + "_"
+                                  + symClass;
+    createOutputDirectory(directoryOut);
+
+    std::string outputFilename = directoryOut
+                                 + prefixOut
+                                 + ".txt";
+
+    //scan through and find the last value we're complete to
+    std::ifstream mediumInFile;
+    mediumInFile.open(outputFilename);
+    string line;
+    while (getline(mediumInFile, line)) {
+        if (line.substr(0, 15) == "Complete up to ") {
+            mediumComplete = std::stod(line.substr(15));
+        }
+    }
+
+    /*
+     *
+     * Open the coarse search file and gather the intervals that need to be medium searched still
+     *
+     */
+
+    const std::string directoryIn = "Output/Coarse/"; // Change this to the desired directory
+    const std::string prefixIn = "coarse_"
+                                 + to_string(d) + "_"
+                                 + symClass;
+
+    std::string filenameIn = directoryIn
+                             + prefixIn
+                             + ".txt";
+
+    std::ifstream inputFile;
+    inputFile.open(filenameIn);
+
+    if (!inputFile.is_open()) {
+        std::cerr << "Error opening file \"" << filenameIn << "\"" << std::endl;
+    }
+
+    vector<pair<double, double>> intervalsFromFile;
+
+    while (std::getline(inputFile, line)) {
+        if (line[0] == '[') {
+            //remove brackets
+            string numbers = line.substr(1, line.size() - 2);
+            int comma = numbers.find(',');
+            string leftStr = numbers.substr(0,comma);
+            string rightStr = numbers.substr(comma + 2);
+            double left = std::stod(leftStr);
+            double right = std::stod(rightStr);
+            if (mediumComplete < right) {
+                intervalsFromFile.emplace_back(left,right);
+            }
+        }
+    }
+
+    return intervalsFromFile;
+}
+
+vector<pair<double,double>> BianchiMaassSearch::getIntervalsForFineSearch() {
+
+
+    /*
+     *
+     * Open the output file and record how far the fine searching has gone
+     *
+     */
+    const std::string directoryOut = "Output/Fine/";
+    const std::string prefixOut = "fine_"
+                                  + to_string(d) + "_"
+                                  + symClass;
+    createOutputDirectory(directoryOut);
+
+    std::string outputFilename = directoryOut
+                                 + prefixOut
+                                 + ".txt";
+
+    std::ifstream fineInFile;
+    fineInFile.open(outputFilename);
+    string line;
+    while (getline(fineInFile, line)) {
+        if (line.substr(0, 15) == "Complete up to ") {
+            fineComplete = std::stod(line.substr(15));
+        }
+    }
+
+    /*
+     *
+     * Open the medium search file and gather the intervals that need to be searched still
+     *
+     */
+
+    const std::string directoryIn = "Output/Medium/";
+    const std::string prefixIn = "medium_"
+                                 + to_string(d) + "_"
+                                 + symClass;
+
+    std::string filenameIn = directoryIn
+                             + prefixIn
+                             + ".txt";
+
+    std::ifstream inputFile;
+    inputFile.open(filenameIn);
+
+    if (!inputFile.is_open()) {
+        std::cerr << "Error opening file \"" << filenameIn << "\"" << std::endl;
+    }
+
+    vector<pair<double, double>> intervalsFromFile;
+    while (std::getline(inputFile, line)) {
+        if (line[0] == '[') {
+            //remove brackets
+            string numbers = line.substr(1, line.size() - 2);
+            int comma = numbers.find(',');
+            string leftStr = numbers.substr(0,comma);
+            string rightStr = numbers.substr(comma + 2);
+            double left = std::stod(leftStr);
+            double right = std::stod(rightStr);
+            if (fineComplete < right) {
+                intervalsFromFile.emplace_back(left,right);
+            }
+        }
+    }
+
+    return intervalsFromFile;
+}
+
+void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
+    double maxNanoseconds = timeLimitSeconds * pow(10,9);
+
+    double maxTerms = maxNanoseconds / nanosecondsPerTerm;
+
+    double leftD = 2; //I don't want to compute anything with any less precision than this
+    double rightD = 20; //This is the most precision I will ever work to
+
+    unsigned long long int leftTerms = 0;
+    unsigned long long int rightTerms = 0;
+
+    truncation = pow(10.0, -leftD);
+    double M0 = computeM0General(r);
+
+    KBessel* K = new KBessel(twoPiOverA * 1 * Y0, r);
+
+    vector<Index> indicesM0 = Od.indicesUpToM(M0);
+    auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
+    vector<Index> indexTransversal = get<0>(data);
+
+    double Y = computeWellConditionedY(K, r, M0, indexTransversal);
+
+    double MY = computeMYGeneral(M0, Y);
+
+    map<Index, vector<TestPointOrbitData>> mToYTestPointOrbits;
+
+#pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        Index m = indexTransversal[i];
+        auto orbitsY = getPointPullbackOrbits(m, Y, MY);
+#pragma omp critical
+        {
+            mToYTestPointOrbits[m] = orbitsY;
+        }
+    }
+
+    for (auto m : indexTransversal) {
+        leftTerms += mToYTestPointOrbits[m].size() * indexTransversal.size();
+    }
+
+
+
+    /*
+     *
+     *
+     *
+     */
+
+    truncation = pow(10.0, -rightD);
+    M0 = computeM0General(r);
+
+    indicesM0 = Od.indicesUpToM(M0);
+    data = Od.indexOrbitQuotientData(indicesM0, symClass);
+    indexTransversal = get<0>(data);
+
+    MY = computeMYGeneral(M0, Y);
+
+    mToYTestPointOrbits.clear();
+
+#pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        Index m = indexTransversal[i];
+        auto orbitsY = getPointPullbackOrbits(m, Y, MY);
+#pragma omp critical
+        {
+            mToYTestPointOrbits[m] = orbitsY;
+        }
+    }
+
+    for (auto m : indexTransversal) {
+        rightTerms += mToYTestPointOrbits[m].size() * indexTransversal.size();
+    }
+
+    //In this case, both precisions exceed or meet the time limit, but we're not willing
+    //to work in precision less than D = 2
+    if (leftTerms >= maxTerms && rightTerms >= maxTerms) {
+        D = 2;
+        truncation = pow(10.0, -D);
+    }
+
+    //In this case, both precisions will finish on time, so we return the largest
+    //precision that seems sensible. This may never happen.
+    if (leftTerms <= maxTerms && rightTerms <= maxTerms) {
+        double answer;
+        if (mode == "coarse") {
+            answer = rightD * 0.5;
+        } else if (mode == "medium") {
+            answer =  rightD * 0.75;
+        } else {
+            //mode == "fine"
+            answer =  rightD;
+        }
+        D = max(2.0, answer);
+        truncation = pow(10.0, -D);
+    }
+
+    while (rightD - leftD > 0.1) {
+        double centerD = (leftD + rightD)/2;
+        unsigned long long int centerTerms = 0;
+        truncation = pow(10.0, -centerD);
+        M0 = computeM0General(r);
+
+        indicesM0 = Od.indicesUpToM(M0);
+        data = Od.indexOrbitQuotientData(indicesM0, symClass);
+        indexTransversal = get<0>(data);
+
+        MY = computeMYGeneral(M0, Y);
+
+        mToYTestPointOrbits.clear();
+
+#pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
+        for (int i = 0; i < indexTransversal.size(); i++) {
+            Index m = indexTransversal[i];
+            auto orbitsY = getPointPullbackOrbits(m, Y, MY);
+#pragma omp critical
+            {
+                mToYTestPointOrbits[m] = orbitsY;
+            }
+        }
+
+        for (auto m : indexTransversal) {
+            centerTerms += mToYTestPointOrbits[m].size() * indexTransversal.size();
+        }
+
+        if (centerTerms > maxTerms) {
+            rightD = centerD;
+            rightTerms = centerTerms;
+        } else {
+            leftD = centerD;
+            leftTerms = centerTerms;
+        }
+    }
+
+    double answer;
+
+    if (mode == "coarse") {
+        answer = rightD * 0.5;
+    } else if (mode == "medium") {
+        answer =  rightD * 0.75;
+    } else {
+        //mode == "fine"
+        answer =  rightD;
+    }
+
+    D = max(2.0, answer);
+    truncation = pow(10.0, -D);
 }
 
