@@ -128,7 +128,7 @@ void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const do
         intervals.pop();
 
         if (autoPrecision) {
-            if (lastPrecisionRecompute + 5 < left) {
+            if (lastPrecisionRecompute + 2 < left) {
                 computeMaximumD(left, 180);
                 lastPrecisionRecompute = left;
                 std::cout << "D = " << D << std::endl;
@@ -198,7 +198,7 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
         intervals.pop();
 
         if (autoPrecision) {
-            if (lastPrecisionRecompute + 5 < spawnedIntervals.top().first) {
+            if (lastPrecisionRecompute + 2 < spawnedIntervals.top().first) {
                 computeMaximumD(spawnedIntervals.top().first, 180);
                 lastPrecisionRecompute = spawnedIntervals.top().first;
                 std::cout << "D = " << D << std::endl;
@@ -335,6 +335,8 @@ void BianchiMaassSearch::fineSearchForEigenvalues() {
             out << std::setprecision(16) << pair.first << ", " << pair.second << '\n';
         }
         out << std::flush;
+
+
 
         fineOutputFile << "Complete up to " << std::setprecision(16) << interval.second << std::endl;
     }
