@@ -89,6 +89,7 @@ private:
     double computeMYGeneral(double M0, double Y);
 
     vector<TestPointOrbitData> getPointPullbackOrbits(const Index &m, double Y, double MY);
+    unsigned long long int countPointPullbackOrbits(const Index &m, double Y, double MY);
 
     double traceProduct(complex<double> z, complex<double> w);
     bool areDifferentSign(double a, double b);

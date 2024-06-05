@@ -548,6 +548,107 @@ double BianchiMaassSearch::computeMYGeneral(const double M0, const double Y) {
     return Y0/Y * M0;
 }
 
+unsigned long long int BianchiMaassSearch::countPointPullbackOrbits(const Index &m, double Y, double MY) {
+    unsigned long long int answer = 0;
+
+    //These formulas provide bounds to guarantee that the DFT result is valid
+    double absRealM = abs(m.getComplex(d).real());
+    double absImagM = abs(m.getComplex(d).imag());
+    double Q0double = 0;
+    double Q1double = (MY + absRealM)/2.0;
+    if (Auxiliary::mod(-d, 4) == 1) {
+        double Q0doubleOption1 = MY + absRealM;
+        double Q0doubleOption2 = (MY + absImagM)/(2.0*A);
+        Q0double = max(Q0doubleOption1, Q0doubleOption2);
+    } else {
+        Q0double = (MY + absImagM)/(2.0*A);
+    }
+
+    int Q0 = ceil(Q0double);
+    int Q1 = ceil(Q1double);
+
+    //Tweak Q0 and Q1 to be exactly what we need for exploiting symmetry
+    if (Auxiliary::mod(-d, 4) == 1 && d != 3) {
+        //If -d = 1 mod 4 then we need Q0/Q1 to be an even integer for the map x -> -bar(x) to be defined on test points
+        if (Auxiliary::mod(Q0, Q1) == 0 && Auxiliary::mod(Q0 / Q1, 2) == 0) {
+            // Q0/Q1 is an even integer
+            // there is nothing to do!
+        } else {
+            // Q0/Q1 is not an even integer
+            int k = 0;
+            double quotient = ((double)Q0)/Q1;
+
+            while (!(2 * k < quotient && quotient < 2 * (k+1))) {
+                k++;
+            }
+
+            if (k == 0) {
+                Q0 = 2*Q1;
+            } else {
+                //It is true that 2k < Q0/Q1 < 2(k+1) and k > 0
+                int firstOptionQ0 = ceil(Q1 * 2 * (k+1));
+                while (!Auxiliary::mod(firstOptionQ0, 2 * (k + 1) == 0)) {
+                    firstOptionQ0++;
+                }
+                int firstOptionQ1 = firstOptionQ0/(2*(k+1));
+
+                int secondOptionQ0 = ceil(Q1 * 2 * k);
+                while (!Auxiliary::mod(secondOptionQ0, 2 * k == 0)) {
+                    secondOptionQ0++;
+                }
+                int secondOptionQ1 = secondOptionQ0/(2 * k);
+
+                //Now both give a valid number of points, choose the one that will have fewest points overall (4*Q0*Q1 total)
+                if (firstOptionQ0 * firstOptionQ1 < secondOptionQ0 * secondOptionQ1) {
+                    Q0 = firstOptionQ0;
+                    Q1 = firstOptionQ1;
+                } else {
+                    Q0 = secondOptionQ0;
+                    Q1 = secondOptionQ1;
+                }
+            }
+        }
+    } else if (d == 3 || d == 1) {
+        //So that we can do rotations by something other than -1, we need Q0=Q1
+        //Add a little numerical wiggle room
+        Q0 = max(Q0, Q1) + 1;
+        Q1 = Q0;
+    } else {
+        //We don't need to fiddle with the divisibility of Q0 and Q1
+        //Add some numerical wiggle room
+        Q0 += 1;
+        Q1 += 1;
+    }
+
+    //Now generate the representatives
+    //then generate the orbits
+    if (Auxiliary::mod(-d, 4) == 1 && d != 3) {
+        //iterate to make orbit representatives
+        answer = Q1 * (Q0 + 1);
+
+    } else if (d != 1) {
+        //So -d = 2,3 mod 4 and d != 1
+
+        //iterate to make orbit representatives
+        answer = Q0 * Q1;
+
+    } else if (d == 1) {
+
+        answer = Q0 * Q1;
+
+    } else {
+        //d == 3
+        //
+        //In order for rotation to be defined on the set of testpoints, we do not use the shifted version
+        //WWWWWWWAAAAARRRNNNIIINNNGGG
+        //THIS CODE IS A MESS, IT'S WRONG AND WRONG AGAIN, NEEDS SERIOUS MATHEMATICAL REWORK
+
+        throw std::invalid_argument("Code not ready yet for d = 3");
+    }
+
+    return answer;
+}
+
 vector<TestPointOrbitData>
 BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const double MY) {
     vector<TestPointOrbitData> answer;
@@ -1869,6 +1970,9 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
 
     double leftD = 2; //I don't want to compute anything with any less precision than this
     double rightD = 20; //This is the most precision I will ever work to
+    if (d == 163) {
+        rightD = 12;
+    }
 
     unsigned long long int leftTerms = 0;
     unsigned long long int rightTerms = 0;
@@ -1886,23 +1990,10 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
 
     double MY = computeMYGeneral(M0, Y);
 
-    map<Index, vector<TestPointOrbitData>> mToYTestPointOrbits;
-
-#pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
-    for (int i = 0; i < indexTransversal.size(); i++) {
-        Index m = indexTransversal[i];
-        //TODO: make a function that returns only the size of this vector!
-        auto orbitsY = getPointPullbackOrbits(m, Y, MY);
-#pragma omp critical
-        {
-            mToYTestPointOrbits[m] = orbitsY;
-        }
-    }
-
     for (auto m : indexTransversal) {
-        leftTerms += mToYTestPointOrbits[m].size() * indexTransversal.size();
+        leftTerms += countPointPullbackOrbits(m, Y, MY);
     }
-
+    leftTerms *= indexTransversal.size();
 
 
     /*
@@ -1920,20 +2011,8 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
 
     MY = computeMYGeneral(M0, Y);
 
-    mToYTestPointOrbits.clear();
-
-#pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
-    for (int i = 0; i < indexTransversal.size(); i++) {
-        Index m = indexTransversal[i];
-        auto orbitsY = getPointPullbackOrbits(m, Y, MY);
-#pragma omp critical
-        {
-            mToYTestPointOrbits[m] = orbitsY;
-        }
-    }
-
     for (auto m : indexTransversal) {
-        rightTerms += mToYTestPointOrbits[m].size() * indexTransversal.size();
+        rightTerms += countPointPullbackOrbits(m, Y, MY) * indexTransversal.size();
     }
 
     //In this case, both precisions exceed or meet the time limit, but we're not willing
@@ -1971,20 +2050,8 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
 
         MY = computeMYGeneral(M0, Y);
 
-        mToYTestPointOrbits.clear();
-
-#pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
-        for (int i = 0; i < indexTransversal.size(); i++) {
-            Index m = indexTransversal[i];
-            auto orbitsY = getPointPullbackOrbits(m, Y, MY);
-#pragma omp critical
-            {
-                mToYTestPointOrbits[m] = orbitsY;
-            }
-        }
-
         for (auto m : indexTransversal) {
-            centerTerms += mToYTestPointOrbits[m].size() * indexTransversal.size();
+            centerTerms += countPointPullbackOrbits(m, Y, MY) * indexTransversal.size();
         }
 
         if (centerTerms > maxTerms) {
