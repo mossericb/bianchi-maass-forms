@@ -73,11 +73,11 @@ BianchiMaassSearch::BianchiMaassSearch(string mode, int d, double D, char symCla
     dToDMap[67] = {3,3,3,4};
     dToDMap[163] = {2,2,2,3};
 
+    this->D = D;
     if (D == 0) {
         autoPrecision = true;
     } else {
         autoPrecision = false;
-        this->D = D;
         truncation = pow(10.0, -(this->D));
     }
 
@@ -828,8 +828,8 @@ MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal
 
 #pragma omp parallel for default(none) shared(indexTransversal, size, answer, mToTestPointData, ntoIndexOrbitData,Y, K)
     for (int i = 0; i < size; i++) {
+        Index m = indexTransversal[i];
         for (int j = 0; j < size; j++) {
-            Index m = indexTransversal[i];
             Index n = indexTransversal[j];
             double entry = computeEntry(m, n, K, mToTestPointData[m], Y, ntoIndexOrbitData[n]);
 
@@ -913,7 +913,7 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
                                  const vector<pair<Index, int>> &nIndexOrbitDataModSign) {
     double answer = 0;
 
-    long pointCount = 0;
+    unsigned long long int pointCount = 0;
     for (const auto& orbit : mTestPointOrbits) {
         pointCount += (orbit.properTranslatesModSign.size() + 1) * 2;
     }
@@ -1891,6 +1891,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
 #pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
     for (int i = 0; i < indexTransversal.size(); i++) {
         Index m = indexTransversal[i];
+        //TODO: make a function that returns only the size of this vector!
         auto orbitsY = getPointPullbackOrbits(m, Y, MY);
 #pragma omp critical
         {
