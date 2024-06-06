@@ -11,6 +11,8 @@
 //#include "BianchiMaassComputer.h"
 #include "omp.h"
 
+#include <algorithm>
+
 Auxiliary::Auxiliary() {
 
 #pragma omp parallel default(none)

@@ -75,7 +75,7 @@ private:
 
 
     double EIGENVALUE_INTERVAL_CUTOFF = pow(2,-16);
-    double nanosecondsPerTerm = 20;
+    double nanosecondsPerTerm = 5;
     int maxSecondsPerMatrix = 180;
     bool autoPrecision = true;
 
