@@ -1099,16 +1099,9 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
     vector<double> terms;
     terms.resize(size, 0);
 
+    //Do it this way so the multiplications are vectorizable
     for (size_t i = 0; i < size; ++i) {
-        terms[i] = yStars[i] * bessels[i];
-    }
-
-    for (size_t i = 0; i < size; ++i) {
-        terms[i] *= xStarTerms[i];
-    }
-
-    for (size_t i = 0; i < size; ++i) {
-        terms[i] *= xTerms[i];
+        terms[i] = yStars[i] * bessels[i] * xStarTerms[i] * xTerms[i];
     }
 
     double answer = 0;
@@ -1227,7 +1220,7 @@ int BianchiMaassSearch::findMaxFileNumber(const string &directory, const string 
 
 void BianchiMaassSearch::createOutputDirectory(const std::string& directory) {
     if (!std::filesystem::exists(directory)) {
-        std::filesystem::create_directory(directory);
+        std::filesystem::create_directories(directory);
     }
 }
 
