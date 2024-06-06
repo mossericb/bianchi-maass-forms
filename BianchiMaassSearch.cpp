@@ -927,7 +927,7 @@ MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal
 
     auto start = std::chrono::high_resolution_clock::now();
 
-#pragma omp parallel for default(none) shared(indexTransversal, size, answer, mToTestPointData, ntoIndexOrbitData,Y, K)
+#pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, size, answer, mToTestPointData, ntoIndexOrbitData,Y, K)
     for (int i = 0; i < size; i++) {
         Index m = indexTransversal[i];
         for (int j = 0; j < size; j++) {
@@ -1968,7 +1968,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
 
     double maxTerms = maxNanoseconds / nanosecondsPerTerm;
 
-    double leftD = 2; //I don't want to compute anything with any less precision than this
+    double leftD = 3; //I don't want to compute anything with any less precision than this
     double rightD = 20; //This is the most precision I will ever work to
     if (d == 163) {
         rightD = 12;
