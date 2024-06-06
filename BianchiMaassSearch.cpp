@@ -1968,11 +1968,14 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
 
     double maxTerms = maxNanoseconds / nanosecondsPerTerm;
 
-    double leftD = 3; //I don't want to compute anything with any less precision than this
-    double rightD = 20; //This is the most precision I will ever work to
+    double minD = 3;
+    double maxD = 20;
     if (d == 163) {
-        rightD = 12;
+        maxD = 12;
     }
+    double leftD = minD; //I don't want to compute anything with any less precision than this
+    double rightD = maxD; //This is the most precision I will ever work to
+
 
     unsigned long long int leftTerms = 0;
     unsigned long long int rightTerms = 0;
@@ -2018,7 +2021,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     //In this case, both precisions exceed or meet the time limit, but we're not willing
     //to work in precision less than D = 2
     if (leftTerms >= maxTerms && rightTerms >= maxTerms) {
-        D = 2;
+        D = minD;
         truncation = pow(10.0, -D);
     }
 
@@ -2034,7 +2037,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
             //mode == "fine"
             answer =  rightD;
         }
-        D = max(2.0, answer);
+        D = max(minD, answer);
         truncation = pow(10.0, -D);
     }
 
@@ -2074,7 +2077,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
         answer =  rightD;
     }
 
-    D = max(2.0, answer);
+    D = max(minD, answer);
     truncation = pow(10.0, -D);
 }
 
