@@ -18,6 +18,7 @@
 #include <eigen3/Eigen/SVD>
 #include <fstream>
 #include "archtKBessel.h"
+#include <boost/align/aligned_allocator.hpp>
 //#include "Plotter.h"
 //#include "PlotWindow.h"
 //#include "FunctionToEvaluate.h"
@@ -1030,6 +1031,10 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
     vector<double> bessels;
     vector<double> xStarTerms;
     vector<double> xTerms;
+    yStars.reserve(size);
+    bessels.reserve(size);
+    xStarTerms.reserve(size);
+    xTerms.reserve(size);
 
     if (symClass == 'D' || symClass == 'G' || d == 1) {
         for (const auto& testPointOrbit : mTestPointOrbits) {
@@ -1093,12 +1098,27 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
 
     vector<double> terms;
     terms.resize(size, 0);
-#pragma omp simd
+
     for (size_t i = 0; i < size; ++i) {
-        terms[i] = yStars[i] * bessels[i] * xStarTerms[i] * xTerms[i];
+        terms[i] = yStars[i] * bessels[i];
     }
 
-    double answer = Aux.kahanSummation(terms);
+    for (size_t i = 0; i < size; ++i) {
+        terms[i] *= xStarTerms[i];
+    }
+
+    for (size_t i = 0; i < size; ++i) {
+        terms[i] *= xTerms[i];
+    }
+
+    double answer = 0;
+    std::sort(terms.begin(), terms.end(), [] (double left, double right) {
+        return abs(left) < abs(right);
+    });
+    for (auto const t : terms) {
+        answer += t;
+    }
+
     if (symClass == 'D' || symClass == 'G' || d == 1) {
         answer *= -4.0 / pointCount;
     } else {

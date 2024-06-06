@@ -9,6 +9,7 @@
 #include <vector>
 #include "Index.h"
 #include "mpfr.h"
+#include <boost/align/aligned_allocator.hpp>
 
 class Auxiliary {
 public:
