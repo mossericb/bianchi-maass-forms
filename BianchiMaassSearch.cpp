@@ -88,6 +88,7 @@ BianchiMaassSearch::BianchiMaassSearch(string mode, int d, double D, char symCla
     theta = Od.getTheta();
     Y0 = Od.getY0();
     twoPiOverA = 2 * pi / A;
+    piOverA = pi/A;
 
     dToPrimes[1] = {Index(1,1), Index(2,1), Index(3,0)};
     dToPrimes[2] = {Index(0,1), Index(1,1), Index(3,1)};
@@ -1012,85 +1013,102 @@ double
 BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
                                  const vector<TestPointOrbitData> &mTestPointOrbits, const double Y,
                                  const vector<pair<Index, int>> &nIndexOrbitDataModSign) {
-    double answer = 0;
+    auto nComplex = n.getComplex(d);
+    auto mComplex = m.getComplex(d);
+    auto nAbs = abs(nComplex);
+    auto mAbs = abs(mComplex);
+    auto twoPiOverATimesNAbs = twoPiOverA * nAbs;
+    size_t size = mTestPointOrbits.size();
 
     unsigned long long int pointCount = 0;
     for (const auto& orbit : mTestPointOrbits) {
-        pointCount += (orbit.properTranslatesModSign.size() + 1) * 2;
+        pointCount += (orbit.properTranslatesModSign.size() + 1);
     }
+    pointCount *= 2;
+
+    vector<double> yStars;
+    vector<double> bessels;
+    vector<double> xStarTerms;
+    vector<double> xTerms;
 
     if (symClass == 'D' || symClass == 'G' || d == 1) {
-        vector<double> terms;
-        terms.reserve(mTestPointOrbits.size());
         for (const auto& testPointOrbit : mTestPointOrbits) {
             auto x = testPointOrbit.representativeComplex;
             auto pullback = testPointOrbit.representativePullback;
-
+            auto xStar = pullback.getComplex();
 
             //toAdd =  ystar * kappa(2*pi/A*|n|*ystar) * e(symClass, n, x^*) * exp(-pi*I/A * <I*m,x>)
             double yStar = pullback.getJ();
-            double term = yStar * K.approxKBessel(2 * pi / A * n.getAbs(d) * yStar);
+            yStars.push_back(yStar);
+            double bess = K.approxKBessel(twoPiOverATimesNAbs * yStar);
+            bessels.push_back(bess);
 
             double indexTerm = 0;
             for (const auto& tup : nIndexOrbitDataModSign) {
                 Index l = tup.first;
-                complex<double> xStar = pullback.getComplex();
                 double ellTerm = tup.second; //This is a_l/a_n
-                ellTerm *= cos(pi/A * traceProduct(I* l.getComplex(d), xStar));
+                ellTerm *= cos(piOverA * traceProduct(I* l.getComplex(d), xStar));
                 indexTerm += ellTerm;
             }
-            term *= indexTerm;
+            xStarTerms.push_back(indexTerm);
 
-            double testPointTerm = cos(pi/A * traceProduct(-I* m.getComplex(d), x));
+            double testPointTerm = cos(piOverA * traceProduct(-I* mComplex, x));
             for (const auto& tup : testPointOrbit.properTranslatesModSign) {
                 complex<double> etaX = tup.first;
                 short sign = tup.second;
-                testPointTerm += sign * cos(pi/A * traceProduct(-I* m.getComplex(d), etaX));
+                testPointTerm += sign * cos(piOverA * traceProduct(-I* mComplex, etaX));
             }
-            term *= testPointTerm;
-
-            terms.push_back(term);
+            xTerms.push_back(testPointTerm);
         }
-        answer = Aux.kahanSummation(terms);
-        answer *= -4.0 / pointCount;
     } else {
-        vector<double> terms;
-        terms.reserve(mTestPointOrbits.size());
         for (const auto& testPointOrbit : mTestPointOrbits) {
             auto x = testPointOrbit.representativeComplex;
             auto pullback = testPointOrbit.representativePullback;
+            auto xStar = pullback.getComplex();
 
+            //toAdd =  ystar * kappa(2*pi/A*|n|*ystar) * e(symClass, n, x^*) * exp(-pi*I/A * <I*m,x>)
             double yStar = pullback.getJ();
-            double term = yStar * K.approxKBessel(2 * pi / A * n.getAbs(d) * yStar);
+            yStars.push_back(yStar);
+            double bess = K.approxKBessel(twoPiOverATimesNAbs * yStar);
+            bessels.push_back(bess);
 
             double indexTerm = 0;
             for (const auto& tup : nIndexOrbitDataModSign) {
-                Index l = get<0>(tup);
-                complex<double> xStar = pullback.getComplex();
-                double ellTerm = get<1>(tup); //This is a_l/a_n
-                ellTerm *= sin(pi/A * traceProduct(I* l.getComplex(d), xStar));
+                Index l = tup.first;
+                double ellTerm = tup.second; //This is a_l/a_n
+                ellTerm *= sin(piOverA * traceProduct(I* l.getComplex(d), xStar));
                 indexTerm += ellTerm;
             }
-            term *= indexTerm;
+            xStarTerms.push_back(indexTerm);
 
-            double testPointTerm = sin(pi/A * traceProduct(-I* m.getComplex(d), x));
+            double testPointTerm = sin(piOverA * traceProduct(-I* mComplex, x));
             for (const auto& tup : testPointOrbit.properTranslatesModSign) {
-                complex<double> etaX = get<0>(tup);
-                short sign = get<1>(tup);
-                testPointTerm += sign * sin(pi/A * traceProduct(-I* m.getComplex(d), etaX));
+                complex<double> etaX = tup.first;
+                short sign = tup.second;
+                testPointTerm += sign * sin(piOverA * traceProduct(-I* mComplex, etaX));
             }
-            term *= testPointTerm;
-
-            terms.push_back(term);
+            xTerms.push_back(testPointTerm);
         }
-        answer = Aux.kahanSummation(terms);
-        answer *= +4.0 / pointCount;
+    }
+
+    vector<double> terms;
+    terms.resize(size, 0);
+#pragma omp simd
+    for (size_t i = 0; i < size; ++i) {
+        terms[i] = yStars[i] * bessels[i] * xStarTerms[i] * xTerms[i];
+    }
+
+    double answer = Aux.kahanSummation(terms);
+    if (symClass == 'D' || symClass == 'G' || d == 1) {
+        answer *= -4.0 / pointCount;
+    } else {
+        answer *= 4.0 / pointCount;
     }
 
     //Add on the kronecker delta term
     if (m == n) {
         //deltaTerm = Y * kappa(2*pi/A*|m|*Y)
-        double deltaTerm = Y * K.exactKBessel(2 * pi / A * m.getAbs(d) * Y);
+        double deltaTerm = Y * K.exactKBessel(twoPiOverA * mAbs * Y);
 
         answer += deltaTerm;
     }

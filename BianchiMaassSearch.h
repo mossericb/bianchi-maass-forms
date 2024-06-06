@@ -66,6 +66,7 @@ private:
 
     double pi = 3.141592653589793238462643383279502884197;
     double twoPiOverA;
+    double piOverA;
     complex<double> I = {0,1};
 
     double tolerance;
