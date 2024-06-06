@@ -22,7 +22,7 @@ Auxiliary::Auxiliary() {
     sums.resize(threads);
 
     for (int i = 0; i < threads; i++) {
-        mpfr_init2(&sums[i], 2000);
+        mpfr_init2(&sums[i], 1076);
     }
 }
 
@@ -335,6 +335,21 @@ double Auxiliary::nextWithinOrderOfMag(double x) {
     double g = floor(x/pow(10.0,f));
     double h = (g + 1)*pow(10.0,f);
     return h;
+}
+
+double Auxiliary::kahanSummation(std::vector<double> &numbers) {
+    std::sort(numbers.begin(), numbers.end(), [] (double left, double right) {
+        return abs(left) < abs(right);
+    });
+    double volatile sum = 0.0;
+    double volatile c = 0.0;
+    for (const auto n : numbers) {
+        double volatile y = n - c;
+        double volatile t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    return sum;
 }
 
 

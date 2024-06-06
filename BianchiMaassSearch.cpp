@@ -1021,6 +1021,7 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
 
     if (symClass == 'D' || symClass == 'G' || d == 1) {
         vector<double> terms;
+        terms.reserve(mTestPointOrbits.size());
         for (const auto& testPointOrbit : mTestPointOrbits) {
             auto x = testPointOrbit.representativeComplex;
             auto pullback = testPointOrbit.representativePullback;
@@ -1050,10 +1051,11 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
 
             terms.push_back(term);
         }
-        answer = Aux.multiPrecisionSummation(terms);
+        answer = Aux.kahanSummation(terms);
         answer *= -4.0 / pointCount;
     } else {
         vector<double> terms;
+        terms.reserve(mTestPointOrbits.size());
         for (const auto& testPointOrbit : mTestPointOrbits) {
             auto x = testPointOrbit.representativeComplex;
             auto pullback = testPointOrbit.representativePullback;
@@ -1081,7 +1083,7 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
 
             terms.push_back(term);
         }
-        answer = Aux.multiPrecisionSummation(terms);
+        answer = Aux.kahanSummation(terms);
         answer *= +4.0 / pointCount;
     }
 
@@ -1090,8 +1092,9 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
         //deltaTerm = Y * kappa(2*pi/A*|m|*Y)
         double deltaTerm = Y * K.exactKBessel(2 * pi / A * m.getAbs(d) * Y);
 
-        answer = Aux.multiPrecisionSummation({answer, deltaTerm});
+        answer += deltaTerm;
     }
+
     return answer;
 }
 
