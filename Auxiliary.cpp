@@ -341,8 +341,8 @@ double Auxiliary::kahanSummation(std::vector<double> &numbers) {
     std::sort(numbers.begin(), numbers.end(), [] (double left, double right) {
         return abs(left) < abs(right);
     });
-    double volatile sum = 0.0;
-    double volatile c = 0.0;
+    double sum = 0.0;
+    double c = 0.0;
     for (const auto n : numbers) {
         double volatile y = n - c;
         double volatile t = sum + y;
