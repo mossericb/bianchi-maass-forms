@@ -1773,10 +1773,12 @@ void BianchiMaassSearch::setUpOutputLogFiles() {
 
         mediumOutputFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
 
-        if (isFileEmpty(outputFilename)) {
-            mediumOutputFile << "d = " << d << '\n';
-            mediumOutputFile << "symClass = " << symClass << '\n';
-            mediumOutputFile << "D = " << D << std::endl;
+        if (mediumOutputFile.is_open()) {
+            if (isFileEmpty(outputFilename)) {
+                mediumOutputFile << "d = " << d << '\n';
+                mediumOutputFile << "symClass = " << symClass << '\n';
+                mediumOutputFile << "D = " << D << std::endl;
+            }
         } else {
             std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
         }
@@ -1794,9 +1796,12 @@ void BianchiMaassSearch::setUpOutputLogFiles() {
 
         fineOutputFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
 
-        if (isFileEmpty(outputFilename)) {
-            mediumOutputFile << "d = " << d << '\n';
-            mediumOutputFile << "symClass = " << symClass << std::endl;
+        if (fineOutputFile.is_open()) {
+            if (isFileEmpty(outputFilename)) {
+                fineOutputFile << "d = " << d << '\n';
+                fineOutputFile << "symClass = " << symClass << std::endl;
+                fineOutputFile << "D =" << D << std::endl;
+            }
         } else {
             std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
         }
