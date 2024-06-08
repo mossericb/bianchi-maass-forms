@@ -264,6 +264,12 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
         }
         mediumOutputFile << "Complete up to " << std::setprecision(16) << upper << std::endl;
     }
+
+    for (auto itr = KBessMap.begin(); itr != KBessMap.end(); ) {
+        delete itr->second;
+        KBessMap.erase(itr++);
+    }
+
 }
 
 void BianchiMaassSearch::fineSearchForEigenvalues() {
@@ -1427,6 +1433,8 @@ tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecan
             || phiN == phiNPlus1 //numerical error incoming, could just be very good convergence
             || rN == rNPlus1) {
 
+            delete leftRK;
+            delete rightRK;
             return {heckeValues, rN, rNPlus1};
 
         }
