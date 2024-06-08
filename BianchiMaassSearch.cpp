@@ -130,7 +130,7 @@ void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const do
         intervals.pop();
 
         if (autoPrecision) {
-            if (lastPrecisionRecompute + 2 < left) {
+            if (lastPrecisionRecompute + 1 < left) {
                 computeMaximumD(left, 180);
                 lastPrecisionRecompute = left;
                 std::cout << "D = " << D << std::endl;
@@ -200,11 +200,9 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
         intervals.pop();
 
         if (autoPrecision) {
-            if (lastPrecisionRecompute + 2 < spawnedIntervals.top().first) {
-                computeMaximumD(spawnedIntervals.top().first, 180);
-                lastPrecisionRecompute = spawnedIntervals.top().first;
-                std::cout << "D = " << D << std::endl;
-            }
+            computeMaximumD(spawnedIntervals.top().first, 180);
+            lastPrecisionRecompute = spawnedIntervals.top().first;
+            std::cout << "D = " << D << std::endl;
         }
 
         while (!spawnedIntervals.empty()) {
@@ -422,8 +420,6 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
     map<Index, vector<TestPointOrbitData>> mToY1TestPointOrbits;
     map<Index, vector<TestPointOrbitData>> mToY2TestPointOrbits;
 
-    mToY1TestPointOrbits.clear();
-    mToY2TestPointOrbits.clear();
     maxYStar = 0;
 
 
@@ -944,7 +940,7 @@ MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal
     auto duration = end - start;
     duration = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
 
-    nanosecondsPerTerm = ((double)duration.count())/terms;
+    nanosecondsPerTerm = ((double)duration.count())/((double)terms);
 
     watch(nanosecondsPerTerm);
 
@@ -1104,13 +1100,7 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
         terms[i] = yStars[i] * bessels[i] * xStarTerms[i] * xTerms[i];
     }
 
-    double answer = 0;
-    std::sort(terms.begin(), terms.end(), [] (double left, double right) {
-        return abs(left) < abs(right);
-    });
-    for (auto const t : terms) {
-        answer += t;
-    }
+    double answer = Aux.kahanSummation(terms);
 
     if (symClass == 'D' || symClass == 'G' || d == 1) {
         answer *= -4.0 / pointCount;
@@ -1507,6 +1497,9 @@ double BianchiMaassSearch::computeWellConditionedY(KBessel *K, double r, double 
 
     upperY = Y + 0.5 * c;
     lowerY = Y - 0.5 * c;
+    if (lowerY <= 0) {
+        lowerY = Y * 0.5;
+    }
 
     heightsToTry.clear();
 
@@ -1527,9 +1520,6 @@ double BianchiMaassSearch::computeWellConditionedY(KBessel *K, double r, double 
         minDiag[i] = minBess(K, indexTransversal, testY);
     }
 
-
-    Y = 0;
-    maxSoFar = 0;
     //heightsToTry is sorted smallest to largest
     for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
         double maxMinBess = minDiag[i];
@@ -1593,6 +1583,9 @@ BianchiMaassSearch::computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, d
 
     upperY = Y + 0.5 * c;
     lowerY = Y - 0.5 * c;
+    if (lowerY <= 0) {
+        lowerY = 0.5 * Y;
+    }
 
     heightsToTry.clear();
 
@@ -1622,9 +1615,6 @@ BianchiMaassSearch::computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, d
         r1MinDiag[i] = minBess(leftRK, indexTransversal, testY);
     }
 
-
-    Y = 0;
-    maxSoFar = 0;
     //heightsToTry is sorted smallest to largest
     for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
         double maxMinBess = std::min({r1MinDiag[i],
@@ -1640,6 +1630,10 @@ BianchiMaassSearch::computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, d
 pair<double, double>
 BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR,
                                                double M0, const vector<Index> &indexTransversal) {
+    if (leftR < 12.1 && 12.1 < rightR) {
+        int a = 0;
+    }
+
     double c = max(1.0, rightR)/(2*pi/A*M0);
     double upperY = Y0;
     double lowerY = 0.5 * max(1.0, rightR)/(2*pi/A*M0);
@@ -1652,9 +1646,6 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK
         tempY *= 0.99;
     }
     std::sort(heightsToTry.begin(), heightsToTry.end());
-
-    vector<double> r1ConditionNumbers;
-    vector<double> r2ConditionNumbers;
 
     vector<double> r1MinDiag(heightsToTry.size(), 0);
     vector<double> r2MinDiag(heightsToTry.size(), 0);
@@ -1696,6 +1687,9 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK
 
     upperY = ansY2 + 0.5 * c;
     lowerY = ansY1 - 0.5 * c;
+    if (lowerY <= 0) {
+        lowerY = 0.5 * ansY1;
+    }
 
     heightsToTry.clear();
 
@@ -1724,9 +1718,6 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK
         r1MinDiag[i] = minBess(leftRK, indexTransversal, Y);
     }
 
-
-    ansY1 = 0;
-    ansY2 = 0;
     //heightsToTry is sorted smallest to largest
     for (int i = 0; i <= heightsToTry.size() - 2; i++) {//end i at second to last because Y2 has to be greater
         for (int j = i + 1; j < heightsToTry.size(); j++) {//j is always less than i, so j indexes a larger Y
@@ -2024,7 +2015,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     vector<Index> indexTransversal = get<0>(data);
 
     double Y = computeWellConditionedY(K, r, M0, indexTransversal);
-
+    delete K;
     double MY = computeMYGeneral(M0, Y);
 
     for (auto m : indexTransversal) {
@@ -2057,6 +2048,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     if (leftTerms >= maxTerms && rightTerms >= maxTerms) {
         D = minD;
         truncation = pow(10.0, -D);
+        return;
     }
 
     //In this case, both precisions will finish on time, so we return the largest
@@ -2073,6 +2065,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
         }
         D = max(minD, answer);
         truncation = pow(10.0, -D);
+        return;
     }
 
     while (rightD - leftD > 0.1) {
@@ -2113,5 +2106,6 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
 
     D = max(minD, answer);
     truncation = pow(10.0, -D);
+    return;
 }
 

@@ -31,8 +31,11 @@ public:
     static double imagTheta(int d);
     double multiPrecisionSummation(const std::vector<double>& numbers);
     double kahanSummation(std::vector<double> &numbers);
+    double kahanSummationUnvectorized(std::vector<double> &numbers);
     static double nextWithinOrderOfMag(double x);
     //static double pi;
+
+    static int SIMD_DOUBLE_WIDTH;
 
 private:
     std::vector<__mpfr_struct> sums;

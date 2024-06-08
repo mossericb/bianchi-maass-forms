@@ -13,6 +13,8 @@
 
 #include <algorithm>
 
+int Auxiliary::SIMD_DOUBLE_WIDTH = 2;
+
 Auxiliary::Auxiliary() {
 
 #pragma omp parallel default(none)
@@ -340,6 +342,10 @@ double Auxiliary::nextWithinOrderOfMag(double x) {
 }
 
 double Auxiliary::kahanSummation(std::vector<double> &numbers) {
+    return kahanSummationUnvectorized(numbers);
+}
+
+double Auxiliary::kahanSummationUnvectorized(std::vector<double> &numbers) {
     std::sort(numbers.begin(), numbers.end(), [] (double left, double right) {
         return abs(left) < abs(right);
     });
@@ -354,7 +360,6 @@ double Auxiliary::kahanSummation(std::vector<double> &numbers) {
     }
     return sum;
 }
-
 
 
 
