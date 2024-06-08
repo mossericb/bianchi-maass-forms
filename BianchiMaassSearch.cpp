@@ -182,12 +182,6 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
      *
      */
 
-    double lastPrecisionRecompute = intervals.top().first;
-    if (autoPrecision) {
-        computeMaximumD(lastPrecisionRecompute, 180);
-        std::cout << "D = " << D << std::endl;
-    }
-
     //Magic number!
     double weylEigenvalueCount = 0.0005;
 
@@ -201,7 +195,6 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
 
         if (autoPrecision) {
             computeMaximumD(spawnedIntervals.top().first, 180);
-            lastPrecisionRecompute = spawnedIntervals.top().first;
             std::cout << "D = " << D << std::endl;
         }
 
