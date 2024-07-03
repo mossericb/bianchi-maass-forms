@@ -65,7 +65,7 @@ add_executable(${PROJECT_NAME}
         ImaginaryQuadraticIntegers.cpp
         ImaginaryQuadraticIntegers.h
         archtKBessel.h
-        archtKBessel.cpp)
+        archtKBessel.cpp KBesselReal.cpp KBesselReal.h)
 
 target_link_libraries(${PROJECT_NAME} ${FLINT_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${ARB_LIBRARY})

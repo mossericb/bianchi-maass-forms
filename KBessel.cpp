@@ -11,6 +11,8 @@
 #include <boost/math/differentiation/finite_difference.hpp>
 #include "omp.h"
 #include "Auxiliary.h"
+#include "arb.h"
+#include "arb_hypgeom.h"
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl
 /*
@@ -22,7 +24,7 @@
  *
  */
 
-KBessel::KBessel(double precomputeLowerBound, double r) {
+KBessel::KBessel(double precomputeLowerBound, double lambda) {
     precomputedRegionLeftBound = precomputeLowerBound;
     precomputedRegionRightBound = precomputeLowerBound;
 
@@ -32,25 +34,40 @@ KBessel::KBessel(double precomputeLowerBound, double r) {
         threads = omp_get_max_threads();
     }
 
-    K.reserve(threads);
-    for (int i = 0; i < threads; i++) {
-        K.push_back(new archtKBessel(r));
+    K.resize(threads);
+    KReal.resize(threads);
+
+    if (lambda <= 1) {
+        for (int i = 0; i < threads; i++) {
+            KReal[i] = new KBesselReal(lambda);
+        }
+    } else {
+        for (int i = 0; i < threads; i++) {
+            K[i] = new archtKBessel(lambda);
+        }
     }
 
-    setRAndClear(r);
+    setLambdaAndClear(lambda);
 }
 
 KBessel::~KBessel() {
     for (auto bess : K) {
         delete bess;
     }
+    for (auto bess : KReal) {
+        delete bess;
+    }
     K.clear();
+    KReal.clear();
 }
 
 double KBessel::exactKBessel(double x) {
     int threadNum = omp_get_thread_num();
-    double ans = K[threadNum]->evaluate(x);
-    return ans;
+    if (lambda <= 1) {
+        return KReal[threadNum]->evaluate(x);
+    } else {
+        return K[threadNum]->evaluate(x);
+    }
 }
 
 double KBessel::approxKBessel(const double x) {
@@ -99,24 +116,37 @@ double KBessel::approxKBessel(const double x) {
     }
 }
 
-void KBessel::setRAndPrecompute(double newR, double precomputeUpperBound) {
-    setRAndClear(newR);
+void KBessel::setLambdaAndPrecompute(double lambda, double precomputeUpperBound) {
+    setLambdaAndClear(lambda);
 
     extendPrecomputedRange(precomputeUpperBound);
 }
 
-void KBessel::setRAndClear(double newR) {
-    r = newR;
+void KBessel::setLambdaAndClear(double lambda) {
 
-    for (auto A : K) {
-        A->setR(r);
+    this->lambda = lambda;
+    if (lambda <= 1) {
+        for (auto bess : KReal) {
+            bess->setLambda(lambda);
+        }
+    } else {
+        for (auto A : K) {
+            A->setLambda(lambda);
+        }
     }
+
 
     chunkWidth = 1.0;
 
     //In general, I expect oscillation to start happening around r - 1
     //However, I always want to make sure that this value is always past the left bound
-    firstChunkLeftEndpoint = std::max(r - 1, precomputedRegionLeftBound + 1);
+    if (lambda <= 1) {
+        firstChunkLeftEndpoint = precomputedRegionLeftBound + 1;
+    } else {
+        double r = sqrt(lambda - 1);
+        firstChunkLeftEndpoint = std::max(r - 1, precomputedRegionLeftBound + 1);
+    }
+
 
     //set what I want the last width (this is the widest shrinking chunk)
     double shrinkingChunkMaxLastWidth = std::min(1.0, (firstChunkLeftEndpoint - precomputedRegionLeftBound)/2);
@@ -137,8 +167,17 @@ void KBessel::setRAndClear(double newR) {
     }
 
     numberOfShrinkingChunks = n;
+    if (lambda <= 1) {
+        double test = 650.0;
+        while (KReal[0]->evaluate(test) > 0) {
+            test += 10;
+        }
+        zeroCutoff = test;
+    } else {
+        double r = sqrt(lambda - 1);
+        zeroCutoff = (1136 + PI*r/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
+    }
 
-    zeroCutoff = (1136 + PI*r/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
 
     chunkStepSize.clear();
     shrinkingChunkStepSize.clear();

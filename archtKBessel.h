@@ -7,10 +7,10 @@
 
 class archtKBessel {
 public:
-    explicit archtKBessel(double r);
+    explicit archtKBessel(double lambda);
     ~archtKBessel();
 
-    void setR(double r);
+    void setLambda(double lambda);
     double evaluate(double x);
 private:
     static constexpr double PI = 3.141592653589793238462643383279;
@@ -20,6 +20,7 @@ private:
 
     mpfr_t acc;
 
+    double lambda;
     double r;
 
     std::vector<mpfi_ptr> vec_f;

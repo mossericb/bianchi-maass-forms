@@ -103,12 +103,12 @@ BianchiMaassSearch::BianchiMaassSearch(string mode, int d, double D, char symCla
 }
 
 
-void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const double rightR) {
-    if (leftR >= rightR) {
+void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftLambda, const double rightLambda) {
+    if (leftLambda >= rightLambda) {
         throw(std::invalid_argument("leftR should be less than rightR"));
     }
 
-    auto intervalsFromFile = getIntervalsForCoarseSearch(leftR, rightR);
+    auto intervalsFromFile = getIntervalsForCoarseSearch(leftLambda, rightLambda);
 
     stack<pair<double,double>> intervals;
 
@@ -122,8 +122,8 @@ void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const do
         std::cout << "D = " << D << std::endl;
     }
 
-    KBessel* leftRK = new KBessel(twoPiOverA * 1 * Y0, intervals.top().first);
-    KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, intervals.top().second);
+    KBessel* leftLambdaK = new KBessel(twoPiOverA * 1 * Y0, intervals.top().first);
+    KBessel* rightLambdaK = new KBessel(twoPiOverA * 1 * Y0, intervals.top().second);
     while (!intervals.empty()) {
         double left = intervals.top().first;
         double right = intervals.top().second;
@@ -137,16 +137,16 @@ void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const do
             }
         }
 
-        rightRK = new KBessel(twoPiOverA * 1 * Y0, right);
-        if (possiblyContainsEigenvalue(left, right, leftRK, rightRK)) {
+        rightLambdaK = new KBessel(twoPiOverA * 1 * Y0, right);
+        if (possiblyContainsEigenvalue(left, right, leftLambdaK, rightLambdaK)) {
             coarseOutputFile << std::setprecision(16) << "[" << left << ", " << right << "]" << std::endl;
         }
-        delete leftRK;
-        leftRK = rightRK;
+        delete leftLambdaK;
+        leftLambdaK = rightLambdaK;
 
         coarseOutputFile << std::setprecision(16) << "Complete up to " << right << std::endl;
     }
-    delete rightRK;
+    delete rightLambdaK;
 }
 
 void BianchiMaassSearch::mediumSearchForEigenvalues() {
@@ -293,15 +293,15 @@ void BianchiMaassSearch::fineSearchForEigenvalues() {
             continue;
         }
 
-        double firstR = get<1>(firstPassOutput);
-        double secondR = get<2>(firstPassOutput);
+        double firstLambda = get<1>(firstPassOutput);
+        double secondLambda = get<2>(firstPassOutput);
 
         if (autoPrecision) {
             computeMaximumD(intervals.top().first, 180);
             std::cout << "D = " << D << std::endl;
         }
 
-        auto secondPassOutput = fineSecantMethod(firstR, secondR);
+        auto secondPassOutput = fineSecantMethod(firstLambda, secondLambda);
         auto secondPassHecke = get<0>(secondPassOutput);
         lastHecke = secondPassHecke[secondPassHecke.size() - 1].second;
         if (lastHecke > 1) {
@@ -378,7 +378,7 @@ void BianchiMaassSearch::fineSearchForEigenvalues() {
 }
 
 
-bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const double rightR, KBessel *leftRK, KBessel *rightRK) {
+bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftLambda, const double rightLambda, KBessel *leftLambdaK, KBessel *rightLambdaK) {
     //Assume that I will have to recompute everything multiple times here, so don't bother checking otherwise
 
     //First time through, compute the condition number everywhere to get an idea of how low you can go
@@ -386,9 +386,9 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
     //the condition number is close to the computed ballpark
 
     std::cout << std::setprecision(16)
-              << "[" << leftR << ", " << rightR << "]" << std::endl;
+              << "[" << leftLambda << ", " << rightLambda << "]" << std::endl;
 
-    double M0 = computeM0General(rightR);
+    double M0 = computeM0General(rightLambda);
 
     vector<Index> indicesM0 = Od.indicesUpToM(M0);
     auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
@@ -403,7 +403,7 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
         }
     }
 
-    auto pairOfYs = computeTwoWellConditionedY(leftRK, rightRK, leftR, rightR, M0, indexTransversal);
+    auto pairOfYs = computeTwoWellConditionedY(leftLambdaK, rightLambdaK, leftLambda, rightLambda, M0, indexTransversal);
 
     double Y1 = pairOfYs.first;
     double Y2 = pairOfYs.second;
@@ -442,22 +442,22 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
         }
     }
 
-    leftRK->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-    MatrixXd matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, *leftRK);
-    MatrixXd matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, *leftRK);
+    leftLambdaK->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
+    MatrixXd matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, *leftLambdaK);
+    MatrixXd matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, *leftLambdaK);
 
-    auto solAndCondY1R1 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
-    auto solAndCondY2R1 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
+    auto solAndCondY1Lambda1 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
+    auto solAndCondY2Lambda1 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
 
-    rightRK->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-    matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, *rightRK);
-    matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, *rightRK);
+    rightLambdaK->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
+    matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, *rightLambdaK);
+    matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, *rightLambdaK);
 
-    auto solAndCondY1R2 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
-    auto solAndCondY2R2 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
+    auto solAndCondY1Lambda2 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
+    auto solAndCondY2Lambda2 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
 
-    std::cout << solAndCondY1R1.second << " " << solAndCondY2R1.second << " ";
-    std::cout << solAndCondY1R2.second << " " << solAndCondY2R2.second << std::endl;
+    std::cout << solAndCondY1Lambda1.second << " " << solAndCondY2Lambda1.second << " ";
+    std::cout << solAndCondY1Lambda2.second << " " << solAndCondY2Lambda2.second << std::endl;
 
     /*
      * When you have to start over, for whatever reason, this means that condition numbers
@@ -467,18 +467,18 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
      * search goal lower again.
      */
 
-    vector<double> coeffDiffR1(indexTransversal.size(),NAN);
-    vector<double> coeffDiffR2(indexTransversal.size(),NAN);
+    vector<double> coeffDiffLambda1(indexTransversal.size(), NAN);
+    vector<double> coeffDiffLambda2(indexTransversal.size(), NAN);
 
     for (int i = 0; i < indexTransversal.size(); i++) {
-        coeffDiffR1[i] = solAndCondY1R1.first(i) - solAndCondY2R1.first(i);
-        coeffDiffR2[i] = solAndCondY1R2.first(i) - solAndCondY2R2.first(i);
+        coeffDiffLambda1[i] = solAndCondY1Lambda1.first(i) - solAndCondY2Lambda1.first(i);
+        coeffDiffLambda2[i] = solAndCondY1Lambda2.first(i) - solAndCondY2Lambda2.first(i);
     }
 
-    int signChanges = countSignChanges(coeffDiffR1, coeffDiffR2);
-    std::cout << signChanges << "/" << coeffDiffR1.size() << std::endl;
+    int signChanges = countSignChanges(coeffDiffLambda1, coeffDiffLambda2);
+    std::cout << signChanges << "/" << coeffDiffLambda1.size() << std::endl;
 
-    int possibleSignChanges = coeffDiffR1.size() - 1;
+    int possibleSignChanges = coeffDiffLambda1.size() - 1;
     double proportion = ((double)signChanges)/possibleSignChanges;
     if (proportion >=  0.5) {
         return true;
@@ -487,8 +487,8 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
     }
 }
 
-double BianchiMaassSearch::computeM0General(const double r) {
-    archtKBessel bess(r);
+double BianchiMaassSearch::computeM0General(const double lambda) {
+    KBessel bess(1, lambda);
 
     //Method: use binary search to find M0 such that
     //K(2*pi/A * M0 * Y0) = 10^-D * K(max(r,1))
@@ -497,27 +497,40 @@ double BianchiMaassSearch::computeM0General(const double r) {
     //ON THE DISTRIBUTION OF EIGENVALUES OF MAASS FORMS ON CERTAIN MOONSHINE GROUPS
 
     //Step 1: Make sure the equality point happens between my left and right endpoints
-    double minM0 = max(r, 1.0)/(2*pi/A*Y0);
-    double maxM0 = 100;
+    double minM0 = 0;
+    if (lambda <= 1) {
+        minM0 = 1.0/(2 * pi / A * Y0);
+    } else {
+        double r = sqrt(lambda - 1);
+        minM0 = max(r, 1.0) / (2 * pi / A * Y0);
+    }
+    double maxM0 = 700.0 / (2 * pi / A * Y0);
 
-    double peak = bess.evaluate(max(r,1.0));
-    double evalLeft = truncation * peak - bess.evaluate(2*pi/A*minM0*Y0);
-    double evalRight = truncation * peak - bess.evaluate(2*pi/A*maxM0*Y0);
+    double peak = 0;
+    if (lambda <= 1) {
+        peak = bess.exactKBessel(2*pi/A*1*Y0);
+    } else {
+        double r = sqrt(lambda - 1);
+        peak = bess.exactKBessel(max(r, 1.0));
+    }
+
+    double evalLeft = truncation * peak - bess.exactKBessel(2*pi/A*minM0*Y0);
+    double evalRight = truncation * peak - bess.exactKBessel(2*pi/A*maxM0*Y0);
     while (!areDifferentSign(evalLeft, evalRight)) {
         maxM0 *= 2;
-        evalRight = truncation * peak - bess.evaluate(2*pi/A*maxM0*Y0);
+        evalRight = truncation * peak - bess.exactKBessel(2*pi/A*maxM0*Y0);
     }
 
 
     //Step 2: Do binary search
     double left = minM0;
     double right = maxM0;
-    evalLeft = truncation * peak - bess.evaluate(2*pi/A*left*Y0);
+    evalLeft = truncation * peak - bess.exactKBessel(2*pi/A*left*Y0);
 
     //Super accuracy here doesn't really matter, but it's fast, so we go this far because we can
     while (right - left > 0.000001) {
         double center = (left + right)/2.0;
-        double evalCenter = truncation * peak - bess.evaluate(2*pi/A*center*Y0);
+        double evalCenter = truncation * peak - bess.exactKBessel(2*pi/A*center*Y0);
 
         if (areDifferentSign(evalLeft, evalCenter)) {
             right = center;
@@ -548,74 +561,9 @@ double BianchiMaassSearch::computeMYGeneral(const double M0, const double Y) {
 unsigned long long int BianchiMaassSearch::countPointPullbackOrbits(const Index &m, double Y, double MY) {
     unsigned long long int answer = 0;
 
-    //These formulas provide bounds to guarantee that the DFT result is valid
-    double absRealM = abs(m.getComplex(d).real());
-    double absImagM = abs(m.getComplex(d).imag());
-    double Q0double = 0;
-    double Q1double = (MY + absRealM)/2.0;
-    if (Auxiliary::mod(-d, 4) == 1) {
-        double Q0doubleOption1 = MY + absRealM;
-        double Q0doubleOption2 = (MY + absImagM)/(2.0*A);
-        Q0double = max(Q0doubleOption1, Q0doubleOption2);
-    } else {
-        Q0double = (MY + absImagM)/(2.0*A);
-    }
-
-    int Q0 = ceil(Q0double);
-    int Q1 = ceil(Q1double);
-
-    //Tweak Q0 and Q1 to be exactly what we need for exploiting symmetry
-    if (Auxiliary::mod(-d, 4) == 1 && d != 3) {
-        //If -d = 1 mod 4 then we need Q0/Q1 to be an even integer for the map x -> -bar(x) to be defined on test points
-        if (Auxiliary::mod(Q0, Q1) == 0 && Auxiliary::mod(Q0 / Q1, 2) == 0) {
-            // Q0/Q1 is an even integer
-            // there is nothing to do!
-        } else {
-            // Q0/Q1 is not an even integer
-            int k = 0;
-            double quotient = ((double)Q0)/Q1;
-
-            while (!(2 * k < quotient && quotient < 2 * (k+1))) {
-                k++;
-            }
-
-            if (k == 0) {
-                Q0 = 2*Q1;
-            } else {
-                //It is true that 2k < Q0/Q1 < 2(k+1) and k > 0
-                int firstOptionQ0 = ceil(Q1 * 2 * (k+1));
-                while (!Auxiliary::mod(firstOptionQ0, 2 * (k + 1) == 0)) {
-                    firstOptionQ0++;
-                }
-                int firstOptionQ1 = firstOptionQ0/(2*(k+1));
-
-                int secondOptionQ0 = ceil(Q1 * 2 * k);
-                while (!Auxiliary::mod(secondOptionQ0, 2 * k == 0)) {
-                    secondOptionQ0++;
-                }
-                int secondOptionQ1 = secondOptionQ0/(2 * k);
-
-                //Now both give a valid number of points, choose the one that will have fewest points overall (4*Q0*Q1 total)
-                if (firstOptionQ0 * firstOptionQ1 < secondOptionQ0 * secondOptionQ1) {
-                    Q0 = firstOptionQ0;
-                    Q1 = firstOptionQ1;
-                } else {
-                    Q0 = secondOptionQ0;
-                    Q1 = secondOptionQ1;
-                }
-            }
-        }
-    } else if (d == 3 || d == 1) {
-        //So that we can do rotations by something other than -1, we need Q0=Q1
-        //Add a little numerical wiggle room
-        Q0 = max(Q0, Q1) + 1;
-        Q1 = Q0;
-    } else {
-        //We don't need to fiddle with the divisibility of Q0 and Q1
-        //Add some numerical wiggle room
-        Q0 += 1;
-        Q1 += 1;
-    }
+    auto Q0Q1 = computeQ0Q1(m, MY);
+    int Q0 = Q0Q1.first;
+    int Q1 = Q0Q1.second;
 
     //Now generate the representatives
     //then generate the orbits
@@ -653,75 +601,145 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
     //These formulas provide bounds to guarantee that the DFT result is valid
     double absRealM = abs(m.getComplex(d).real());
     double absImagM = abs(m.getComplex(d).imag());
-    double Q0double = 0;
-    double Q1double = (MY + absRealM)/2.0;
-    if (Auxiliary::mod(-d, 4) == 1) {
-        double Q0doubleOption1 = MY + absRealM;
-        double Q0doubleOption2 = (MY + absImagM)/(2.0*A);
-        Q0double = max(Q0doubleOption1, Q0doubleOption2);
+    double Q0double = (MY + absImagM)/A;
+    double Q1double = MY + absRealM;
+
+    int Q0 = floor(Q0double) + 1;
+    int Q1 = floor(Q1double) + 1;
+
+    //Method 1, only quotient by negation
+    long method1 = 0;
+    if (Aux.mod(Q0, 2) == 1 and Aux.mod(Q1,2) == 1) {
+        method1 = (Q0*Q1 - 1)/2 + 1;
     } else {
-        Q0double = (MY + absImagM)/(2.0*A);
+        method1 = Q0*Q1/2;
     }
 
-    int Q0 = ceil(Q0double);
-    int Q1 = ceil(Q1double);
+    //Method 2, quotient by reflection
+    long method2 = 0;
+    int method2AdjustedQ0 = Q0;
+    int method2AdjustedQ1 = Q1;
 
-    //Tweak Q0 and Q1 to be exactly what we need for exploiting symmetry
-    if (Auxiliary::mod(-d, 4) == 1 && d != 3) {
-        //If -d = 1 mod 4 then we need Q0/Q1 to be an even integer for the map x -> -bar(x) to be defined on test points
-        if (Auxiliary::mod(Q0, Q1) == 0 && Auxiliary::mod(Q0 / Q1, 2) == 0) {
-            // Q0/Q1 is an even integer
-            // there is nothing to do!
+    if (method2AdjustedQ0 % 2 == 1) {
+        method2AdjustedQ0++;
+    }
+    if (method2AdjustedQ1 % 2 == 1) {
+        method2AdjustedQ1++;
+    }
+
+    if (method2AdjustedQ0 % method2AdjustedQ1 == 0 && (method2AdjustedQ0/method2AdjustedQ1) % 2 == 0) {
+        //do nothing
+    } else {
+        if ((1.0*method2AdjustedQ0)/method2AdjustedQ1 <= 2) {
+            method2AdjustedQ0 = 2 * method2AdjustedQ1;
         } else {
-            // Q0/Q1 is not an even integer
-            int k = 0;
-            double quotient = ((double)Q0)/Q1;
+            int k = 2;
+            while ( !(k <= ((1.0*Q0)/Q1) && ((1.0*Q0)/Q1) <= k + 2) ) {
+                k += 2;
+            }
 
-            while (!(2 * k < quotient && quotient < 2 * (k+1))) {
+            //either make the ratio go up to k+2 by pumping up Q0
+            int goUpQ0 = (k + 2) * method2AdjustedQ1;
+            int goUpQ1 = method2AdjustedQ1;
+
+            //or make the ratio go down to k by pumping up Q1
+            int goDownQ0 = method2AdjustedQ0;
+            while (goDownQ0 % k != 0) {
+                goDownQ0 += 2;
+            }
+
+            int goDownQ1 = goDownQ0/k;
+
+            if (goUpQ0 * goUpQ1 > goDownQ0 * goDownQ1) {
+                method2AdjustedQ0 = goDownQ0;
+                method2AdjustedQ1 = goDownQ1;
+            } else {
+                method2AdjustedQ0 = goUpQ0;
+                method2AdjustedQ1 = goUpQ1;
+            }
+        }
+    }
+
+    method2 = method2AdjustedQ0 * method2AdjustedQ1 / 4;
+
+    //Method 3, quotient by negation and then reflection as much as possible
+    long method3 = 0;
+
+    int method3AdjustedQ0 = Q0;
+    int method3AdjustedQ1 = Q1;
+
+    if (method2AdjustedQ1 % 2 == 0) {
+        method3AdjustedQ1++;
+    }
+
+    if (method3AdjustedQ0 % method3AdjustedQ1 == 0) {
+        // do nothing
+    } else {
+        if ((1.0*method3AdjustedQ0)/method3AdjustedQ1 <= 1) {
+            method3AdjustedQ0 = method3AdjustedQ1;
+        } else {
+            int k = 1;
+            while ( !(k <= (1.0*Q0)/Q1 && (1.0*Q0)/Q1 <= k + 1)) {
                 k++;
             }
 
-            if (k == 0) {
-                Q0 = 2*Q1;
+            //either make the ratio go up to k+1 by pumping up Q0
+            int goUpQ0 = (k + 1) * method3AdjustedQ1;
+            int goUpQ1 = method3AdjustedQ1;
+
+            //or make the ratio go down to k by pumping up Q1
+            int goDownQ0 = Q0;
+            while (goDownQ0 % k != 0 || (goDownQ0/k) % 2 != 1) {
+                goDownQ0++;
+            }
+
+            int goDownQ1 = goDownQ0/k;
+
+            if (goUpQ0*goUpQ1 + goUpQ0 + goUpQ1 > goDownQ0*goDownQ1 + goDownQ0 + goDownQ1) {
+                method3AdjustedQ0 = goDownQ0;
+                method3AdjustedQ1 = goDownQ1;
             } else {
-                //It is true that 2k < Q0/Q1 < 2(k+1) and k > 0
-                int firstOptionQ0 = ceil(Q1 * 2 * (k+1));
-                while (!Auxiliary::mod(firstOptionQ0, 2 * (k + 1) == 0)) {
-                    firstOptionQ0++;
-                }
-                int firstOptionQ1 = firstOptionQ0/(2*(k+1));
-
-                int secondOptionQ0 = ceil(Q1 * 2 * k);
-                while (!Auxiliary::mod(secondOptionQ0, 2 * k == 0)) {
-                    secondOptionQ0++;
-                }
-                int secondOptionQ1 = secondOptionQ0/(2 * k);
-
-                //Now both give a valid number of points, choose the one that will have fewest points overall (4*Q0*Q1 total)
-                if (firstOptionQ0 * firstOptionQ1 < secondOptionQ0 * secondOptionQ1) {
-                    Q0 = firstOptionQ0;
-                    Q1 = firstOptionQ1;
-                } else {
-                    Q0 = secondOptionQ0;
-                    Q1 = secondOptionQ1;
-                }
+                method3AdjustedQ0 = goUpQ0;
+                method3AdjustedQ1 = goUpQ1;
             }
         }
-    } else if (d == 3 || d == 1) {
-        //So that we can do rotations by something other than -1, we need Q0=Q1
-        //Add a little numerical wiggle room
-        Q0 = max(Q0, Q1) + 1;
-        Q1 = Q0;
-    } else {
-        //We don't need to fiddle with the divisibility of Q0 and Q1
-        //Add some numerical wiggle room
-        Q0 += 1;
-        Q1 += 1;
     }
+    method3 = method3AdjustedQ0*method3AdjustedQ1 + method3AdjustedQ0 + method3AdjustedQ1;
+    method3 /= 4;
 
+    char method = 1;
+    if (method2 < method1 && method2 < method3) {
+        method = 2;
+        Q0 = method2AdjustedQ0;
+        Q1 = method2AdjustedQ1;
+    } else if (method3 < method1 && method3 < method2) {
+        method = 3;
+        Q0 = method3AdjustedQ0;
+        Q1 = method3AdjustedQ1;
+    } else {
+        //Q0 and Q1 stay the same
+    }
+    double xi0 = Q0 % 2 == 0 ? 0.5 : 0;
+    double xi1 = Q1 % 2 == 0 ? 0.5 : 0;
+    int L0 = Q0 % 2 == 0 ? 1 - Q0/2 : (1 - Q0)/2;
+    int U0 = Q0 % 2 == 0 ? Q0/2 : (Q0 - 1)/2;
+    int L1 = Q1 % 2 == 0 ? 1 - Q1/2 : (1 - Q1)/2;
+    int U1 = Q1 % 2 == 0 ? Q1/2 : (Q1 - 1)/2;
 
     short nonsquareUnitSign = (symClass == 'D' || symClass == 'G') ? 1 : -1;
     short reflectionSign = (symClass == 'D' || symClass == 'C') ? 1 : -1;
+
+    if (Aux.mod(-d, 4) == 1) {
+        for (int l0 = L0; l0 <= U0; l0++) {
+            for (int l1 = L1; l1 <= U1; l1++) {
+                complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
+            }
+        }
+
+
+    } else {
+
+    }
 
     //Now generate the representatives
     //then generate the orbits
@@ -1159,26 +1177,46 @@ double BianchiMaassSearch::heckeCheck(map<Index, double>& coeffMap) {
     return abs(hecke1) + abs(hecke2);
 }
 
-double BianchiMaassSearch::minBess(KBessel *K, const vector<Index> &indexTransversal, double Y) {
-    double min = +INFINITY;
+double BianchiMaassSearch::approxCondition(KBessel *K, const vector<Index> &indexTransversal, double Y) {
 
-    for(const auto index : indexTransversal) {
-        double arg = 2 * pi / A * index.getAbs(d) * Y;
-        if (arg > K->getR()) {
-            break;
+    if (K->getLambda() <= 1) {
+        double min = +INFINITY;
+        double max = -INFINITY;
+
+
+        for(const auto index : indexTransversal) {
+            double arg = 2 * pi / A * index.getAbs(d) * Y;
+            double bess = Y * K->exactKBessel(arg);
+            if (abs(bess) < min) {
+                min = abs(bess);
+            }
+            if (abs(bess) > max) {
+                max = abs(bess);
+            }
         }
+
+        return max/min;
+    } else {
+        double min = +INFINITY;
+
+        for(const auto index : indexTransversal) {
+            double arg = 2 * pi / A * index.getAbs(d) * Y;
+            if (arg > K->getLambda()) {
+                break;
+            }
+            double bess = Y * K->exactKBessel(arg);
+            if (abs(bess) < min) {
+                min = abs(bess);
+            }
+        }
+        double arg = 2 * pi / A * indexTransversal[indexTransversal.size() - 1].getAbs(d) * Y;
         double bess = Y * K->exactKBessel(arg);
         if (abs(bess) < min) {
             min = abs(bess);
         }
-    }
-    double arg = 2 * pi / A * indexTransversal[indexTransversal.size() - 1].getAbs(d) * Y;
-    double bess = Y * K->exactKBessel(arg);
-    if (abs(bess) < min) {
-        min = abs(bess);
-    }
 
-    return min;
+        return 1.0/min;
+    }
 }
 
 
@@ -1218,18 +1256,18 @@ bool BianchiMaassSearch::isFileEmpty(const string &filename) {
 }
 
 
-tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecantMethod(double leftR, double rightR) {
+tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecantMethod(double leftLambda, double rightLambda) {
     std::cout << "Starting final refinement." << std::endl;
-    std::cout << std::setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
+    std::cout << std::setprecision(16) << "[" << leftLambda << ", " << rightLambda << "]" << std::endl;
 
-    double M0 = computeM0General(rightR);
+    double M0 = computeM0General(rightLambda);
 
-    KBessel* leftRK = new KBessel(2 * pi / A /*usual factor*/
+    KBessel* leftLambdaK = new KBessel(2 * pi / A /*usual factor*/
                         * 1 /*smallest magnitude of an index*/
                         * Y0 /*smallest height of a pullback*/
-            , leftR);
+            , leftLambda);
 
-    KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, rightR);
+    KBessel* rightLambdaK = new KBessel(twoPiOverA * 1 * Y0, rightLambda);
 
     vector<Index> indicesM0 = Od.indicesUpToM(M0);
     auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
@@ -1244,7 +1282,7 @@ tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecan
         }
     }
 
-    double Y = computeWellConditionedY(leftRK, rightRK, leftR, rightR, M0, indexTransversal);
+    double Y = computeWellConditionedY(leftLambdaK, rightLambdaK, leftLambda, rightLambda, M0, indexTransversal);
 
     double MY = computeMYGeneral(M0, Y);
 
@@ -1270,47 +1308,47 @@ tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecan
         }
     }
 
-    leftRK->setRAndPrecompute(leftR, 2 * pi / A * M0 * maxYStar);
-    MatrixXd matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, (*leftRK));
-    auto solAndCondYR1 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+    leftLambdaK->setLambdaAndPrecompute(leftLambda, 2 * pi / A * M0 * maxYStar);
+    MatrixXd matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, (*leftLambdaK));
+    auto solAndCondYLambda1 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
 
-    rightRK->setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
-    matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, (*rightRK));
-    auto solAndCondYR2 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+    rightLambdaK->setLambdaAndPrecompute(rightLambda, 2 * pi / A * M0 * maxYStar);
+    matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, (*rightLambdaK));
+    auto solAndCondYLambda2 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
 
-    std::cout << solAndCondYR1.second << " " << solAndCondYR2.second << std::endl;
+    std::cout << solAndCondYLambda1.second << " " << solAndCondYLambda2.second << std::endl;
 
 
-    map<Index, double> coeffMapR1, coeffMapR2;
+    map<Index, double> coeffMapLambda1, coeffMapLambda2;
 
     for (int i = 0; i < indexTransversal.size(); i++) {
         Index index = indexTransversal[i];
-        coeffMapR1[index] = solAndCondYR1.first(i);
-        coeffMapR2[index] = solAndCondYR2.first(i);
+        coeffMapLambda1[index] = solAndCondYLambda1.first(i);
+        coeffMapLambda2[index] = solAndCondYLambda2.first(i);
     }
 
     //We have the solutions from everything, now we cook up the phi function
 
-    double coeff0R1 = coeffMapR1.at(dToPrimes.at(d)[0]);
-    double coeff1R1 = coeffMapR1.at(dToPrimes.at(d)[1]);
-    double coeff2R1 = coeffMapR1.at(dToPrimes.at(d)[2]);
+    double coeff0Lambda1 = coeffMapLambda1.at(dToPrimes.at(d)[0]);
+    double coeff1Lambda1 = coeffMapLambda1.at(dToPrimes.at(d)[1]);
+    double coeff2Lambda1 = coeffMapLambda1.at(dToPrimes.at(d)[2]);
 
-    double coeff0R2 = coeffMapR2.at(dToPrimes.at(d)[0]);
-    double coeff1R2 = coeffMapR2.at(dToPrimes.at(d)[1]);
-    double coeff2R2 = coeffMapR2.at(dToPrimes.at(d)[2]);
+    double coeff0Lambda2 = coeffMapLambda2.at(dToPrimes.at(d)[0]);
+    double coeff1Lambda2 = coeffMapLambda2.at(dToPrimes.at(d)[1]);
+    double coeff2Lambda2 = coeffMapLambda2.at(dToPrimes.at(d)[2]);
 
     Index prod01 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[1], d);
     Index prod02 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[2], d);
 
-    double hecke1R1 = coeff0R1 * coeff1R1 - coeffMapR1.at(prod01);
-    double hecke2R1 = coeff0R1 * coeff2R1 - coeffMapR1.at(prod02);
-    hecke1R1 = abs(hecke1R1);
-    hecke2R1 = abs(hecke2R1);
+    double hecke1Lambda1 = coeff0Lambda1 * coeff1Lambda1 - coeffMapLambda1.at(prod01);
+    double hecke2Lambda1 = coeff0Lambda1 * coeff2Lambda1 - coeffMapLambda1.at(prod02);
+    hecke1Lambda1 = abs(hecke1Lambda1);
+    hecke2Lambda1 = abs(hecke2Lambda1);
 
-    double hecke1R2 = coeff0R2 * coeff1R2 - coeffMapR2.at(prod01);
-    double hecke2R2 = coeff0R2 * coeff2R2 - coeffMapR2.at(prod02);
-    hecke1R2 = abs(hecke1R2);
-    hecke2R2 = abs(hecke2R2);
+    double hecke1Lambda2 = coeff0Lambda2 * coeff1Lambda2 - coeffMapLambda2.at(prod01);
+    double hecke2Lambda2 = coeff0Lambda2 * coeff2Lambda2 - coeffMapLambda2.at(prod02);
+    hecke1Lambda2 = abs(hecke1Lambda2);
+    hecke2Lambda2 = abs(hecke2Lambda2);
 
 
     double phi1;
@@ -1330,8 +1368,8 @@ tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecan
 
         for (auto epsItr1 : epsilon) {
             for (auto epsItr2 : epsilon) {
-                phi1 = epsItr1*hecke1R1 + epsItr2*hecke2R1;
-                phi2 = epsItr1*hecke1R2 + epsItr2*hecke2R2;
+                phi1 = epsItr1 * hecke1Lambda1 + epsItr2 * hecke2Lambda1;
+                phi2 = epsItr1 * hecke1Lambda2 + epsItr2 * hecke2Lambda2;
                 if (areDifferentSign(phi1, phi2)) {
                     signChange = true;
                     eps1 = epsItr1;
@@ -1346,17 +1384,17 @@ tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecan
         n++;
     }
 
-    double rN = leftR;
+    double lambdaN = leftLambda;
     double phiN = phi1;
-    double rNPlus1 = rightR;
+    double lambdaNPlus1 = rightLambda;
     double phiNPlus1 = phi2;
 
-    std::cout << std::setprecision(16) << "r = " << leftR << ", " << heckeCheck(coeffMapR1) << std::endl;
-    std::cout << std::setprecision(16) << "r = " << rightR << ", " << heckeCheck(coeffMapR2) << std::endl;
+    std::cout << std::setprecision(16) << "r = " << leftLambda << ", " << heckeCheck(coeffMapLambda1) << std::endl;
+    std::cout << std::setprecision(16) << "r = " << rightLambda << ", " << heckeCheck(coeffMapLambda2) << std::endl;
 
     vector<pair<double, double>> heckeValues;
-    heckeValues.emplace_back(rN, heckeCheck(coeffMapR1));
-    heckeValues.emplace_back(rNPlus1, heckeCheck(coeffMapR2));
+    heckeValues.emplace_back(lambdaN, heckeCheck(coeffMapLambda1));
+    heckeValues.emplace_back(lambdaNPlus1, heckeCheck(coeffMapLambda2));
 
     int minIterations = 4;
     int maxIterations = 30;
@@ -1365,46 +1403,46 @@ tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecan
     while (true) {
         iterations++;
 
-        double nextR = findZeroOfLinearInterpolation(rN, phiN, rNPlus1, phiNPlus1);
+        double nextLambda = findZeroOfLinearInterpolation(lambdaN, phiN, lambdaNPlus1, phiNPlus1);
 
-        KBessel K = KBessel(twoPiOverA * 1 * Y0, nextR);
+        KBessel K = KBessel(twoPiOverA * 1 * Y0, nextLambda);
         K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
         matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
-        auto solAndCondYNextR = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+        auto solAndCondYNextLambda = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
 
-        std::cout << solAndCondYNextR.second << " " << solAndCondYNextR.second << std::endl;
+        std::cout << solAndCondYNextLambda.second << " " << solAndCondYNextLambda.second << std::endl;
 
-        map<Index, double> coeffMapNextR;
+        map<Index, double> coeffMapNextLambda;
         for (int i = 0; i < indexTransversal.size(); i++) {
             Index index = indexTransversal[i];
-            coeffMapNextR[index] = solAndCondYNextR.first(i);
+            coeffMapNextLambda[index] = solAndCondYNextLambda.first(i);
         }
 
-        double hecke = heckeCheck(coeffMapNextR);
-        heckeValues.emplace_back(nextR, hecke);
-        std::cout << std::setprecision(16) << "r = " << nextR << ", " << hecke << std::endl;
+        double hecke = heckeCheck(coeffMapNextLambda);
+        heckeValues.emplace_back(nextLambda, hecke);
+        std::cout << std::setprecision(16) << "r = " << nextLambda << ", " << hecke << std::endl;
 
         //We have the solutions from everything, now we cook up the phi function
 
-        double coeff0NextR = coeffMapNextR.at(dToPrimes.at(d)[0]);
-        double coeff1NextR = coeffMapNextR.at(dToPrimes.at(d)[1]);
-        double coeff2NextR = coeffMapNextR.at(dToPrimes.at(d)[2]);
+        double coeff0NextLambda = coeffMapNextLambda.at(dToPrimes.at(d)[0]);
+        double coeff1NextLambda = coeffMapNextLambda.at(dToPrimes.at(d)[1]);
+        double coeff2NextLambda = coeffMapNextLambda.at(dToPrimes.at(d)[2]);
 
-        double hecke1NextR = coeff0NextR * coeff1NextR - coeffMapNextR.at(prod01);
-        double hecke2NextR = coeff0NextR * coeff2NextR - coeffMapNextR.at(prod02);
-        hecke1NextR = abs(hecke1NextR);
-        hecke2NextR = abs(hecke2NextR);
+        double hecke1NextLambda = coeff0NextLambda * coeff1NextLambda - coeffMapNextLambda.at(prod01);
+        double hecke2NextLambda = coeff0NextLambda * coeff2NextLambda - coeffMapNextLambda.at(prod02);
+        hecke1NextLambda = abs(hecke1NextLambda);
+        hecke2NextLambda = abs(hecke2NextLambda);
 
-        double nextPhi = eps1 * hecke1NextR + eps2 * hecke2NextR;
+        double nextPhi = eps1 * hecke1NextLambda + eps2 * hecke2NextLambda;
 
         /*
          * This is the Anderson-Bjorck bracketed root finding algorithm
          */
         if (areDifferentSign(phiNPlus1, nextPhi)) {
-            rN = rNPlus1;
+            lambdaN = lambdaNPlus1;
             phiN = phiNPlus1;
 
-            rNPlus1 = nextR;
+            lambdaNPlus1 = nextLambda;
             phiNPlus1 = nextPhi;
         } else {
             double m = 1 - nextPhi/phiNPlus1;
@@ -1413,7 +1451,7 @@ tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecan
             }
             phiN *= m;
 
-            rNPlus1 = nextR;
+            lambdaNPlus1 = nextLambda;
             phiNPlus1 = nextPhi;
         }
 
@@ -1424,11 +1462,11 @@ tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecan
             || heckeHasConverged(heckeValues) //computation succeeded and is complete
             || iterations > maxIterations //computation not converging as expected
             || phiN == phiNPlus1 //numerical error incoming, could just be very good convergence
-            || rN == rNPlus1) {
+            || lambdaN == lambdaNPlus1) {
 
-            delete leftRK;
-            delete rightRK;
-            return {heckeValues, rN, rNPlus1};
+            delete leftLambdaK;
+            delete rightLambdaK;
+            return {heckeValues, lambdaN, lambdaNPlus1};
 
         }
     }
@@ -1457,10 +1495,16 @@ bool BianchiMaassSearch::heckeHasConverged(const vector<pair<double, double>> &h
     }
 }
 
-double BianchiMaassSearch::computeWellConditionedY(KBessel *K, double r, double M0, vector<Index> &indexTransversal) {
-    double c = max(1.0, r)/(2*pi/A*M0);
+double BianchiMaassSearch::computeWellConditionedY(KBessel *K, double M0, vector<Index> &indexTransversal) {
+    double c = 0;
+    if (K->getLambda() <= 1) {
+        c = 1 / (2*pi/A*M0);
+    } else {
+        double r = sqrt(K->getLambda() - 1);
+        c = r / (2*pi/A*M0);
+    }
     double upperY = Y0;
-    double lowerY = 0.5 * max(1.0, r)/(2*pi/A*M0);
+    double lowerY = 0.5 * c;
 
     vector<double> heightsToTry;
 
@@ -1471,23 +1515,28 @@ double BianchiMaassSearch::computeWellConditionedY(KBessel *K, double r, double 
     }
     std::sort(heightsToTry.begin(), heightsToTry.end());
 
-    vector<double> minDiag(heightsToTry.size(), 0);
+    vector<double> approxConditionNumbers(heightsToTry.size(), 0);
 
 
-#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, minDiag, K)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, approxConditionNumbers, K)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
-        minDiag[i] = minBess(K, indexTransversal, Y);
+        approxConditionNumbers[i] = approxCondition(K, indexTransversal, Y);
     }
 
 
+    for (int i = heightsToTry.size() - 1; i >= 0; i--)  {
+        if (approxConditionNumbers[i] <= 100) {
+            return heightsToTry[i];
+        }
+    }
+
     double Y = 0;
-    double maxSoFar = 0;
+    double minCondSoFar = +INFINITY;
     //heightsToTry is sorted smallest to largest
     for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
-        double maxMinBess = minDiag[i];
-        if (maxSoFar < maxMinBess) {
-            maxSoFar = maxMinBess;
+        if (minCondSoFar > approxConditionNumbers[i]) {
+            minCondSoFar = approxConditionNumbers[i];
             Y = heightsToTry[i];
         }
     }
@@ -1511,21 +1560,26 @@ double BianchiMaassSearch::computeWellConditionedY(KBessel *K, double r, double 
     }
     std::sort(heightsToTry.begin(), heightsToTry.end());
 
-    minDiag.clear();
+    approxConditionNumbers.clear();
 
-    minDiag.resize(heightsToTry.size(), 0);
+    approxConditionNumbers.resize(heightsToTry.size(), 0);
 
-#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, minDiag, K)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, approxConditionNumbers, K)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double testY = heightsToTry[i];
-        minDiag[i] = minBess(K, indexTransversal, testY);
+        approxConditionNumbers[i] = approxCondition(K, indexTransversal, testY);
+    }
+
+    for (int i = heightsToTry.size() - 1; i >= 0; i--)  {
+        if (approxConditionNumbers[i] <= 100) {
+            return heightsToTry[i];
+        }
     }
 
     //heightsToTry is sorted smallest to largest
     for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
-        double maxMinBess = minDiag[i];
-        if (maxSoFar < maxMinBess) {
-            maxSoFar = maxMinBess;
+        if (minCondSoFar > approxConditionNumbers[i]) {
+            minCondSoFar = approxConditionNumbers[i];
             Y = heightsToTry[i];
         }
     }
@@ -1533,13 +1587,20 @@ double BianchiMaassSearch::computeWellConditionedY(KBessel *K, double r, double 
 }
 
 double
-BianchiMaassSearch::computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR, double M0,
+BianchiMaassSearch::computeWellConditionedY(KBessel *leftLambdaK, KBessel *rightLambdaK, double leftLambda, double rightLambda, double M0,
                                             const vector<Index> &indexTransversal) {
     //double upperY = 2.0 * max(1.0, rightR)/(2*pi/A*M0);
     //double lowerY = 1.7 * max(1.0, rightR)/(2*pi/A*M0);
-    double c = max(1.0, rightR)/(2*pi/A*M0);
+
+    double c = 0;
+    if (rightLambdaK->getLambda() <= 1) {
+        c = 1 / (2*pi/A*M0);
+    } else {
+        double r = sqrt(rightLambdaK->getLambda() - 1);
+        c = r / (2*pi/A*M0);
+    }
     double upperY = Y0;
-    double lowerY = 0.5 * max(1.0, rightR)/(2*pi/A*M0);
+    double lowerY = 0.5 * c;
 
     vector<double> heightsToTry;
 
@@ -1550,30 +1611,37 @@ BianchiMaassSearch::computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, d
     }
     std::sort(heightsToTry.begin(), heightsToTry.end());
 
-    vector<double> r1MinDiag(heightsToTry.size(), 0);
-    vector<double> r2MinDiag(heightsToTry.size(), 0);
+    vector<double> lambda1ApproxCond(heightsToTry.size(), 0);
+    vector<double> lambda2ApproxCond(heightsToTry.size(), 0);
 
-#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, rightRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, lambda2ApproxCond, rightLambdaK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
-        r2MinDiag[i] = minBess(rightRK, indexTransversal, Y);
+        lambda2ApproxCond[i] = approxCondition(rightLambdaK, indexTransversal, Y);
     }
 
-#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, leftRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, lambda1ApproxCond, leftLambdaK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
-        r1MinDiag[i] = minBess(leftRK, indexTransversal, Y);
+        lambda1ApproxCond[i] = approxCondition(leftLambdaK, indexTransversal, Y);
     }
 
+    for (int i = heightsToTry.size() - 1; i >= 0; i--) {
+        double condHere = std::max({lambda1ApproxCond[i],
+                                    lambda2ApproxCond[i]});
+        if (condHere <= 100) {
+            return heightsToTry[i];
+        }
+    }
 
     double Y = 0;
-    double maxSoFar = 0;
+    double minCondSoFar = +INFINITY;
     //heightsToTry is sorted smallest to largest
     for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
-        double maxMinBess = std::min({r1MinDiag[i],
-                                      r2MinDiag[i]});
-        if (maxSoFar < maxMinBess) {
-            maxSoFar = maxMinBess;
+        double condHere = std::max({lambda1ApproxCond[i],
+                                      lambda2ApproxCond[i]});
+        if (condHere < minCondSoFar) {
+            minCondSoFar = condHere;
             Y = heightsToTry[i];
         }
     }
@@ -1597,31 +1665,39 @@ BianchiMaassSearch::computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, d
     }
     std::sort(heightsToTry.begin(), heightsToTry.end());
 
-    r1MinDiag.clear();
-    r2MinDiag.clear();
+    lambda1ApproxCond.clear();
+    lambda2ApproxCond.clear();
 
-    r1MinDiag.resize(heightsToTry.size(), 0);
-    r2MinDiag.resize(heightsToTry.size(), 0);
+    lambda1ApproxCond.resize(heightsToTry.size(), 0);
+    lambda2ApproxCond.resize(heightsToTry.size(), 0);
 
 
-#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, rightRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, lambda2ApproxCond, rightLambdaK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double testY = heightsToTry[i];
-        r2MinDiag[i] = minBess(rightRK, indexTransversal, testY);
+        lambda2ApproxCond[i] = approxCondition(rightLambdaK, indexTransversal, testY);
     }
 
-#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, leftRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, lambda1ApproxCond, leftLambdaK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double testY = heightsToTry[i];
-        r1MinDiag[i] = minBess(leftRK, indexTransversal, testY);
+        lambda1ApproxCond[i] = approxCondition(leftLambdaK, indexTransversal, testY);
+    }
+
+    for (int i = heightsToTry.size() - 1; i >= 0; i--) {
+        double condHere = std::max({lambda1ApproxCond[i],
+                                    lambda2ApproxCond[i]});
+        if (condHere <= 100) {
+            return heightsToTry[i];
+        }
     }
 
     //heightsToTry is sorted smallest to largest
     for (int i = 0; i < heightsToTry.size(); i++) {//end i at second to last because Y2 has to be greater
-        double maxMinBess = std::min({r1MinDiag[i],
-                                      r2MinDiag[i]});
-        if (maxSoFar < maxMinBess) {
-            maxSoFar = maxMinBess;
+        double condHere = std::max({lambda1ApproxCond[i],
+                                      lambda2ApproxCond[i]});
+        if (condHere < minCondSoFar) {
+            minCondSoFar = condHere;
             Y = heightsToTry[i];
         }
     }
@@ -1629,15 +1705,18 @@ BianchiMaassSearch::computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, d
 }
 
 pair<double, double>
-BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR,
+BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftLambdaK, KBessel *rightLambdaK, double leftLambda, double rightLambda,
                                                double M0, const vector<Index> &indexTransversal) {
-    if (leftR < 12.1 && 12.1 < rightR) {
-        int a = 0;
-    }
 
-    double c = max(1.0, rightR)/(2*pi/A*M0);
+    double c = 0;
+    if (rightLambdaK->getLambda() <= 1) {
+        c = 1 / (2*pi/A*M0);
+    } else {
+        double r = sqrt(rightLambdaK->getLambda() - 1);
+        c = r / (2*pi/A*M0);
+    }
     double upperY = Y0;
-    double lowerY = 0.5 * max(1.0, rightR)/(2*pi/A*M0);
+    double lowerY = 0.5 * c;
 
     vector<double> heightsToTry;
 
@@ -1648,34 +1727,40 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK
     }
     std::sort(heightsToTry.begin(), heightsToTry.end());
 
-    vector<double> r1MinDiag(heightsToTry.size(), 0);
-    vector<double> r2MinDiag(heightsToTry.size(), 0);
+    vector<double> lambda1ApproxCond(heightsToTry.size(), 0);
+    vector<double> lambda2ApproxCond(heightsToTry.size(), 0);
 
-#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, rightRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, lambda2ApproxCond, rightLambdaK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
-        r2MinDiag[i] = minBess(rightRK, indexTransversal, Y);
+        lambda2ApproxCond[i] = approxCondition(rightLambdaK, indexTransversal, Y);
     }
 
-#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, leftRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, lambda1ApproxCond, leftLambdaK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
-        r1MinDiag[i] = minBess(leftRK, indexTransversal, Y);
+        lambda1ApproxCond[i] = approxCondition(leftLambdaK, indexTransversal, Y);
     }
 
 
     double ansY1 = 0;
     double ansY2 = 0;
-    double maxSoFar = 0;
+    double minCondSoFar = +INFINITY;
     //heightsToTry is sorted smallest to largest
-    for (int i = 0; i <= heightsToTry.size() - 2; i++) {//end i at second to last because Y2 has to be greater
-        for (int j = i + 1; j < heightsToTry.size(); j++) {//j is always less than i, so j indexes a larger Y
-            double maxMinBess = std::min({r1MinDiag[i],
-                                          r1MinDiag[j],
-                                          r2MinDiag[i],
-                                          r2MinDiag[j]});
-            if (maxSoFar < maxMinBess) {
-                maxSoFar = maxMinBess;
+    for (int i = heightsToTry.size() - 1; i >= 2; i--) {//end i at second to last because Y2 has to be greater
+        for (int j = i - 2; j >= 0; j--) {//j is always less than i, so j indexes a larger Y
+            double condHere = std::max({lambda1ApproxCond[i],
+                                          lambda1ApproxCond[j],
+                                          lambda2ApproxCond[i],
+                                          lambda2ApproxCond[j]});
+
+            if (condHere <= 100) {
+                ansY1 = heightsToTry[i];
+                ansY2 = heightsToTry[j];
+                return {min(ansY1, ansY2), max(ansY1, ansY2)};
+            }
+            if (condHere < minCondSoFar) {
+                minCondSoFar = condHere;
                 ansY1 = heightsToTry[i];
                 ansY2 = heightsToTry[j];
             }
@@ -1701,33 +1786,39 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK
     }
     std::sort(heightsToTry.begin(), heightsToTry.end());
 
-    r1MinDiag.clear();
-    r2MinDiag.clear();
+    lambda1ApproxCond.clear();
+    lambda2ApproxCond.clear();
 
-    r1MinDiag.resize(heightsToTry.size(), 0);
-    r2MinDiag.resize(heightsToTry.size(), 0);
+    lambda1ApproxCond.resize(heightsToTry.size(), 0);
+    lambda2ApproxCond.resize(heightsToTry.size(), 0);
 
-#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r2MinDiag, rightRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, lambda2ApproxCond, rightLambdaK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
-        r2MinDiag[i] = minBess(rightRK, indexTransversal, Y);
+        lambda2ApproxCond[i] = approxCondition(rightLambdaK, indexTransversal, Y);
     }
 
-#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, r1MinDiag, leftRK)
+#pragma omp parallel for schedule(dynamic) default(none) shared(heightsToTry, indexTransversal, lambda1ApproxCond, leftLambdaK)
     for (int i = 0; i < heightsToTry.size(); i++) {
         double Y = heightsToTry[i];
-        r1MinDiag[i] = minBess(leftRK, indexTransversal, Y);
+        lambda1ApproxCond[i] = approxCondition(leftLambdaK, indexTransversal, Y);
     }
 
     //heightsToTry is sorted smallest to largest
-    for (int i = 0; i <= heightsToTry.size() - 2; i++) {//end i at second to last because Y2 has to be greater
-        for (int j = i + 1; j < heightsToTry.size(); j++) {//j is always less than i, so j indexes a larger Y
-            double maxMinBess = std::min({r1MinDiag[i],
-                                          r1MinDiag[j],
-                                          r2MinDiag[i],
-                                          r2MinDiag[j]});
-            if (maxSoFar < maxMinBess) {
-                maxSoFar = maxMinBess;
+    for (int i = heightsToTry.size() - 1; i >= 2; i--) {//end i at second to last because Y2 has to be greater
+        for (int j = i - 2; j >= 0; j--) {//j is always less than i, so j indexes a larger Y
+            double condHere = std::max({lambda1ApproxCond[i],
+                                        lambda1ApproxCond[j],
+                                        lambda2ApproxCond[i],
+                                        lambda2ApproxCond[j]});
+
+            if (condHere <= 100) {
+                ansY1 = heightsToTry[i];
+                ansY2 = heightsToTry[j];
+                return {min(ansY1, ansY2), max(ansY1, ansY2)};
+            }
+            if (condHere < minCondSoFar) {
+                minCondSoFar = condHere;
                 ansY1 = heightsToTry[i];
                 ansY2 = heightsToTry[j];
             }
@@ -1809,7 +1900,7 @@ void BianchiMaassSearch::setUpOutputLogFiles() {
 
 }
 
-vector<pair<double, double>> BianchiMaassSearch::getIntervalsForCoarseSearch(double startR, double endR) {
+vector<pair<double, double>> BianchiMaassSearch::getIntervalsForCoarseSearch(double startLambda, double endLambda) {
 
     const std::string directoryIn = "Output/Coarse/";
     const std::string prefixIn = "coarse_"
@@ -1837,12 +1928,12 @@ vector<pair<double, double>> BianchiMaassSearch::getIntervalsForCoarseSearch(dou
     double numEigenValues = 0.2;
 
     vector<double> endpoints;
-    double endpoint = max(startR, coarseComplete);
-    while (endpoint < endR) {
+    double endpoint = max(startLambda, coarseComplete);
+    while (endpoint < endLambda) {
         endpoints.push_back(endpoint);
         endpoint = Od.eigenvalueIntervalRightEndpoint(endpoint, numEigenValues);
     }
-    endpoints.push_back(endR);
+    endpoints.push_back(endLambda);
 
     if (endpoints.size() < 2) {
         return {};
@@ -1994,7 +2085,7 @@ vector<pair<double,double>> BianchiMaassSearch::getIntervalsForFineSearch() {
     return intervalsFromFile;
 }
 
-void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
+void BianchiMaassSearch::computeMaximumD(double lambda, int timeLimitSeconds) {
     double maxNanoseconds = timeLimitSeconds * pow(10,9);
 
     double maxTerms = maxNanoseconds / nanosecondsPerTerm;
@@ -2012,15 +2103,15 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     unsigned long long int rightTerms = 0;
 
     truncation = pow(10.0, -leftD);
-    double M0 = computeM0General(r);
+    double M0 = computeM0General(lambda);
 
-    KBessel* K = new KBessel(twoPiOverA * 1 * Y0, r);
+    KBessel* K = new KBessel(twoPiOverA * 1 * Y0, lambda);
 
     vector<Index> indicesM0 = Od.indicesUpToM(M0);
     auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
     vector<Index> indexTransversal = get<0>(data);
 
-    double Y = computeWellConditionedY(K, r, M0, indexTransversal);
+    double Y = computeWellConditionedY(K, M0, indexTransversal);
     delete K;
     double MY = computeMYGeneral(M0, Y);
 
@@ -2037,7 +2128,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
      */
 
     truncation = pow(10.0, -rightD);
-    M0 = computeM0General(r);
+    M0 = computeM0General(lambda);
 
     indicesM0 = Od.indicesUpToM(M0);
     data = Od.indexOrbitQuotientData(indicesM0, symClass);
@@ -2078,7 +2169,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
         double centerD = (leftD + rightD)/2;
         unsigned long long int centerTerms = 0;
         truncation = pow(10.0, -centerD);
-        M0 = computeM0General(r);
+        M0 = computeM0General(lambda);
 
         indicesM0 = Od.indicesUpToM(M0);
         data = Od.indexOrbitQuotientData(indicesM0, symClass);
@@ -2113,5 +2204,127 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     D = max(minD, answer);
     truncation = pow(10.0, -D);
     return;
+}
+
+pair<int, int> BianchiMaassSearch::computeQ0Q1(Index m, double MY) {
+    if (d == 3 || d == 1) {
+        throw std::invalid_argument("not implemented for d = " + to_string(d));
+    }
+
+    complex<double> mComplex = m.getComplex(d);
+    int Q0 = ceil((MY + abs(mComplex.imag()))/(2 * A));
+    int Q1 = ceil((MY + abs(mComplex.real()))/2);
+    bool adjusted = true;
+
+    while (adjusted) {
+
+        adjusted = false;
+        bool circleContainsNoPoints = true;
+        while (circleContainsNoPoints) {
+            int tempQ0 = Q0 - 1;
+
+            vector<complex<double>> pointsToMiss;
+            pointsToMiss.emplace_back(2.0 * Q1, 0);
+            pointsToMiss.emplace_back(-2.0 * Q1, 0);
+            pointsToMiss.push_back(2.0 * tempQ0 * conj(theta));
+            pointsToMiss.push_back(-2.0 * tempQ0 * conj(theta));
+            pointsToMiss.push_back(pointsToMiss[3] + pointsToMiss[0]);
+            pointsToMiss.push_back(pointsToMiss[2] + pointsToMiss[1]);
+
+            for (const auto& p : pointsToMiss) {
+                bool circleContainsP = abs((p-mComplex)) <= MY;
+                if (circleContainsP) {
+                    circleContainsNoPoints = false;
+                    break;
+                }
+            }
+
+            if (circleContainsNoPoints) {
+                Q0 = tempQ0;
+                adjusted = true;
+            }
+
+        }
+
+        circleContainsNoPoints = true;
+        while (circleContainsNoPoints) {
+            int tempQ1 = Q1 - 1;
+
+            vector<complex<double>> pointsToMiss;
+            pointsToMiss.emplace_back(2.0 * tempQ1, 0);
+            pointsToMiss.emplace_back(-2.0 * tempQ1, 0);
+            pointsToMiss.push_back(2.0 * Q0 * conj(theta));
+            pointsToMiss.push_back(-2.0 * Q0 * conj(theta));
+            pointsToMiss.push_back(pointsToMiss[3] + pointsToMiss[0]);
+            pointsToMiss.push_back(pointsToMiss[2] + pointsToMiss[1]);
+
+            for (const auto& p : pointsToMiss) {
+                bool circleContainsP = abs((p-mComplex)) <= MY;
+                if (circleContainsP) {
+                    circleContainsNoPoints = false;
+                    break;
+                }
+            }
+
+            if (circleContainsNoPoints) {
+                Q1 = tempQ1;
+                adjusted = true;
+            }
+        }
+    }
+
+    if (Auxiliary::mod(-d,4) != 1) {
+        return {Q0, Q1};
+    }
+
+    if (Q0 % Q1 == 0 && Q0/Q1 % 2 == 0) {
+        return {Q0, Q1};
+    }
+
+    int k = 0;
+    double quotient = ((double)Q0)/Q1;
+
+    while (!(2 * k < quotient && quotient < 2 * (k+1))) {
+        k++;
+    }
+
+    int testQ0;
+    int testQ1;
+
+    if (k == 0) {
+        testQ1 = Q1;
+        testQ0 = 2 * Q1;
+    } else {
+        //It is true that 2k < Q0/Q1 < 2(k+1) and k > 0
+        int firstOptionQ0 = ceil(Q1 * 2 * (k+1));
+        while (!Auxiliary::mod(firstOptionQ0, 2 * (k + 1) == 0)) {
+            firstOptionQ0++;
+        }
+        int firstOptionQ1 = firstOptionQ0/(2*(k+1));
+
+        int secondOptionQ0 = ceil(Q1 * 2 * k);
+        while (!Auxiliary::mod(secondOptionQ0, 2 * k == 0)) {
+            secondOptionQ0++;
+        }
+        int secondOptionQ1 = secondOptionQ0/(2 * k);
+
+        //Now both give a valid number of points, choose the one that will have fewest points overall (4*Q0*Q1 total)
+        if (firstOptionQ0 * firstOptionQ1 < secondOptionQ0 * secondOptionQ1) {
+            testQ0 = firstOptionQ0;
+            testQ1 = firstOptionQ1;
+        } else {
+            testQ0 = secondOptionQ0;
+            testQ1 = secondOptionQ1;
+        }
+    }
+
+    long pointsIfAdjust = (2 * testQ0) * (2 * testQ1) / 4;
+    long pointsIfNoAdjust = (2 * Q0) * (2 * Q1) / 2;
+
+    if (pointsIfAdjust < pointsIfNoAdjust) {
+        return {testQ0, testQ1};
+    } else {
+        return {Q0, Q1};
+    }
 }
 

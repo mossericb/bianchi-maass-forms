@@ -11,11 +11,51 @@
 #include "BianchiMaassSearch.h"
 #include <chrono>
 #include <acb_hypgeom.h>
+#include "KBesselReal.h"
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl << std::flush
 using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
+    /*
+    KBessel K(1, 1 + 9*9);
+    K.extendPrecomputedRange(300);
+
+    int num = 10000;
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < num; i++) {
+        double x = 1 + (300.0 - 1) * i/num;
+        double y = K.exactKBessel(x);
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<microseconds>(end - start);
+    std::cout << duration.count() << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < num; i++) {
+        double x = 1 + (300.0 - 1) * i/num;
+        double y = K.approxKBessel(x);
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<microseconds>(end - start);
+    std::cout << duration.count() << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < num; i++) {
+        double x = 1 + (300.0 - 1) * i/num;
+        double y = sin(x);
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<microseconds>(end - start);
+    std::cout << duration.count() << std::endl;
+    */
+
     if (argc == 1) {
         throw std::invalid_argument("Please provide command line arguments.");
     }
