@@ -35,7 +35,7 @@ public:
     [[nodiscard]] double getY0() const { return Y0; };
     [[nodiscard]] double getVolumeOfFD() const { return volumeOfFD; };
 
-    double weylLaw(double lambda);
+    double weylLaw(double r);
     double eigenvalueIntervalRightEndpoint(double leftEndpoint, double numEigenvalues);
 
     vector<Index> indicesUpToM(const double M);

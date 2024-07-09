@@ -211,24 +211,20 @@ ImaginaryQuadraticIntegers::indexOrbitQuotientData(vector<Index> indices, const 
     return {indexTransversal, orbitDataModSign};
 }
 
-double ImaginaryQuadraticIntegers::weylLaw(double lambda) {
+double ImaginaryQuadraticIntegers::weylLaw(double r) {
     //weyl law is vol * r^3/ (24 * pi^2)
-    //also is vol * (lambda)^(3/2) / (24 * pi^2)
-    double weyl = volumeOfFD * pow(lambda, 3.0/2) / 236.87050562614460685202778399702762724;
+    double weyl = volumeOfFD * pow(r,3) / 236.87050562614460685202778399702762724;
     return weyl;
 }
 
 double ImaginaryQuadraticIntegers::eigenvalueIntervalRightEndpoint(double leftEndpoint, double numEigenvalues) {
-    if (leftEndpoint < 1) {
-        return leftEndpoint + 0.1;
-    }
     double weylLeft = weylLaw(leftEndpoint);
-    double maxStep = 1;
+    double minStep = 0.1;
 
     double rightEndpoint = (numEigenvalues + weylLeft) / (volumeOfFD / 236.87050562614460685202778399702762724);
-    rightEndpoint = pow(rightEndpoint, 2.0/3);
-    if (rightEndpoint - leftEndpoint > maxStep) {
-        return leftEndpoint + maxStep;
+    rightEndpoint = pow(rightEndpoint, 1.0/3);
+    if (rightEndpoint - leftEndpoint > minStep) {
+        return leftEndpoint + minStep;
     }
     return rightEndpoint;
 }
