@@ -102,27 +102,27 @@ void BianchiMaassPointwise::checkSingleEigenvalue(const double r, const double Y
 
     //If any of these are zero or empty, intialize/reinitialize everything
     if (M0 == 0 || MY == 0 || indexTransversal.empty()) {
-        K.setLambdaAndClear(r);
+        K.setRAndClear(r);
         this->Y = Y;
         M0 = computeM0General(r);
         MY = computeMYGeneral(M0, Y);
         computeIndexData();
     } else {
-        if (K.getLambda() == r && this->Y == Y) {
+        if (K.getR() == r && this->Y == Y) {
             //do nothing, we're all set
-        } else if (K.getLambda() != r && this->Y != Y) {
+        } else if (K.getR() != r && this->Y != Y) {
             this->Y = Y;
-            K.setLambdaAndClear(r);
+            K.setRAndClear(r);
             M0 = computeM0General(r);
             MY = computeMYGeneral(M0, Y);
             computeIndexData();
-        } else if (K.getLambda() != r && this->Y == Y) {
-            K.setLambdaAndClear(r);
+        } else if (K.getR() != r && this->Y == Y) {
+            K.setRAndClear(r);
             M0 = computeM0General(r);
             MY = computeMYGeneral(M0, Y);
             computeIndexData();
         } else {
-            //K.getLambda() == r && Y != Y
+            //K.getR() == r && Y != Y
             this->Y = Y;
             MY = computeMYGeneral(M0, Y);
             computeIndexData();
@@ -183,7 +183,7 @@ double BianchiMaassPointwise::evaluate(const double r, const Quaternion& z, cons
     }
 
     if (coefficientMap.empty()) {
-        K.setLambdaAndClear(r);
+        K.setRAndClear(r);
         this->Y = Y;
         M0 = computeM0General(r);
         MY = computeMYGeneral(M0, Y);

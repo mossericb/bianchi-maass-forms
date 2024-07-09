@@ -33,7 +33,7 @@ class BianchiMaassSearch {
 public:
     BianchiMaassSearch(string mode, int d, double D, char symClass);
 
-    void coarseSearchForEigenvalues(const double leftLambda, const double rightLambda);
+    void coarseSearchForEigenvalues(const double leftR, const double rightR);
     void mediumSearchForEigenvalues();
     void fineSearchForEigenvalues();
 
@@ -76,7 +76,7 @@ private:
 
 
     double EIGENVALUE_INTERVAL_CUTOFF = pow(2,-16);
-    double nanosecondsPerTerm = 15;
+    double nanosecondsPerTerm = 5;
     int maxSecondsPerMatrix = 180;
     bool autoPrecision = true;
 
@@ -84,13 +84,10 @@ private:
      * Private methods used in ALL calculations.
      ***************************************************/
 
+    void computeMaximumD(double r, int timeLimitSeconds);
 
-
-    void computeMaximumD(double lambda, int timeLimitSeconds);
-
-    double computeM0General(const double lambda);
+    double computeM0General(double r);
     double computeMYGeneral(double M0, double Y);
-    pair<int, int> computeQ0Q1(Index m, double MY);
 
     vector<TestPointOrbitData> getPointPullbackOrbits(const Index &m, double Y, double MY);
     unsigned long long int countPointPullbackOrbits(const Index &m, double Y, double MY);
@@ -108,20 +105,18 @@ private:
     static void createOutputDirectory(const std::string& directory);
     static bool isFileEmpty(const string& filename);
 
-    vector<pair<double,double>> getIntervalsForCoarseSearch(double startLambda, double endLambda);
+    vector<pair<double,double>> getIntervalsForCoarseSearch(double startR, double endR);
     vector<pair<double,double>> getIntervalsForMediumSearch();
     vector<pair<double,double>> getIntervalsForFineSearch();
 
-    void simulateMatrixForNanoseondsPerTerm();
-
-    bool possiblyContainsEigenvalue(const double leftLambda, const double rightLambda, KBessel *leftLambdaK, KBessel *rightLambdaK);
-    tuple<vector<pair<double,double>>, double, double> fineSecantMethod(double leftLambda, double rightLambda);
+    bool possiblyContainsEigenvalue(double leftR, double rightR, KBessel *leftRK, KBessel *rightRK);
+    tuple<vector<pair<double,double>>, double, double> fineSecantMethod(double leftR, double rightR);
     static bool heckeHasConverged(const vector<pair<double, double>>& heckeValues);
 
-    double approxCondition(KBessel *K, const vector<Index> &indexTransversal, double Y);
-    double computeWellConditionedY(KBessel *K, double M0, vector<Index> &indexTransversal);
-    double computeWellConditionedY(KBessel *leftLambdaK, KBessel *rightLambdaK, double leftLambda, double rightLambda, double M0, const vector<Index>& indexTransversal);
-    pair<double, double> computeTwoWellConditionedY(KBessel *leftLambdaK, KBessel *rightLambdaK, double leftLambda, double rightLambda, double M0, const vector<Index>& indexTransversal);
+    double minBess(KBessel *K, const vector<Index> &indexTransversal, double Y);
+    double computeWellConditionedY(KBessel *K, double r, double M0, vector<Index> &indexTransversal);
+    double computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR, double M0, const vector<Index>& indexTransversal);
+    pair<double, double> computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR, double M0, const vector<Index>& indexTransversal);
 
     MatrixXd produceMatrix(const vector<Index> &indexTransversal,
                            map<Index, vector<TestPointOrbitData>> &mToTestPointData,

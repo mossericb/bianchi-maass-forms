@@ -3,10 +3,7 @@
 
 #include <iostream>
 
-archtKBessel::archtKBessel(double lambda) {
-    if (lambda < 1) {
-        throw std::invalid_argument("lambda must be at least 1");
-    }
+archtKBessel::archtKBessel(double r) {
     mpfr_init_set_d(acc, 1.0e-16, MPFR_RNDN);
 
     mpfi_ptr bess = init_kbessel(BEGINNING_BITS);
@@ -20,7 +17,7 @@ archtKBessel::archtKBessel(double lambda) {
     mpfi_init2(mpfi_x, BEGINNING_BITS);
     vec_mpfi_x.push_back(*mpfi_x);
 
-    setLambda(lambda);
+    setR(r);
 }
 
 archtKBessel::~archtKBessel() {
@@ -42,13 +39,12 @@ archtKBessel::~archtKBessel() {
     mpfr_free_cache();
 }
 
-void archtKBessel::setLambda(double lambda) {
-    this->lambda = lambda;
-    this->r = sqrt(lambda - 1);
+void archtKBessel::setR(double r) {
+    this->r = r;
     for (int i = 0; i < vec_mpfi_r.size(); i++) {
         mpfi_init_set_d(&(vec_mpfi_r[i]), r);
     }
-    zeroCutoff = (1136 + PI * r / 2.0 * log2(E) - 0.5 * log2(E) + 0.5 * log2(PI / 2)) / log2(E);
+    zeroCutoff = (1136 + PI*r/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
 }
 
 double archtKBessel::evaluate(double x) {
