@@ -58,9 +58,9 @@ private:
     ofstream mediumOutputFile;
     ofstream fineOutputFile;
 
-    double coarseComplete = 0.75;
-    double mediumComplete = 0.75;
-    double fineComplete = 0.75;
+    double coarseComplete = 0.9;
+    double mediumComplete = 0.9;
+    double fineComplete = 0.9;
 
     int secondsToComputeMatrix = 400;
 

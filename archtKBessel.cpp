@@ -4,8 +4,8 @@
 #include <iostream>
 
 archtKBessel::archtKBessel(double lambda) {
-    if (lambda < 1) {
-        throw std::invalid_argument("lambda must be at least 1");
+    if (lambda <= 1) {
+        throw std::invalid_argument("lambda must be greater than 1");
     }
     mpfr_init_set_d(acc, 1.0e-16, MPFR_RNDN);
 

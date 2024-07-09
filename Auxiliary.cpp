@@ -349,7 +349,8 @@ double Auxiliary::kahanSummationUnvectorized(std::vector<double> &numbers) {
     std::sort(numbers.begin(), numbers.end(), [] (double left, double right) {
         return abs(left) < abs(right);
     });
-    //The Linux Cluster CPUs support AVX-512, so I want to make this
+
+
     double sum = 0.0;
     double c = 0.0;
     for (const auto n : numbers) {
