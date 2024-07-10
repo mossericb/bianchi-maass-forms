@@ -224,12 +224,12 @@ bool KBessel::withinError(double exact, double approx) {
     double error = abs(1 - ratio);
 
     double size = abs(exact);
-    if (size >= pow(10.0, -15)) {
+    if (size >= pow(10.0, -20)) {
         return error < ABS_ERROR_CUTOFF;
     } else {
         double exponent = log10(size);
         double modifiedCutoff = ABS_ERROR_CUTOFF;
-        modifiedCutoff *= (1 - 10/ABS_ERROR_CUTOFF)/(-15 - (-314)) * (exponent - (-15)) + 1;
+        modifiedCutoff *= (1 - 10/ABS_ERROR_CUTOFF)/(-20 - (-314)) * (exponent - (-20)) + 1;
         return error < modifiedCutoff;
     }
 }

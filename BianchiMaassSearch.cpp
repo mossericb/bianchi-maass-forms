@@ -109,7 +109,10 @@ void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const do
     }
 
     auto intervalsFromFile = getIntervalsForCoarseSearch(leftR, rightR);
-
+    if (intervalsFromFile.empty()) {
+        std::cout << "Range already complete." << std::endl;
+        return;
+    }
     stack<pair<double,double>> intervals;
 
     for (auto itr = intervalsFromFile.rbegin(); itr != intervalsFromFile.rend(); itr++) {
@@ -168,6 +171,11 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
 
 
     auto intervalsFromFile = getIntervalsForMediumSearch();
+
+    if (intervalsFromFile.empty()) {
+        std::cout << "Range already complete." << std::endl;
+        return;
+    }
 
     stack<pair<double, double>> intervals;
     for (auto itr = intervalsFromFile.rbegin(); itr != intervalsFromFile.rend(); itr++) {
@@ -241,8 +249,8 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
                     spawnedIntervals.emplace(center, right);
                     continue;
                 } else {
-                    spawnedIntervals.emplace(left, center);
                     spawnedIntervals.emplace(center, right);
+                    spawnedIntervals.emplace(left, center);
                     continue;
                 }
             }
@@ -268,6 +276,11 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
 void BianchiMaassSearch::fineSearchForEigenvalues() {
 
     auto intervalsFromFile = getIntervalsForFineSearch();
+    if (intervalsFromFile.empty()) {
+        std::cout << "Range already complete." << std::endl;
+        return;
+    }
+
 
     stack<pair<double, double>> intervals;
     for (auto itr = intervalsFromFile.rbegin(); itr != intervalsFromFile.rend(); itr++) {
@@ -480,7 +493,7 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
 
     int possibleSignChanges = coeffDiffR1.size() - 1;
     double proportion = ((double)signChanges)/possibleSignChanges;
-    if (proportion >=  0.5) {
+    if (proportion >=  0.3) {
         return true;
     } else {
         return false;
@@ -529,7 +542,7 @@ double BianchiMaassSearch::computeM0General(const double r) {
     }
 
     double M0 = (left + right)/2.0;
-    M0++;
+    M0 += 2;
     return M0;
 }
 
@@ -653,239 +666,285 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
     //These formulas provide bounds to guarantee that the DFT result is valid
     double absRealM = abs(m.getComplex(d).real());
     double absImagM = abs(m.getComplex(d).imag());
-    double Q0double = 0;
-    double Q1double = (MY + absRealM)/2.0;
-    if (Auxiliary::mod(-d, 4) == 1) {
-        double Q0doubleOption1 = MY + absRealM;
-        double Q0doubleOption2 = (MY + absImagM)/(2.0*A);
-        Q0double = max(Q0doubleOption1, Q0doubleOption2);
-    } else {
-        Q0double = (MY + absImagM)/(2.0*A);
-    }
+    double Q0double = (MY + absImagM)/A;
+    double Q1double = MY + absRealM;
 
-    int Q0 = ceil(Q0double);
-    int Q1 = ceil(Q1double);
-
-    //Tweak Q0 and Q1 to be exactly what we need for exploiting symmetry
-    if (Auxiliary::mod(-d, 4) == 1 && d != 3) {
-        //If -d = 1 mod 4 then we need Q0/Q1 to be an even integer for the map x -> -bar(x) to be defined on test points
-        if (Auxiliary::mod(Q0, Q1) == 0 && Auxiliary::mod(Q0 / Q1, 2) == 0) {
-            // Q0/Q1 is an even integer
-            // there is nothing to do!
-        } else {
-            // Q0/Q1 is not an even integer
-            int k = 0;
-            double quotient = ((double)Q0)/Q1;
-
-            while (!(2 * k < quotient && quotient < 2 * (k+1))) {
-                k++;
-            }
-
-            if (k == 0) {
-                Q0 = 2*Q1;
-            } else {
-                //It is true that 2k < Q0/Q1 < 2(k+1) and k > 0
-                int firstOptionQ0 = ceil(Q1 * 2 * (k+1));
-                while (!Auxiliary::mod(firstOptionQ0, 2 * (k + 1) == 0)) {
-                    firstOptionQ0++;
-                }
-                int firstOptionQ1 = firstOptionQ0/(2*(k+1));
-
-                int secondOptionQ0 = ceil(Q1 * 2 * k);
-                while (!Auxiliary::mod(secondOptionQ0, 2 * k == 0)) {
-                    secondOptionQ0++;
-                }
-                int secondOptionQ1 = secondOptionQ0/(2 * k);
-
-                //Now both give a valid number of points, choose the one that will have fewest points overall (4*Q0*Q1 total)
-                if (firstOptionQ0 * firstOptionQ1 < secondOptionQ0 * secondOptionQ1) {
-                    Q0 = firstOptionQ0;
-                    Q1 = firstOptionQ1;
-                } else {
-                    Q0 = secondOptionQ0;
-                    Q1 = secondOptionQ1;
-                }
-            }
-        }
-    } else if (d == 3 || d == 1) {
-        //So that we can do rotations by something other than -1, we need Q0=Q1
-        //Add a little numerical wiggle room
-        Q0 = max(Q0, Q1) + 1;
-        Q1 = Q0;
-    } else {
-        //We don't need to fiddle with the divisibility of Q0 and Q1
-        //Add some numerical wiggle room
-        Q0 += 1;
-        Q1 += 1;
-    }
-
+    int Q0 = floor(Q0double) + 1;
+    int Q1 = floor(Q1double) + 1;
+    Q0 += 2;
+    Q1 += 2;
 
     short nonsquareUnitSign = (symClass == 'D' || symClass == 'G') ? 1 : -1;
     short reflectionSign = (symClass == 'D' || symClass == 'C') ? 1 : -1;
 
-    //Now generate the representatives
-    //then generate the orbits
-    if (Auxiliary::mod(-d, 4) == 1 && d != 3) {
-        //iterate to make orbit representatives
-        for (int l1 = 1; l1 <= Q1; l1++) {
-            int lowerBound = ceil(0.5 - Q0*(l1-0.5)/(2.0*Q1));
-            int upperBound = floor(0.5 + Q0 - Q0*(l1 - 0.5)/(2.0*Q1));
-            for (int l0 = lowerBound; l0 <= upperBound; l0++) {
-                //build the orbit
-                TestPointOrbitData orbit;
-                complex<double> x = (l0 - 0.5)/(2.0*Q0) + theta*(l1 - 0.5)/(2.0*Q1);
-                Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
-                pullback.reduce(d);
-
-                orbit.representativeComplex = x;
-                orbit.representativePullback = pullback;
-
-                //This magic quantity tells you about the real part of x
-                int discriminant = 4*Q1*l0 - 2*Q1 + 2*Q0*l1 - Q0;
-
-                //First case detects when real(x) = 0
-                //Second case detects when real(x) has absolute value = 1/2
-                if (discriminant == 0 || abs(discriminant) - 4*Q0*Q1 == 0) {
-                    //The orbit in this case is {x, -x}
-                    //So orbit/{+/-1} = {[x]}
-                    //Therefore there are no proper translates mod +/-1
-                } else {
-                    //The orbit in this case is {x, -x, -bar(x), bar(x)}
-                    //So orbit/{+/-1} = {[x], [-bar(x)]}
-                    //So the only proper translate is -bar(x)
-                    pair<complex<double>, short> tup (-conj(x), reflectionSign);
-                    orbit.properTranslatesModSign.push_back(tup);
-                }
-                answer.push_back(orbit);
-            }
+    if (Auxiliary::mod(-d, 4) == 2 || Auxiliary::mod(-d, 4) == 3) {
+        if (Q0 % 2 == 1) {
+            Q0++;
         }
-    } else if (d != 1) {
-        //So -d = 2,3 mod 4 and d != 1
+        if (Q1 % 2 == 1) {
+            Q1++;
+        }
 
-        //iterate to make orbit representatives
-        for (int l0 = 1; l0 <= Q0; l0++) {
-            for (int l1 = 1; l1 <= Q1; l1++) {
-                //The orbit is {x, -x, -bar(x), bar(x)}
-                //So orbit/{+/-1} is {[x], [-bar(x)]}
-                //So the only proper translate is -bar(x)
+        double xi0 = 0.5;
+        double xi1 = 0.5;
+        int L0 = 1 - Q0/2;
+        int U0 = Q0/2;
+        int L1 = 1 - Q1/2;
+        int U1 = Q1/2;
+
+        for (int l0 = 1; l0 <= U0; l0++) {
+            for (int l1 = 1; l1 <= U1; l1++) {
                 TestPointOrbitData orbit;
-                complex<double> x = (l0 - 0.5)/(2.0*Q0) + theta*(l1 - 0.5)/(2.0*Q1);
+                complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
                 Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
                 pullback.reduce(d);
 
                 orbit.representativeComplex = x;
                 orbit.representativePullback = pullback;
+                orbit.properTranslatesModSign = vector<pair<complex<double>, short>>();
 
-                pair<complex<double>, short> tup (-conj(x), reflectionSign);
-                orbit.properTranslatesModSign.push_back(tup);
+                orbit.properTranslatesModSign.emplace_back(-conj(x), reflectionSign);
 
                 answer.push_back(orbit);
             }
         }
-    } else if (d == 1) {
-        //Iterate through orbit representatives
-        for (int l0 = 1; l0 <= Q0; l0++) {
-            for (int l1 = 1; l1 <= Q1; l1++) {
-                TestPointOrbitData orbit;
+        return answer;
+    }
 
-                complex<double> x = (l0 - 0.5)/(2.0*Q0) + theta*(l1 - 0.5)/(2.0*Q1);
+    //Method 1, only quotient by negation
+    long method1 = 0;
+    if (Q0 % 2 == 1 && Q1 % 2 == 1) {
+        method1 = (Q0*Q1 - 1)/2 + 1;
+    } else {
+        method1 = Q0*Q1/2;
+    }
+
+    //Method 2, quotient by reflection
+    long method2 = 0;
+    int method2AdjustedQ0 = Q0;
+    int method2AdjustedQ1 = Q1;
+
+    if (method2AdjustedQ0 % 2 == 1) {
+        method2AdjustedQ0++;
+    }
+    if (method2AdjustedQ1 % 2 == 1) {
+        method2AdjustedQ1++;
+    }
+
+    if (method2AdjustedQ0 % method2AdjustedQ1 == 0 && (method2AdjustedQ0/method2AdjustedQ1) % 2 == 0) {
+        //do nothing
+    } else {
+        if ((1.0*method2AdjustedQ0)/method2AdjustedQ1 <= 2) {
+            method2AdjustedQ0 = 2 * method2AdjustedQ1;
+        } else {
+            int k = 2;
+            while ( !(k <= ((1.0*Q0)/Q1) && ((1.0*Q0)/Q1) <= k + 2) ) {
+                k += 2;
+            }
+
+            //either make the ratio go up to k+2 by pumping up Q0
+            int goUpQ0 = (k + 2) * method2AdjustedQ1;
+            int goUpQ1 = method2AdjustedQ1;
+
+            //or make the ratio go down to k by pumping up Q1
+            int goDownQ0 = method2AdjustedQ0;
+            while (goDownQ0 % k != 0 || (goDownQ0/k) % 2 != 0) {
+                goDownQ0 += 2;
+            }
+
+            int goDownQ1 = goDownQ0/k;
+
+            if (goUpQ0 * goUpQ1 > goDownQ0 * goDownQ1) {
+                method2AdjustedQ0 = goDownQ0;
+                method2AdjustedQ1 = goDownQ1;
+            } else {
+                method2AdjustedQ0 = goUpQ0;
+                method2AdjustedQ1 = goUpQ1;
+            }
+        }
+    }
+
+    method2 = method2AdjustedQ0 * method2AdjustedQ1 / 4;
+    if (method2AdjustedQ0/method2AdjustedQ1 % 4 == 2) {
+        method2 += method2AdjustedQ1/4;
+    }
+
+    //Method 3, quotient by negation and then reflection as much as possible
+    long method3 = 0;
+
+    int method3AdjustedQ0 = Q0;
+    int method3AdjustedQ1 = Q1;
+
+    if (method3AdjustedQ1 % 2 == 0) {
+        method3AdjustedQ1++;
+    }
+
+    if (method3AdjustedQ0 % method3AdjustedQ1 == 0) {
+        // do nothing
+    } else {
+        if ((1.0*method3AdjustedQ0)/method3AdjustedQ1 <= 1) {
+            method3AdjustedQ0 = method3AdjustedQ1;
+        } else {
+            int k = 1;
+            while ( !(k <= (1.0*Q0)/Q1 && (1.0*Q0)/Q1 <= k + 1)) {
+                k++;
+            }
+
+            //either make the ratio go up to k+1 by pumping up Q0
+            int goUpQ0 = (k + 1) * method3AdjustedQ1;
+            int goUpQ1 = method3AdjustedQ1;
+
+            //or make the ratio go down to k by pumping up Q1
+            int goDownQ0 = Q0;
+            while (goDownQ0 % k != 0 || (goDownQ0/k) % 2 != 1) {
+                goDownQ0++;
+            }
+
+            int goDownQ1 = goDownQ0/k;
+
+            if (goUpQ0*goUpQ1 + goUpQ0 + goUpQ1 > goDownQ0*goDownQ1 + goDownQ0 + goDownQ1) {
+                method3AdjustedQ0 = goDownQ0;
+                method3AdjustedQ1 = goDownQ1;
+            } else {
+                method3AdjustedQ0 = goUpQ0;
+                method3AdjustedQ1 = goUpQ1;
+            }
+        }
+    }
+    method3 = method3AdjustedQ0 * method3AdjustedQ1 + method3AdjustedQ0 + method3AdjustedQ1;
+    method3 /= 4;
+    if (method3AdjustedQ0 % 2 == 1 && method3AdjustedQ1 % 2 == 1) {
+        method3++;
+    }
+
+    char method = 1;
+    if (method2 < method1 && method2 < method3) {
+        method = 2;
+        Q0 = method2AdjustedQ0;
+        Q1 = method2AdjustedQ1;
+    } else if (method3 < method1 && method3 < method2) {
+        method = 3;
+        Q0 = method3AdjustedQ0;
+        Q1 = method3AdjustedQ1;
+    } else {
+        //Q0 and Q1 stay the same
+    }
+
+    double xi0, xi1;
+    int L0, U0, L1, U1;
+    if (Q0 % 2 == 0) {
+        xi0 = 0.5;
+        L0 = 1 - Q0/2;
+        U0 = Q0/2;
+    } else {
+        xi0 = 0;
+        L0 = (1 - Q0)/2;
+        U0 = (Q0 - 1)/2;
+    }
+    if (Q1 % 2 == 0) {
+        xi1 = 0.5;
+        L1 = 1 - Q1/2;
+        U1 = Q1/2;
+    } else {
+        xi1 = 0;
+        L1 = (1 - Q1)/2;
+        U1 = (Q1 - 1)/2;
+    }
+
+    if ((method == 2 || method == 3) && xi1 == 0) {
+        //impose conditions so that we only iterate over a chosen negation representative
+        //also impose conditions so that we only iterate over a chosen reflection representative
+        for (int l1 = 0; l1 <= U1; l1++) {
+            int adjustedL0 = ceil(xi0 - ((1.0*Q0)/Q1)*((l1 - xi1)/2.0));
+            int adjustedU0 = floor(xi0 + Q0/2.0 - ((1.0*Q0)/Q1)*((l1 - xi1)/2.0));
+            for (int l0 = adjustedL0; l0 <= adjustedU0; l0++) {
+                TestPointOrbitData orbit;
+                complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
                 Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
                 pullback.reduce(d);
 
                 orbit.representativeComplex = x;
                 orbit.representativePullback = pullback;
+                orbit.properTranslatesModSign = vector<pair<complex<double>, short>>();
 
-                if (abs(l0) == abs(l1)) {
-                    //The orbit is {x, ix, -x, -ix}
-                    //So orbit/{+/-1} is {[x], [ix]}
-                    //So the only proper translate is ix
+                bool realPartIsZero = (int)(2*Q1*(2*l0 - (int)(2*xi0)) + Q0*(2*l1 - (int)(2*xi1))) == 0;
+                bool onPositiveRealAxis = l1 == 0;
 
-                    pair<complex<double>, short> tup (I*x, nonsquareUnitSign);
-                    orbit.properTranslatesModSign.push_back(tup);
+                if (onPositiveRealAxis || realPartIsZero) {
+                    //don't pair up
                 } else {
-                    //The orbit is {x, ix, -x, -ix, bar(x), ibar(x), -bar(x), -ibar(x)}
-                    //So orbit/{+/-1} is {[x], [ix], [-bar(x)], [-ibar(x)]}
-                    //So the proper translates are ix, -bar(x), and -ibar(x)
-
-                    pair<complex<double>, short> tup (I*x, nonsquareUnitSign);
-                    orbit.properTranslatesModSign.push_back(tup);
-
-                    get<0>(tup) = -conj(x);
-                    get<1>(tup) = reflectionSign;
-                    orbit.properTranslatesModSign.push_back(tup);
-
-                    get<0>(tup) = -I*conj(x);
-                    get<1>(tup) = reflectionSign * nonsquareUnitSign;
-                    orbit.properTranslatesModSign.push_back(tup);
+                    orbit.properTranslatesModSign.emplace_back(-conj(x), reflectionSign);
                 }
+                answer.push_back(orbit);
+            }
+        }
+    } else if ((method == 2 || method == 3) && xi1 == 0.5) {
+        //xi1 = 1/2
+        //impose conditions so that we only iterate over a chosen negation representative
+        //also impose conditions so that we only iterate over a chosen reflection representative
+        for (int l1 = 1; l1 <= U1; l1++) {
+            int adjustedL0 = ceil(xi0 - ((1.0*Q0)/Q1)*((l1 - xi1)/2.0));
+            int adjustedU0 = floor(xi0 + Q0/2.0 - ((1.0*Q0)/Q1)*((l1 - xi1)/2.0));
+            for (int l0 = adjustedL0; l0 <= adjustedU0; l0++) {
+                TestPointOrbitData orbit;
+                complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
+                Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
+                pullback.reduce(d);
+
+                orbit.representativeComplex = x;
+                orbit.representativePullback = pullback;
+                orbit.properTranslatesModSign = vector<pair<complex<double>, short>>();
+
+                bool realPartIsZero = (int)(Q1*(4*l0 - (int)(4*xi0)) + Q0*(2*l1 - 1)) == 0;
+
+                if (realPartIsZero) {
+                    //don't pair up
+                } else {
+                    orbit.properTranslatesModSign.emplace_back(-conj(x), reflectionSign);
+                }
+                answer.push_back(orbit);
+            }
+        }
+    } else if (method == 1 && xi1 == 0) {
+        for (int l0 = L0; l0 <= U0; l0++) {
+            for (int l1 = 0; l1 <= U1; l1++) {
+                if (l1 == 0) {
+                    if (xi0 == 0 && l0 < 0) {
+                        continue;
+                    } else if (xi0 == 0.5 && l0 < 1) {
+                        continue;
+                    }
+                }
+                TestPointOrbitData orbit;
+                complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
+                Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
+                pullback.reduce(d);
+
+                orbit.representativeComplex = x;
+                orbit.representativePullback = pullback;
+                orbit.properTranslatesModSign = vector<pair<complex<double>, short>>();
+
+                answer.push_back(orbit);
+            }
+        }
+    } else if (method == 1 && xi1 == 0.5) {
+        for (int l0 = L0; l0 <= U0; l0++) {
+            for (int l1 = 1; l1 <= U1; l1++) {
+                TestPointOrbitData orbit;
+                complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
+                Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
+                pullback.reduce(d);
+
+                orbit.representativeComplex = x;
+                orbit.representativePullback = pullback;
+                orbit.properTranslatesModSign = vector<pair<complex<double>, short>>();
 
                 answer.push_back(orbit);
             }
         }
     } else {
-        //d == 3
-        //
-        //In order for rotation to be defined on the set of testpoints, we do not use the shifted version
-        //WWWWWWWAAAAARRRNNNIIINNNGGG
-        //THIS CODE IS A MESS, IT'S WRONG AND WRONG AGAIN, NEEDS SERIOUS MATHEMATICAL REWORK
-
-        int l1LowerBound = 0;
-        int l1UpperBound = floor(2.0*Q1/3.0);
-        for (int l1 = l1LowerBound; l1 <= l1UpperBound; l1++) {
-            int l0LowerBound = l1; //should really be ceil(Q0*l1/(double)Q1), but Q0=Q1
-            int l0UpperBound = floor(Q0 - l1/2.0); //should really be floor(Q0 - l1*Q0/(2*Q1)), but Q0=Q1
-            for (int l0 = l0LowerBound; l0 <= l0UpperBound; l0++) {
-                TestPointOrbitData orbit;
-
-                complex<double> x = l0 / (2.0 * Q0) + theta * (double) l1 / (2.0 * Q1);
-                Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
-                pullback.reduce(d);
-
-                orbit.representativeComplex = x;
-                orbit.representativePullback = pullback;
-
-                if (l0 == 0 && l1 == 0) {
-                    //orbit is degenerate, just {0}
-                    //is this okay?
-
-                } else {
-
-                    //For this comment let zeta=e^(2pi i /6) be represented by w
-                    //The orbit is {x, wx, w^2x, -x, -wx, -w^2x}
-                    //So orbit/{+/-1} is {[x], [wx], [w^2x]}
-                    //So the proper translates are wx, w^2x
-
-                    pair<complex<double>, short> tup (theta*x, nonsquareUnitSign);
-                    orbit.properTranslatesModSign.push_back(tup);
-
-                    get<0>(tup) = theta*theta*x;
-                    get<1>(tup) = 1; //theta*theta is a square unit
-                    orbit.properTranslatesModSign.push_back(tup);
-
-                    //magic quantity that tells me about the real part of x
-                    int discriminant = 2*Q1*l0 + Q1*l1 - 2*Q0*Q1;
-                    bool orbitIsHalfSize = (l0 == 0 || l1 == 0 || l0 + l1 == 0 || discriminant == 0);
-
-                    if (!orbitIsHalfSize) {
-                        //For this comment let zeta=e^(2pi i /6) be represented by w
-                        //The orbit is {x, wx, w^2x, -x, -wx, -w^2x, -bar(x), -wbar(x), -w^2bar(x), bar(x), wbar(x), w^2bar(x)}
-                        //So orbit/{+/-1} is {[x], [wx], [w^2x], [-bar(x)], [-wbar(x)], [-w^2bar(x)]}
-                        //So the proper translates are wx, w^2x, -bar(x), -wbar(x), -w^2bar(x)
-                        get<0>(tup) = -conj(x);
-                        get<1>(tup) = reflectionSign;
-                        orbit.properTranslatesModSign.push_back(tup);
-
-                        get<0>(tup) = -theta*conj(x);
-                        get<1>(tup) = reflectionSign * nonsquareUnitSign;
-                        orbit.properTranslatesModSign.push_back(tup);
-
-                        get<0>(tup) = -theta*theta*conj(x);
-                        get<1>(tup) = reflectionSign; //theta*theta is a square unit
-                        orbit.properTranslatesModSign.push_back(tup);
-                    }
-                }
-            }
-        }
+        //this never happens
+        throw std::invalid_argument("Error in DFT point generation.");
     }
 
     return answer;
@@ -1018,9 +1077,12 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
 
     unsigned long long int pointCount = 0;
     for (const auto& orbit : mTestPointOrbits) {
-        pointCount += (orbit.properTranslatesModSign.size() + 1);
+        if (orbit.representativeComplex.real() == 0 && orbit.representativeComplex.imag() == 0) {
+            pointCount++;
+        } else {
+            pointCount += (orbit.properTranslatesModSign.size() + 1) * 2;
+        }
     }
-    pointCount *= 2;
 
     vector<double> yStars;
     vector<double> bessels;
@@ -1042,6 +1104,18 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
             yStars.push_back(yStar);
             double bess = K.approxKBessel(twoPiOverATimesNAbs * yStar);
             bessels.push_back(bess);
+
+            if (x.real() == 0 && x.imag() == 0) {
+
+                double indexTerm = 0;
+                for (const auto& tup : nIndexOrbitDataModSign) {
+                    indexTerm += tup.second * 2;
+                }
+                xStarTerms.push_back(indexTerm);
+
+                xTerms.push_back(1.0/4);
+                continue;
+            }
 
             double indexTerm = 0;
             for (const auto& tup : nIndexOrbitDataModSign) {
@@ -1072,6 +1146,11 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
             double bess = K.approxKBessel(twoPiOverATimesNAbs * yStar);
             bessels.push_back(bess);
 
+            if (x.real() == 0 && x.imag() == 0) {
+                xStarTerms.push_back(0);
+                xTerms.push_back(0);
+                continue;
+            }
             double indexTerm = 0;
             for (const auto& tup : nIndexOrbitDataModSign) {
                 Index l = tup.first;
@@ -1773,10 +1852,12 @@ void BianchiMaassSearch::setUpOutputLogFiles() {
 
         mediumOutputFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
 
-        if (isFileEmpty(outputFilename)) {
-            mediumOutputFile << "d = " << d << '\n';
-            mediumOutputFile << "symClass = " << symClass << '\n';
-            mediumOutputFile << "D = " << D << std::endl;
+        if (mediumOutputFile.is_open()) {
+            if (isFileEmpty(outputFilename)) {
+                mediumOutputFile << "d = " << d << '\n';
+                mediumOutputFile << "symClass = " << symClass << '\n';
+                mediumOutputFile << "D = " << D << std::endl;
+            }
         } else {
             std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
         }
@@ -1794,9 +1875,12 @@ void BianchiMaassSearch::setUpOutputLogFiles() {
 
         fineOutputFile.open(outputFilename, std::ofstream::out | std::ofstream::app);
 
-        if (isFileEmpty(outputFilename)) {
-            mediumOutputFile << "d = " << d << '\n';
-            mediumOutputFile << "symClass = " << symClass << std::endl;
+        if (fineOutputFile.is_open()) {
+            if (isFileEmpty(outputFilename)) {
+                fineOutputFile << "d = " << d << '\n';
+                fineOutputFile << "symClass = " << symClass << std::endl;
+                fineOutputFile << "D =" << D << std::endl;
+            }
         } else {
             std::cerr << "Error creating file \"" << outputFilename << "\"" << std::endl;
         }
