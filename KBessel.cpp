@@ -36,6 +36,10 @@ KBessel::KBessel(double precomputeLowerBound, double r) {
     for (int i = 0; i < threads; i++) {
         K.push_back(new archtKBessel(r));
     }
+    KReal.reserve(threads);
+    for (int i = 0; i < threads; i++) {
+        KReal.push_back(new KBesselReal(r));
+    }
 
     setRAndClear(r);
 }
@@ -44,14 +48,29 @@ KBessel::~KBessel() {
     for (auto bess : K) {
         delete bess;
     }
+    for (auto bess : KReal) {
+        delete bess;
+    }
     K.clear();
+    KReal.clear();
 }
 
+
+
 double KBessel::exactKBessel(double x) {
-    int threadNum = omp_get_thread_num();
-    double ans = K[threadNum]->evaluate(x);
-    return ans;
+    return (this->*exactKBesselFunc)(x);
 }
+
+double KBessel::exactKBesselImagOrder(double x) {
+    int threadNum = omp_get_thread_num();
+    return K[threadNum]->evaluate(x);
+}
+
+double KBessel::exactKBesselRealOrder(double x) {
+    int threadNum = omp_get_thread_num();
+    return KReal[threadNum]->evaluate(x);
+}
+
 
 double KBessel::approxKBessel(const double x) {
     if (x >= zeroCutoff) {
@@ -108,8 +127,16 @@ void KBessel::setRAndPrecompute(double newR, double precomputeUpperBound) {
 void KBessel::setRAndClear(double newR) {
     r = newR;
 
-    for (auto A : K) {
-        A->setR(r);
+    if (r <= 0) {
+        for (auto bess: KReal) {
+            bess->setR(abs(r));
+        }
+        exactKBesselFunc = &KBessel::exactKBesselRealOrder;
+    } else {
+        for (auto A : K) {
+            A->setR(r);
+        }
+        exactKBesselFunc = &KBessel::exactKBesselImagOrder;
     }
 
     chunkWidth = 1.0;
@@ -138,7 +165,7 @@ void KBessel::setRAndClear(double newR) {
 
     numberOfShrinkingChunks = n;
 
-    zeroCutoff = (1136 + PI*r/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
+    zeroCutoff = (1136 + PI*abs(r)/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
 
     chunkStepSize.clear();
     shrinkingChunkStepSize.clear();
@@ -482,3 +509,4 @@ void KBessel::computeShrinkingChunkSplines() {
     }
 
 }
+

@@ -36,6 +36,7 @@ public:
     void coarseSearchForEigenvalues(const double leftR, const double rightR);
     void mediumSearchForEigenvalues();
     void fineSearchForEigenvalues();
+    void fineSearchForEigenvalues2();
 
 private:
 
@@ -58,9 +59,9 @@ private:
     ofstream mediumOutputFile;
     ofstream fineOutputFile;
 
-    double coarseComplete = 0;
-    double mediumComplete = 0;
-    double fineComplete = 0;
+    double coarseComplete = -0.4;
+    double mediumComplete = -0.4;
+    double fineComplete = -0.4;
 
     int secondsToComputeMatrix = 400;
 

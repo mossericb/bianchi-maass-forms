@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
             std::cout << "D = " << D << '\n';
 
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
-            bms.fineSearchForEigenvalues();
+            bms.fineSearchForEigenvalues2();
         } else {
             throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" or "fine".)");
         }

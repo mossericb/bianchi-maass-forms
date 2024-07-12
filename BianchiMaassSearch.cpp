@@ -17,7 +17,6 @@
 #include <filesystem>
 #include <eigen3/Eigen/SVD>
 #include <fstream>
-#include "archtKBessel.h"
 #include <boost/align/aligned_allocator.hpp>
 //#include "Plotter.h"
 //#include "PlotWindow.h"
@@ -390,6 +389,135 @@ void BianchiMaassSearch::fineSearchForEigenvalues() {
     }
 }
 
+void BianchiMaassSearch::fineSearchForEigenvalues2() {
+
+    auto intervalsFromFile = getIntervalsForFineSearch();
+    if (intervalsFromFile.empty()) {
+        std::cout << "Range already complete." << std::endl;
+        return;
+    }
+
+
+    stack<pair<double, double>> intervals;
+    for (auto itr = intervalsFromFile.rbegin(); itr != intervalsFromFile.rend(); itr++) {
+        intervals.push(*itr);
+    }
+
+    /**
+     * Anderson-Bjorck pseudocode
+     * because secant method on hecke relations isn't working well
+     * and bisection is far too slow
+     *
+     * 1. Compute well-conditioned Y1 and Y2
+     * 2. Compute testpoints for both horospheres (Don't change this the rest of the time!)
+     * 3. Let a = leftR and b = rightR
+     * 3. Compute g_{a} and g_{b}
+     * 4. Find an index where there is a sign change, call it l
+     * 5. int side = 0
+     * 6. Let fa = g_{a}(l)) and fb = g_{b}(l)
+     * 7. Let c = (fa * b - fb * a) / (fa - fb)
+     * 8. Let fc = g_{c}(l)
+     * 9. if (areDifferentSign(fa, fc))
+     *      Let b = c
+     *      fb = fc
+     *      if (side == -1)
+     *          Let m' = 1 - g/g_{rb}(l), and m = m' > 0 ? m' : 0.5
+     *          fa *= m
+     *      side == -1
+     *   else if (areDifferentSign(fc, fb))
+     *      a = c
+     *      fa = fc
+     *      if (side == +1)
+     *          Let m' = 1 - g/g_{rb}(l), and m = m' > 0 ? m' : 0.5
+     *          fb *= m
+     *      side = +1
+     * 10. if (b - a < 0.000000001) break; else Goto 7
+     * 11. return
+     *
+     *
+     * Might have to include some checking along the way that the sign changes don't become blurry,
+     * for example, if the sign changes stop looking like (0, 400) and more like (100, 300) or something
+     * IF that happens return the last known spec param
+     *
+     * Eventually, it might be a good idea to do Anderson-Bjorck on more than one index...
+     * will take testing to know what works and what doesn't!
+     */
+
+
+
+
+
+    map<double, KBessel*> KBessMap;
+
+    while(!intervals.empty()) {
+        stack<pair<double, double>> spawnedIntervals;
+        double upper = intervals.top().second;
+        spawnedIntervals.push(intervals.top());
+        intervals.pop();
+
+        if (autoPrecision) {
+            computeMaximumD(spawnedIntervals.top().first, 180);
+            std::cout << "D = " << D << std::endl;
+        }
+
+        while (!spawnedIntervals.empty()) {
+            auto interval = spawnedIntervals.top();
+            spawnedIntervals.pop();
+
+            if (interval.second - interval.first <= 0.0000000001) {
+                fineOutputFile << std::setprecision(16) << "[" << interval.first << ", " << interval.second << "]" << std::endl;
+                cout << "Likely eigenvalue " << std::setprecision(16) << "[" << interval.first << ", " << interval.second << "]" << std::endl;
+            } else {
+                double left = interval.first;
+                double right = interval.second;
+                double center = (left + right) / 2;
+
+                if (KBessMap.find(left) == KBessMap.end()) {
+                    KBessMap[left] = new KBessel(twoPiOverA * 1 * Y0, left);
+                }
+                if (KBessMap.find(center) == KBessMap.end()) {
+                    KBessMap[center] = new KBessel(twoPiOverA * 1 * Y0, center);
+                }
+                if (KBessMap.find(right) == KBessMap.end()) {
+                    KBessMap[right] = new KBessel(twoPiOverA * 1 * Y0, right);
+                }
+
+                bool leftInterval = possiblyContainsEigenvalue(left, center, KBessMap[left], KBessMap[center]);
+                bool rightInterval = possiblyContainsEigenvalue(center, right, KBessMap[center], KBessMap[right]);
+                if (!leftInterval && !rightInterval) {
+                    delete KBessMap[center];
+                    KBessMap.erase(center);
+                    continue;
+                } else if (leftInterval && !rightInterval) {
+                    spawnedIntervals.emplace(left, center);
+                    continue;
+                } else if (!leftInterval && rightInterval) {
+                    spawnedIntervals.emplace(center, right);
+                    continue;
+                } else {
+                    spawnedIntervals.emplace(center, right);
+                    spawnedIntervals.emplace(left, center);
+                    continue;
+                }
+            }
+        }
+        for (auto itr = KBessMap.begin(); itr != KBessMap.end(); ) {
+            if (itr->first < upper) {
+                delete itr->second;
+                KBessMap.erase(itr++);
+            } else {
+                ++ itr;
+            }
+        }
+        fineOutputFile << "Complete up to " << std::setprecision(16) << upper << std::endl;
+    }
+
+    for (auto itr = KBessMap.begin(); itr != KBessMap.end(); ) {
+        delete itr->second;
+        KBessMap.erase(itr++);
+    }
+}
+
 
 bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const double rightR, KBessel *leftRK, KBessel *rightRK) {
     //Assume that I will have to recompute everything multiple times here, so don't bother checking otherwise
@@ -472,6 +600,11 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
     std::cout << solAndCondY1R1.second << " " << solAndCondY2R1.second << " ";
     std::cout << solAndCondY1R2.second << " " << solAndCondY2R2.second << std::endl;
 
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        std::cout << std::setprecision(16) << indexTransversal[i] << ", " << solAndCondY1R1.first(i) << "\n";
+    }
+    std::cout << std::flush;
+
     /*
      * When you have to start over, for whatever reason, this means that condition numbers
      * blow up in that interval. The method resets the condition number search goal, but I
@@ -501,7 +634,7 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
 }
 
 double BianchiMaassSearch::computeM0General(const double r) {
-    archtKBessel bess(r);
+    KBessel bess(1, r);
 
     //Method: use binary search to find M0 such that
     //K(2*pi/A * M0 * Y0) = 10^-D * K(max(r,1))
@@ -513,24 +646,24 @@ double BianchiMaassSearch::computeM0General(const double r) {
     double minM0 = max(r, 1.0)/(2*pi/A*Y0);
     double maxM0 = 100;
 
-    double peak = bess.evaluate(max(r,1.0));
-    double evalLeft = truncation * peak - bess.evaluate(2*pi/A*minM0*Y0);
-    double evalRight = truncation * peak - bess.evaluate(2*pi/A*maxM0*Y0);
+    double peak = bess.exactKBessel(max(r,1.0));
+    double evalLeft = truncation * peak - bess.exactKBessel(2*pi/A*minM0*Y0);
+    double evalRight = truncation * peak - bess.exactKBessel(2*pi/A*maxM0*Y0);
     while (!areDifferentSign(evalLeft, evalRight)) {
         maxM0 *= 2;
-        evalRight = truncation * peak - bess.evaluate(2*pi/A*maxM0*Y0);
+        evalRight = truncation * peak - bess.exactKBessel(2*pi/A*maxM0*Y0);
     }
 
 
     //Step 2: Do binary search
     double left = minM0;
     double right = maxM0;
-    evalLeft = truncation * peak - bess.evaluate(2*pi/A*left*Y0);
+    evalLeft = truncation * peak - bess.exactKBessel(2*pi/A*left*Y0);
 
     //Super accuracy here doesn't really matter, but it's fast, so we go this far because we can
     while (right - left > 0.000001) {
         double center = (left + right)/2.0;
-        double evalCenter = truncation * peak - bess.evaluate(2*pi/A*center*Y0);
+        double evalCenter = truncation * peak - bess.exactKBessel(2*pi/A*center*Y0);
 
         if (areDifferentSign(evalLeft, evalCenter)) {
             right = center;
@@ -719,6 +852,16 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
         method1 = Q0*Q1/2;
     }
 
+    //testcode
+    if (Q0 % 2 == 1) {
+        Q0++;
+    }
+    if (Q1 % 2 == 1) {
+        Q1++;
+    }
+    method1 = 0;
+    //end testcode
+
     //Method 2, quotient by reflection
     long method2 = 0;
     int method2AdjustedQ0 = Q0;
@@ -768,6 +911,8 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
     if (method2AdjustedQ0/method2AdjustedQ1 % 4 == 2) {
         method2 += method2AdjustedQ1/4;
     }
+
+
 
     //Method 3, quotient by negation and then reflection as much as possible
     long method3 = 0;
@@ -1504,7 +1649,16 @@ tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecan
             || iterations > maxIterations //computation not converging as expected
             || phiN == phiNPlus1 //numerical error incoming, could just be very good convergence
             || rN == rNPlus1) {
+            watch(hecke);
+            watch(heckeHasConverged(heckeValues));
+            watch(iterations > maxIterations);
+            watch(phiN == phiNPlus1);
+            watch(rN == rNPlus1);
 
+            for (auto const& itr : coeffMapNextR) {
+                std::cout << std::setprecision(16) << itr.first << ", " << itr.second << "\n";
+            }
+            std::cout << std::flush;
             delete leftRK;
             delete rightRK;
             return {heckeValues, rN, rNPlus1};
@@ -1710,10 +1864,6 @@ BianchiMaassSearch::computeWellConditionedY(KBessel *leftRK, KBessel *rightRK, d
 pair<double, double>
 BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK, double leftR, double rightR,
                                                double M0, const vector<Index> &indexTransversal) {
-    if (leftR < 12.1 && 12.1 < rightR) {
-        int a = 0;
-    }
-
     double c = max(1.0, rightR)/(2*pi/A*M0);
     double upperY = Y0;
     double lowerY = 0.5 * max(1.0, rightR)/(2*pi/A*M0);
@@ -2079,7 +2229,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     double maxTerms = maxNanoseconds / nanosecondsPerTerm;
 
     double minD = 3;
-    double maxD = 20;
+    double maxD = 12;
     if (d == 163) {
         maxD = 12;
     }
@@ -2099,7 +2249,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
     vector<Index> indexTransversal = get<0>(data);
 
-    double Y = computeWellConditionedY(K, r, M0, indexTransversal);
+    double Y = computeWellConditionedY(K,r, M0, indexTransversal);
     delete K;
     double MY = computeMYGeneral(M0, Y);
 
@@ -2141,9 +2291,9 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     if (leftTerms <= maxTerms && rightTerms <= maxTerms) {
         double answer;
         if (mode == "coarse") {
-            answer = rightD * 0.5;
+            answer = std::min(6.0, rightD * 0.3);
         } else if (mode == "medium") {
-            answer =  rightD * 0.75;
+            answer =  std::min(6.0, rightD * 0.5);
         } else {
             //mode == "fine"
             answer =  rightD;
@@ -2181,9 +2331,9 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     double answer;
 
     if (mode == "coarse") {
-        answer = rightD * 0.5;
+        answer = std::min(6.0, rightD * 0.3);
     } else if (mode == "medium") {
-        answer =  rightD * 0.75;
+        answer =  std::min(6.0, rightD * 0.5);
     } else {
         //mode == "fine"
         answer =  rightD;
@@ -2191,6 +2341,5 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
 
     D = max(minD, answer);
     truncation = pow(10.0, -D);
-    return;
 }
 
