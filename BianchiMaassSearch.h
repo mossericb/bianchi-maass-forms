@@ -36,7 +36,6 @@ public:
     void coarseSearchForEigenvalues(const double leftR, const double rightR);
     void mediumSearchForEigenvalues();
     void fineSearchForEigenvalues();
-    void fineSearchForEigenvalues2();
 
 private:
 
@@ -109,8 +108,10 @@ private:
     vector<pair<double,double>> getIntervalsForCoarseSearch(double startR, double endR);
     vector<pair<double,double>> getIntervalsForMediumSearch();
     vector<pair<double,double>> getIntervalsForFineSearch();
+    void saveFinalResult(vector<double> spectralParameters, vector<Index>& indexTransversal, vector<double>& coeffs);
 
     bool possiblyContainsEigenvalue(double leftR, double rightR, KBessel *leftRK, KBessel *rightRK);
+    void medianIllinoisSearch(double leftR, double rightR);
     tuple<vector<pair<double,double>>, double, double> fineSecantMethod(double leftR, double rightR);
     static bool heckeHasConverged(const vector<pair<double, double>>& heckeValues);
 

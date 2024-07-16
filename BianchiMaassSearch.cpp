@@ -18,6 +18,7 @@
 #include <eigen3/Eigen/SVD>
 #include <fstream>
 #include <boost/align/aligned_allocator.hpp>
+#include <sstream>
 //#include "Plotter.h"
 //#include "PlotWindow.h"
 //#include "FunctionToEvaluate.h"
@@ -216,7 +217,7 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
             weylRightEndpoint = min(weylRightEndpoint, interval.first + 0.001);
 
             //Cutoff interval should be not narrower than 0.00000001
-            weylRightEndpoint = max(weylRightEndpoint, interval.first + 0.00000001);
+            //weylRightEndpoint = max(weylRightEndpoint, interval.first + 0.00000001);
             if (interval.second <= weylRightEndpoint) {
                 mediumOutputFile << std::setprecision(16) << "[" << interval.first << ", " << interval.second << "]" << std::endl;
                 cout << "Likely eigenvalue " << std::setprecision(16) << "[" << interval.first << ", " << interval.second << "]" << std::endl;
@@ -272,6 +273,7 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
 
 }
 
+
 void BianchiMaassSearch::fineSearchForEigenvalues() {
 
     auto intervalsFromFile = getIntervalsForFineSearch();
@@ -286,235 +288,217 @@ void BianchiMaassSearch::fineSearchForEigenvalues() {
         intervals.push(*itr);
     }
 
-    while(!intervals.empty()) {
+    while (!intervals.empty()) {
         auto interval = intervals.top();
         intervals.pop();
-
         if (autoPrecision) {
-            computeMaximumD(intervals.top().first, 180);
-            D *= 3.0/4;
-            truncation = pow(10.0, -D);
+            computeMaximumD(interval.second, 180);
             std::cout << "D = " << D << std::endl;
         }
-
-        auto firstPassOutput = fineSecantMethod(interval.first, interval.second);
-        auto firstPassHecke = get<0>(firstPassOutput);
-        double lastHecke = firstPassHecke[firstPassHecke.size() - 1].second;
-        if (lastHecke > 1) { //not modular
-            fineOutputFile << "Complete up to " << std::setprecision(16) << interval.second << std::endl;
-            continue;
-        }
-
-        double firstR = get<1>(firstPassOutput);
-        double secondR = get<2>(firstPassOutput);
-
-        if (autoPrecision) {
-            computeMaximumD(intervals.top().first, 180);
-            std::cout << "D = " << D << std::endl;
-        }
-
-        auto secondPassOutput = fineSecantMethod(firstR, secondR);
-        auto secondPassHecke = get<0>(secondPassOutput);
-        lastHecke = secondPassHecke[secondPassHecke.size() - 1].second;
-        if (lastHecke > 1) {
-            fineOutputFile << "Complete up to " << std::setprecision(16) << interval.second << std::endl;
-            continue;
-        }
-
-        const std::string directory = "Output/Final/"; // Change this to the desired directory
-        const std::string prefix = to_string(d) + "_"
-                                   + symClass + "_";
-        createOutputDirectory(directory);
-        int number = findMaxFileNumber(directory, prefix);
-        std::string outputFilename = directory
-                                     + prefix
-                                     + to_string(number + 1)
-                                     + ".txt";
-
-        ofstream out;
-        out.open(outputFilename, std::ofstream::out | std::ofstream::app);
-
-        out << "First pass\n";
-
-        for (auto pair : firstPassHecke) {
-            out << std::setprecision(16) << pair.first << ", " << pair.second << '\n';
-        }
-
-        out << "Second pass\n";
-
-        for (auto pair : secondPassHecke) {
-            out << std::setprecision(16) << pair.first << ", " << pair.second << '\n';
-        }
-        out << std::flush;
-
-        vector<pair<double, double>> combined;
-        for (auto pair : firstPassHecke) {
-            combined.push_back(pair);
-        }
-        for (auto pair : secondPassHecke) {
-            combined.push_back(pair);
-        }
-
-        std::sort(combined.begin(), combined.end(), [](auto &left, auto &right) {
-            return left.second < right.second;
-        });
-
-        string r0;
-        string r1;
-        string r2;
-        out << "Least hecke:\n";
-        for (int i = 0; i < min((int)combined.size(), 3); i++) {
-            out << std::setprecision(16) << combined[i].first << ", " << combined[i].second << std::endl;
-            if (i == 0) {
-                r0 = to_string(combined[i].first);
-            } else if (i == 1) {
-                r1 = to_string(combined[i].first);
-            } else if (i == 2) {
-                r2 = to_string(combined[i].first);
-            }
-        }
-        out << "These digits are correct:\n";
-        int size = r0.length();
-        size = min(size, (int)r1.length());
-        size = min(size, (int)r2.length());
-        for (int n = 0; n < size; n++) {
-            if (r0[n] == r1[n] && r0[n] == r2[n]) {
-                out << r0[n];
-                continue;
-            }
-        }
-
-
+        medianIllinoisSearch(interval.first, interval.second);
         fineOutputFile << "Complete up to " << std::setprecision(16) << interval.second << std::endl;
     }
 }
 
-void BianchiMaassSearch::fineSearchForEigenvalues2() {
+void BianchiMaassSearch::medianIllinoisSearch(double leftR, double rightR) {
 
-    auto intervalsFromFile = getIntervalsForFineSearch();
-    if (intervalsFromFile.empty()) {
-        std::cout << "Range already complete." << std::endl;
-        return;
+    std::cout << std::setprecision(16)
+              << "[" << leftR << ", " << rightR << "]" << std::endl;
+
+    double M0 = computeM0General(rightR);
+
+    vector<Index> indicesM0 = Od.indicesUpToM(M0);
+    auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
+    vector<Index> indexTransversal = get<0>(data);
+    map<Index, vector<pair<Index, int>>> indexOrbitDataModSign = get<1>(data);
+
+    int indexOfNormalization = 0;
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        if (indexTransversal[i] == Index(1,0)) {
+            indexOfNormalization = i;
+            break;
+        }
     }
 
+    KBessel* leftRK = new KBessel(twoPiOverA * 1 * Y0, leftR);
+    KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, rightR);
 
-    stack<pair<double, double>> intervals;
-    for (auto itr = intervalsFromFile.rbegin(); itr != intervalsFromFile.rend(); itr++) {
-        intervals.push(*itr);
-    }
+    auto pairOfYs = computeTwoWellConditionedY(leftRK, rightRK, leftR, rightR, M0, indexTransversal);
 
-    /**
-     * Anderson-Bjorck pseudocode
-     * because secant method on hecke relations isn't working well
-     * and bisection is far too slow
-     *
-     * 1. Compute well-conditioned Y1 and Y2
-     * 2. Compute testpoints for both horospheres (Don't change this the rest of the time!)
-     * 3. Let a = leftR and b = rightR
-     * 3. Compute g_{a} and g_{b}
-     * 4. Find an index where there is a sign change, call it l
-     * 5. int side = 0
-     * 6. Let fa = g_{a}(l)) and fb = g_{b}(l)
-     * 7. Let c = (fa * b - fb * a) / (fa - fb)
-     * 8. Let fc = g_{c}(l)
-     * 9. if (areDifferentSign(fa, fc))
-     *      Let b = c
-     *      fb = fc
-     *      if (side == -1)
-     *          Let m' = 1 - g/g_{rb}(l), and m = m' > 0 ? m' : 0.5
-     *          fa *= m
-     *      side == -1
-     *   else if (areDifferentSign(fc, fb))
-     *      a = c
-     *      fa = fc
-     *      if (side == +1)
-     *          Let m' = 1 - g/g_{rb}(l), and m = m' > 0 ? m' : 0.5
-     *          fb *= m
-     *      side = +1
-     * 10. if (b - a < 0.000000001) break; else Goto 7
-     * 11. return
-     *
-     *
-     * Might have to include some checking along the way that the sign changes don't become blurry,
-     * for example, if the sign changes stop looking like (0, 400) and more like (100, 300) or something
-     * IF that happens return the last known spec param
-     *
-     * Eventually, it might be a good idea to do Anderson-Bjorck on more than one index...
-     * will take testing to know what works and what doesn't!
+    double Y1 = pairOfYs.first;
+    double Y2 = pairOfYs.second;
+
+    /*
+     * Y1 and Y2 have been computed. Proceed with computing the actual matrices
      */
+    double MY1 = computeMYGeneral(M0, Y1);
+    double MY2 = computeMYGeneral(M0, Y2);
 
+    double maxYStar = 0;
 
+    map<Index, vector<TestPointOrbitData>> mToY1TestPointOrbits;
+    map<Index, vector<TestPointOrbitData>> mToY2TestPointOrbits;
 
+    maxYStar = 0;
 
-
-    map<double, KBessel*> KBessMap;
-
-    while(!intervals.empty()) {
-        stack<pair<double, double>> spawnedIntervals;
-        double upper = intervals.top().second;
-        spawnedIntervals.push(intervals.top());
-        intervals.pop();
-
-        if (autoPrecision) {
-            computeMaximumD(spawnedIntervals.top().first, 180);
-            std::cout << "D = " << D << std::endl;
+#pragma omp parallel for default(none) shared(indexTransversal, mToY1TestPointOrbits, mToY2TestPointOrbits, Y1, MY1, Y2, MY2)
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        Index m = indexTransversal[i];
+        auto orbitsY1 = getPointPullbackOrbits(m, Y1, MY1);
+        auto orbitsY2 = getPointPullbackOrbits(m, Y2, MY2);
+#pragma omp critical
+        {
+            mToY1TestPointOrbits[m] = orbitsY1;
+            mToY2TestPointOrbits[m] = orbitsY2;
         }
-
-        while (!spawnedIntervals.empty()) {
-            auto interval = spawnedIntervals.top();
-            spawnedIntervals.pop();
-
-            if (interval.second - interval.first <= 0.0000000001) {
-                fineOutputFile << std::setprecision(16) << "[" << interval.first << ", " << interval.second << "]" << std::endl;
-                cout << "Likely eigenvalue " << std::setprecision(16) << "[" << interval.first << ", " << interval.second << "]" << std::endl;
-            } else {
-                double left = interval.first;
-                double right = interval.second;
-                double center = (left + right) / 2;
-
-                if (KBessMap.find(left) == KBessMap.end()) {
-                    KBessMap[left] = new KBessel(twoPiOverA * 1 * Y0, left);
-                }
-                if (KBessMap.find(center) == KBessMap.end()) {
-                    KBessMap[center] = new KBessel(twoPiOverA * 1 * Y0, center);
-                }
-                if (KBessMap.find(right) == KBessMap.end()) {
-                    KBessMap[right] = new KBessel(twoPiOverA * 1 * Y0, right);
-                }
-
-                bool leftInterval = possiblyContainsEigenvalue(left, center, KBessMap[left], KBessMap[center]);
-                bool rightInterval = possiblyContainsEigenvalue(center, right, KBessMap[center], KBessMap[right]);
-                if (!leftInterval && !rightInterval) {
-                    delete KBessMap[center];
-                    KBessMap.erase(center);
-                    continue;
-                } else if (leftInterval && !rightInterval) {
-                    spawnedIntervals.emplace(left, center);
-                    continue;
-                } else if (!leftInterval && rightInterval) {
-                    spawnedIntervals.emplace(center, right);
-                    continue;
-                } else {
-                    spawnedIntervals.emplace(center, right);
-                    spawnedIntervals.emplace(left, center);
-                    continue;
-                }
-            }
-        }
-        for (auto itr = KBessMap.begin(); itr != KBessMap.end(); ) {
-            if (itr->first < upper) {
-                delete itr->second;
-                KBessMap.erase(itr++);
-            } else {
-                ++ itr;
-            }
-        }
-        fineOutputFile << "Complete up to " << std::setprecision(16) << upper << std::endl;
     }
 
-    for (auto itr = KBessMap.begin(); itr != KBessMap.end(); ) {
-        delete itr->second;
-        KBessMap.erase(itr++);
+    for (const auto& m : indexTransversal) {
+        for (const auto& itr : mToY1TestPointOrbits[m]) {
+            if (maxYStar < itr.representativePullback.getJ()) {
+                maxYStar = itr.representativePullback.getJ();
+            }
+        }
+    }
+
+    leftRK->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
+    MatrixXd matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, *leftRK);
+    MatrixXd matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, *leftRK);
+
+    auto solAndCondY1R1 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
+    auto solAndCondY2R1 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
+
+    rightRK->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
+    matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, *rightRK);
+    matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, *rightRK);
+
+    delete leftRK;
+    delete rightRK;
+
+    auto solAndCondY1R2 = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
+    auto solAndCondY2R2 = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
+
+    std::cout << solAndCondY1R1.second << " " << solAndCondY2R1.second << " ";
+    std::cout << solAndCondY1R2.second << " " << solAndCondY2R2.second << std::endl;
+
+    vector<double> coeffDiffa(indexTransversal.size(), NAN);
+    vector<double> coeffDiffb(indexTransversal.size(), NAN);
+
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        coeffDiffa[i] = solAndCondY1R1.first(i) - solAndCondY2R1.first(i);
+        coeffDiffb[i] = solAndCondY1R2.first(i) - solAndCondY2R2.first(i);
+    }
+
+    int signChangeIndex = 0;
+    double maxDiff = 0;
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        if (areDifferentSign(coeffDiffa[i], coeffDiffb[i])) {
+            double diffHere = std::min(abs(coeffDiffa[i]), abs(coeffDiffb[i]));
+            if (diffHere > maxDiff) {
+                signChangeIndex = i;
+                maxDiff = diffHere;
+            }
+        }
+    }
+
+    double a = leftR;
+    double b = rightR;
+    double c = 0;
+
+    pair<Eigen::Matrix<double, -1, -1, 0>, double> solAndCondY1NextR;
+
+    std::cout << std::setprecision(16) << a << "\n";
+    std::cout << std::setprecision(16) << b << std::endl;
+
+    int side = 0;
+
+    double cutoff = pow(10.0, -15);
+    while (abs((1 - b/a)) > cutoff) {
+        vector<double> c_vec;
+        for (int i = 0; i < indexTransversal.size(); i++) {
+            if (areDifferentSign(coeffDiffa[i], coeffDiffb[i])) {
+                double c_here = (coeffDiffa[i] * b - coeffDiffb[i] * a) / (coeffDiffa[i] - coeffDiffb[i]);
+                c_vec.push_back(c_here);
+            }
+        }
+        std::sort(c_vec.begin(), c_vec.end());
+        c = c_vec.size() % 2 == 1 ? c_vec[c_vec.size()/2] : (c_vec[c_vec.size()/2 - 1] + c_vec[c_vec.size()/2])/2.0;
+
+        KBessel* nextRK = new KBessel(twoPiOverA * 1 * Y0, c);
+        nextRK->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
+        matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, *nextRK);
+        matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, *nextRK);
+
+        delete nextRK;
+
+        solAndCondY1NextR = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
+        auto solAndCondY2NextR = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
+
+        vector<double> coeffDiffc(indexTransversal.size(), NAN);
+
+        for (int i = 0; i < indexTransversal.size(); i++) {
+            coeffDiffc[i] = solAndCondY1NextR.first(i) - solAndCondY2NextR.first(i);
+        }
+
+        std::cout << std::setprecision(16) << c << std::endl;
+
+        int leftSignChanges = countSignChanges(coeffDiffa, coeffDiffc);
+        int rightSignChanges = countSignChanges(coeffDiffc, coeffDiffb);
+
+        std::cout << leftSignChanges << "/" << indexTransversal.size() << ", ";
+        std::cout << rightSignChanges << "/" << indexTransversal.size() << std::endl;
+
+        double leftRatio = leftSignChanges*1.0/indexTransversal.size();
+        double rightRatio = rightSignChanges*1.0/indexTransversal.size();
+
+        if (leftRatio > 0.5 && rightRatio < 0.3) {
+            b = c;
+            coeffDiffb = coeffDiffc;
+            if (side == -1) {
+                for (auto & itr : coeffDiffa) {
+                    itr *= 0.5;
+                }
+            }
+            side = -1;
+        } else if (rightRatio > 0.5 && leftRatio < 0.3) {
+            a = c;
+            coeffDiffa = coeffDiffc;
+            if (side == +1) {
+                for (auto & itr : coeffDiffb) {
+                    itr *= 0.5;
+                }
+            }
+            side = +1;
+        } else if (rightRatio > 0.5 && leftRatio > 0.5) {
+            std::cout << "!!!!!!!!!!!!!!Interval might contain two spec params!!!!!!!!!!!!!\n";
+            std::cout << setprecision(16) << "[" << a << ", " << c << "] and [" << c << ", " << b << "]" << std::endl;
+            std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+            break;
+        } else {
+            std::cout << "Sign changes no longer useful, stopping." << std::endl;
+            fineOutputFile << std::setprecision(16) << "[" << a << ", " << b << "], " << c << std::endl;
+
+            vector<double> coeffs;
+            for (int i = 0; i < indexTransversal.size(); i++) {
+                double coeff = solAndCondY1NextR.first(i);
+                coeffs.push_back(coeff);
+            }
+
+            saveFinalResult({a,b,c}, indexTransversal, coeffs);
+            break;
+        }
+    }
+    if (abs((1 - b/a)) <= cutoff) {
+        std::cout << "Reached final precision, stopping." << std::endl;
+        fineOutputFile << std::setprecision(16) << "[" << a << ", " << b << "], " << c << std::endl;
+
+        vector<double> coeffs;
+        for (int i = 0; i < indexTransversal.size(); i++) {
+            double coeff = solAndCondY1NextR.first(i);
+            coeffs.push_back(coeff);
+        }
+
+        saveFinalResult({a,b,c}, indexTransversal, coeffs);
     }
 }
 
@@ -599,11 +583,6 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
 
     std::cout << solAndCondY1R1.second << " " << solAndCondY2R1.second << " ";
     std::cout << solAndCondY1R2.second << " " << solAndCondY2R2.second << std::endl;
-
-    for (int i = 0; i < indexTransversal.size(); i++) {
-        std::cout << std::setprecision(16) << indexTransversal[i] << ", " << solAndCondY1R1.first(i) << "\n";
-    }
-    std::cout << std::flush;
 
     /*
      * When you have to start over, for whatever reason, this means that condition numbers
@@ -697,99 +676,33 @@ unsigned long long int BianchiMaassSearch::countPointPullbackOrbits(const Index 
     //These formulas provide bounds to guarantee that the DFT result is valid
     double absRealM = abs(m.getComplex(d).real());
     double absImagM = abs(m.getComplex(d).imag());
-    double Q0double = 0;
-    double Q1double = (MY + absRealM)/2.0;
-    if (Auxiliary::mod(-d, 4) == 1) {
-        double Q0doubleOption1 = MY + absRealM;
-        double Q0doubleOption2 = (MY + absImagM)/(2.0*A);
-        Q0double = max(Q0doubleOption1, Q0doubleOption2);
-    } else {
-        Q0double = (MY + absImagM)/(2.0*A);
-    }
+    double Q0double = (MY + absImagM)/A;
+    double Q1double = MY + absRealM;
 
-    int Q0 = ceil(Q0double);
-    int Q1 = ceil(Q1double);
+    int Q0 = floor(Q0double) + 1;
+    int Q1 = floor(Q1double) + 1;
+    Q0 += 2;
+    Q1 += 2;
 
-    //Tweak Q0 and Q1 to be exactly what we need for exploiting symmetry
-    if (Auxiliary::mod(-d, 4) == 1 && d != 3) {
-        //If -d = 1 mod 4 then we need Q0/Q1 to be an even integer for the map x -> -bar(x) to be defined on test points
-        if (Auxiliary::mod(Q0, Q1) == 0 && Auxiliary::mod(Q0 / Q1, 2) == 0) {
-            // Q0/Q1 is an even integer
-            // there is nothing to do!
-        } else {
-            // Q0/Q1 is not an even integer
-            int k = 0;
-            double quotient = ((double)Q0)/Q1;
-
-            while (!(2 * k < quotient && quotient < 2 * (k+1))) {
-                k++;
-            }
-
-            if (k == 0) {
-                Q0 = 2*Q1;
-            } else {
-                //It is true that 2k < Q0/Q1 < 2(k+1) and k > 0
-                int firstOptionQ0 = ceil(Q1 * 2 * (k+1));
-                while (!Auxiliary::mod(firstOptionQ0, 2 * (k + 1) == 0)) {
-                    firstOptionQ0++;
-                }
-                int firstOptionQ1 = firstOptionQ0/(2*(k+1));
-
-                int secondOptionQ0 = ceil(Q1 * 2 * k);
-                while (!Auxiliary::mod(secondOptionQ0, 2 * k == 0)) {
-                    secondOptionQ0++;
-                }
-                int secondOptionQ1 = secondOptionQ0/(2 * k);
-
-                //Now both give a valid number of points, choose the one that will have fewest points overall (4*Q0*Q1 total)
-                if (firstOptionQ0 * firstOptionQ1 < secondOptionQ0 * secondOptionQ1) {
-                    Q0 = firstOptionQ0;
-                    Q1 = firstOptionQ1;
-                } else {
-                    Q0 = secondOptionQ0;
-                    Q1 = secondOptionQ1;
-                }
-            }
+    if (Auxiliary::mod(-d, 4) == 2 || Auxiliary::mod(-d, 4) == 3) {
+        if (Q0 % 2 == 1) {
+            Q0++;
         }
-    } else if (d == 3 || d == 1) {
-        //So that we can do rotations by something other than -1, we need Q0=Q1
-        //Add a little numerical wiggle room
-        Q0 = max(Q0, Q1) + 1;
-        Q1 = Q0;
-    } else {
-        //We don't need to fiddle with the divisibility of Q0 and Q1
-        //Add some numerical wiggle room
-        Q0 += 1;
-        Q1 += 1;
+        if (Q1 % 2 == 1) {
+            Q1++;
+        }
+        return Q0 * Q1 / 4;
     }
 
-    //Now generate the representatives
-    //then generate the orbits
-    if (Auxiliary::mod(-d, 4) == 1 && d != 3) {
-        //iterate to make orbit representatives
-        answer = Q1 * (Q0 + 1);
-
-    } else if (d != 1) {
-        //So -d = 2,3 mod 4 and d != 1
-
-        //iterate to make orbit representatives
-        answer = Q0 * Q1;
-
-    } else if (d == 1) {
-
-        answer = Q0 * Q1;
-
-    } else {
-        //d == 3
-        //
-        //In order for rotation to be defined on the set of testpoints, we do not use the shifted version
-        //WWWWWWWAAAAARRRNNNIIINNNGGG
-        //THIS CODE IS A MESS, IT'S WRONG AND WRONG AGAIN, NEEDS SERIOUS MATHEMATICAL REWORK
-
-        throw std::invalid_argument("Code not ready yet for d = 3");
+    //testcode
+    if (Q0 % 2 == 1) {
+        Q0++;
+    }
+    if (Q1 % 2 == 1) {
+        Q1++;
     }
 
-    return answer;
+    return Q0 * Q1 / 2;
 }
 
 vector<TestPointOrbitData>
@@ -844,135 +757,12 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
         return answer;
     }
 
-    //Method 1, only quotient by negation
-    long method1 = 0;
-    if (Q0 % 2 == 1 && Q1 % 2 == 1) {
-        method1 = (Q0*Q1 - 1)/2 + 1;
-    } else {
-        method1 = Q0*Q1/2;
-    }
-
     //testcode
     if (Q0 % 2 == 1) {
         Q0++;
     }
     if (Q1 % 2 == 1) {
         Q1++;
-    }
-    method1 = 0;
-    //end testcode
-
-    //Method 2, quotient by reflection
-    long method2 = 0;
-    int method2AdjustedQ0 = Q0;
-    int method2AdjustedQ1 = Q1;
-
-    if (method2AdjustedQ0 % 2 == 1) {
-        method2AdjustedQ0++;
-    }
-    if (method2AdjustedQ1 % 2 == 1) {
-        method2AdjustedQ1++;
-    }
-
-    if (method2AdjustedQ0 % method2AdjustedQ1 == 0 && (method2AdjustedQ0/method2AdjustedQ1) % 2 == 0) {
-        //do nothing
-    } else {
-        if ((1.0*method2AdjustedQ0)/method2AdjustedQ1 <= 2) {
-            method2AdjustedQ0 = 2 * method2AdjustedQ1;
-        } else {
-            int k = 2;
-            while ( !(k <= ((1.0*Q0)/Q1) && ((1.0*Q0)/Q1) <= k + 2) ) {
-                k += 2;
-            }
-
-            //either make the ratio go up to k+2 by pumping up Q0
-            int goUpQ0 = (k + 2) * method2AdjustedQ1;
-            int goUpQ1 = method2AdjustedQ1;
-
-            //or make the ratio go down to k by pumping up Q1
-            int goDownQ0 = method2AdjustedQ0;
-            while (goDownQ0 % k != 0 || (goDownQ0/k) % 2 != 0) {
-                goDownQ0 += 2;
-            }
-
-            int goDownQ1 = goDownQ0/k;
-
-            if (goUpQ0 * goUpQ1 > goDownQ0 * goDownQ1) {
-                method2AdjustedQ0 = goDownQ0;
-                method2AdjustedQ1 = goDownQ1;
-            } else {
-                method2AdjustedQ0 = goUpQ0;
-                method2AdjustedQ1 = goUpQ1;
-            }
-        }
-    }
-
-    method2 = method2AdjustedQ0 * method2AdjustedQ1 / 4;
-    if (method2AdjustedQ0/method2AdjustedQ1 % 4 == 2) {
-        method2 += method2AdjustedQ1/4;
-    }
-
-
-
-    //Method 3, quotient by negation and then reflection as much as possible
-    long method3 = 0;
-
-    int method3AdjustedQ0 = Q0;
-    int method3AdjustedQ1 = Q1;
-
-    if (method3AdjustedQ1 % 2 == 0) {
-        method3AdjustedQ1++;
-    }
-
-    if (method3AdjustedQ0 % method3AdjustedQ1 == 0) {
-        // do nothing
-    } else {
-        if ((1.0*method3AdjustedQ0)/method3AdjustedQ1 <= 1) {
-            method3AdjustedQ0 = method3AdjustedQ1;
-        } else {
-            int k = 1;
-            while ( !(k <= (1.0*Q0)/Q1 && (1.0*Q0)/Q1 <= k + 1)) {
-                k++;
-            }
-
-            //either make the ratio go up to k+1 by pumping up Q0
-            int goUpQ0 = (k + 1) * method3AdjustedQ1;
-            int goUpQ1 = method3AdjustedQ1;
-
-            //or make the ratio go down to k by pumping up Q1
-            int goDownQ0 = Q0;
-            while (goDownQ0 % k != 0 || (goDownQ0/k) % 2 != 1) {
-                goDownQ0++;
-            }
-
-            int goDownQ1 = goDownQ0/k;
-
-            if (goUpQ0*goUpQ1 + goUpQ0 + goUpQ1 > goDownQ0*goDownQ1 + goDownQ0 + goDownQ1) {
-                method3AdjustedQ0 = goDownQ0;
-                method3AdjustedQ1 = goDownQ1;
-            } else {
-                method3AdjustedQ0 = goUpQ0;
-                method3AdjustedQ1 = goUpQ1;
-            }
-        }
-    }
-    method3 = method3AdjustedQ0 * method3AdjustedQ1 + method3AdjustedQ0 + method3AdjustedQ1;
-    method3 /= 4;
-    if (method3AdjustedQ0 % 2 == 1 && method3AdjustedQ1 % 2 == 1) {
-        method3++;
-    }
-
-    char method = 1;
-    if (method2 < method1 && method2 < method3) {
-        method = 2;
-        Q0 = method2AdjustedQ0;
-        Q1 = method2AdjustedQ1;
-    } else if (method3 < method1 && method3 < method2) {
-        method = 3;
-        Q0 = method3AdjustedQ0;
-        Q1 = method3AdjustedQ1;
-    } else {
-        //Q0 and Q1 stay the same
     }
 
     double xi0, xi1;
@@ -996,100 +786,19 @@ BianchiMaassSearch::getPointPullbackOrbits(const Index &m, const double Y, const
         U1 = (Q1 - 1)/2;
     }
 
-    if ((method == 2 || method == 3) && xi1 == 0) {
-        //impose conditions so that we only iterate over a chosen negation representative
-        //also impose conditions so that we only iterate over a chosen reflection representative
-        for (int l1 = 0; l1 <= U1; l1++) {
-            int adjustedL0 = ceil(xi0 - ((1.0*Q0)/Q1)*((l1 - xi1)/2.0));
-            int adjustedU0 = floor(xi0 + Q0/2.0 - ((1.0*Q0)/Q1)*((l1 - xi1)/2.0));
-            for (int l0 = adjustedL0; l0 <= adjustedU0; l0++) {
-                TestPointOrbitData orbit;
-                complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
-                Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
-                pullback.reduce(d);
-
-                orbit.representativeComplex = x;
-                orbit.representativePullback = pullback;
-                orbit.properTranslatesModSign = vector<pair<complex<double>, short>>();
-
-                bool realPartIsZero = (int)(2*Q1*(2*l0 - (int)(2*xi0)) + Q0*(2*l1 - (int)(2*xi1))) == 0;
-                bool onPositiveRealAxis = l1 == 0;
-
-                if (onPositiveRealAxis || realPartIsZero) {
-                    //don't pair up
-                } else {
-                    orbit.properTranslatesModSign.emplace_back(-conj(x), reflectionSign);
-                }
-                answer.push_back(orbit);
-            }
-        }
-    } else if ((method == 2 || method == 3) && xi1 == 0.5) {
-        //xi1 = 1/2
-        //impose conditions so that we only iterate over a chosen negation representative
-        //also impose conditions so that we only iterate over a chosen reflection representative
+    for (int l0 = L0; l0 <= U0; l0++) {
         for (int l1 = 1; l1 <= U1; l1++) {
-            int adjustedL0 = ceil(xi0 - ((1.0*Q0)/Q1)*((l1 - xi1)/2.0));
-            int adjustedU0 = floor(xi0 + Q0/2.0 - ((1.0*Q0)/Q1)*((l1 - xi1)/2.0));
-            for (int l0 = adjustedL0; l0 <= adjustedU0; l0++) {
-                TestPointOrbitData orbit;
-                complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
-                Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
-                pullback.reduce(d);
+            TestPointOrbitData orbit;
+            complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
+            Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
+            pullback.reduce(d);
 
-                orbit.representativeComplex = x;
-                orbit.representativePullback = pullback;
-                orbit.properTranslatesModSign = vector<pair<complex<double>, short>>();
+            orbit.representativeComplex = x;
+            orbit.representativePullback = pullback;
+            orbit.properTranslatesModSign = vector<pair<complex<double>, short>>();
 
-                bool realPartIsZero = (int)(Q1*(4*l0 - (int)(4*xi0)) + Q0*(2*l1 - 1)) == 0;
-
-                if (realPartIsZero) {
-                    //don't pair up
-                } else {
-                    orbit.properTranslatesModSign.emplace_back(-conj(x), reflectionSign);
-                }
-                answer.push_back(orbit);
-            }
+            answer.push_back(orbit);
         }
-    } else if (method == 1 && xi1 == 0) {
-        for (int l0 = L0; l0 <= U0; l0++) {
-            for (int l1 = 0; l1 <= U1; l1++) {
-                if (l1 == 0) {
-                    if (xi0 == 0 && l0 < 0) {
-                        continue;
-                    } else if (xi0 == 0.5 && l0 < 1) {
-                        continue;
-                    }
-                }
-                TestPointOrbitData orbit;
-                complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
-                Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
-                pullback.reduce(d);
-
-                orbit.representativeComplex = x;
-                orbit.representativePullback = pullback;
-                orbit.properTranslatesModSign = vector<pair<complex<double>, short>>();
-
-                answer.push_back(orbit);
-            }
-        }
-    } else if (method == 1 && xi1 == 0.5) {
-        for (int l0 = L0; l0 <= U0; l0++) {
-            for (int l1 = 1; l1 <= U1; l1++) {
-                TestPointOrbitData orbit;
-                complex<double> x = (l0 - xi0)/(1.0*Q0) + theta * (l1 - xi1)/(1.0*Q1);
-                Quaternion pullback = Quaternion(x.real(), x.imag(), Y, 0);
-                pullback.reduce(d);
-
-                orbit.representativeComplex = x;
-                orbit.representativePullback = pullback;
-                orbit.properTranslatesModSign = vector<pair<complex<double>, short>>();
-
-                answer.push_back(orbit);
-            }
-        }
-    } else {
-        //this never happens
-        throw std::invalid_argument("Error in DFT point generation.");
     }
 
     return answer;
@@ -1131,9 +840,10 @@ MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal
 #pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, size, answer, mToTestPointData, ntoIndexOrbitData,Y, K)
     for (int i = 0; i < size; i++) {
         Index m = indexTransversal[i];
+        auto mTestPointData = mToTestPointData[m];
         for (int j = 0; j < size; j++) {
             Index n = indexTransversal[j];
-            double entry = computeEntry(m, n, K, mToTestPointData[m], Y, ntoIndexOrbitData[n]);
+            double entry = computeEntry(m, n, K, mTestPointData, Y, ntoIndexOrbitData[n]);
 
             answer(i,j) = entry;
         }
@@ -1965,6 +1675,31 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK
     return {min(ansY1, ansY2), max(ansY1, ansY2)};
 }
 
+void BianchiMaassSearch::saveFinalResult(vector<double> spectralParameters,
+                                         vector<Index>& indexTransversal,
+                                         vector<double>& coeffs) {
+    string directory = "Output/Final/" + to_string(d) + "/" + symClass + "/";
+    std::stringstream ss;
+    ss << std::setprecision(16) << spectralParameters[2];
+    string prefix = ss.str() + ".txt";
+
+    createOutputDirectory(directory);
+
+    ofstream outputFile;
+    outputFile.open(directory + prefix, std::ofstream::out | std::ofstream::app);
+
+    outputFile << std::setprecision(16) << "d = " << d << ", symClass = " << symClass << ", D = " << to_string(D) << "\n";
+    outputFile << "[" << spectralParameters[0] << ", " << spectralParameters[1] << "], ";
+    outputFile << spectralParameters[2];
+
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        auto index = indexTransversal[i];
+        double coeff = coeffs[i];
+        outputFile << "\n" << index.getA() << ", " << index.getB() << ", " << coeff;
+    }
+    outputFile << std::flush;
+}
+
 void BianchiMaassSearch::setUpOutputLogFiles() {
     if (mode == "coarse") {
         const std::string directory = "Output/Coarse/";
@@ -2063,7 +1798,7 @@ vector<pair<double, double>> BianchiMaassSearch::getIntervalsForCoarseSearch(dou
     //Supposed to reflect that we are dispatching the searcher on intervals that we expect
     //to have an eigenvalue in them 2/10th of the time. Allows for easier conditioning and
     //guards against unusually close eigenvalues, but not conclusively.
-    double numEigenValues = 0.2;
+    double numEigenValues = 0.1;
 
     vector<double> endpoints;
     double endpoint = max(startR, coarseComplete);
@@ -2110,6 +1845,15 @@ vector<pair<double, double>> BianchiMaassSearch::getIntervalsForMediumSearch() {
     while (getline(mediumInFile, line)) {
         if (line.substr(0, 15) == "Complete up to ") {
             mediumComplete = std::stod(line.substr(15));
+        } else if (line[0] == '[') {
+            //remove brackets
+            string numbers = line.substr(1, line.size() - 2);
+            int comma = numbers.find(',');
+            string leftStr = numbers.substr(0, comma);
+            string rightStr = numbers.substr(comma + 2);
+            double left = std::stod(leftStr);
+            double right = std::stod(rightStr);
+            mediumComplete = right;
         }
     }
 
@@ -2146,7 +1890,9 @@ vector<pair<double, double>> BianchiMaassSearch::getIntervalsForMediumSearch() {
             string rightStr = numbers.substr(comma + 2);
             double left = std::stod(leftStr);
             double right = std::stod(rightStr);
-            if (mediumComplete < right) {
+            if (left < mediumComplete && mediumComplete < right) {
+                intervalsFromFile.emplace_back(mediumComplete, right);
+            } else if (mediumComplete < right) {
                 intervalsFromFile.emplace_back(left,right);
             }
         }
@@ -2229,7 +1975,7 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     double maxTerms = maxNanoseconds / nanosecondsPerTerm;
 
     double minD = 3;
-    double maxD = 12;
+    double maxD = 16;
     if (d == 163) {
         maxD = 12;
     }
