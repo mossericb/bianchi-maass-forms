@@ -1806,7 +1806,12 @@ vector<pair<double, double>> BianchiMaassSearch::getIntervalsForCoarseSearch(dou
         endpoints.push_back(endpoint);
         endpoint = Od.eigenvalueIntervalRightEndpoint(endpoint, numEigenValues);
     }
-    endpoints.push_back(endR);
+    if (endR > 0 && endR <= 1e-11) {
+        endpoints.push_back(2e-11);
+    } else {
+        endpoints.push_back(endR);
+    }
+
 
     if (endpoints.size() < 2) {
         return {};

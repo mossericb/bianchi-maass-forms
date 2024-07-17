@@ -70,6 +70,12 @@ int main(int argc, char *argv[]) {
 
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
             bms.fineSearchForEigenvalues();
+        } else if (mode == "extend") {
+
+        } else if (mode == "sato") {
+
+        } else if (mode == "L") {
+
         } else {
             throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" or "fine".)");
         }

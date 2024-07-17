@@ -223,6 +223,9 @@ double ImaginaryQuadraticIntegers::eigenvalueIntervalRightEndpoint(double leftEn
 
     double rightEndpoint = (numEigenvalues + weylLeft) / (volumeOfFD / 236.87050562614460685202778399702762724);
     rightEndpoint = pow(rightEndpoint, 1.0/3);
+    if (rightEndpoint > 0 && rightEndpoint <= 1e-11) {
+        return 2e-11;
+    }
     if (rightEndpoint - leftEndpoint > maxStep) {
         return leftEndpoint + maxStep;
     }
