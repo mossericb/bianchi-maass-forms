@@ -484,7 +484,7 @@ void BianchiMaassSearch::medianIllinoisSearch(double leftR, double rightR) {
                 coeffs.push_back(coeff);
             }
 
-            saveFinalResult({a,b,c}, indexTransversal, coeffs);
+            saveSearchResult({a, b, c}, indexTransversal, coeffs);
             break;
         }
     }
@@ -498,7 +498,7 @@ void BianchiMaassSearch::medianIllinoisSearch(double leftR, double rightR) {
             coeffs.push_back(coeff);
         }
 
-        saveFinalResult({a,b,c}, indexTransversal, coeffs);
+        saveSearchResult({a, b, c}, indexTransversal, coeffs);
     }
 }
 
@@ -1675,10 +1675,10 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK
     return {min(ansY1, ansY2), max(ansY1, ansY2)};
 }
 
-void BianchiMaassSearch::saveFinalResult(vector<double> spectralParameters,
-                                         vector<Index>& indexTransversal,
-                                         vector<double>& coeffs) {
-    string directory = "Output/Final/" + to_string(d) + "/" + symClass + "/";
+void BianchiMaassSearch::saveSearchResult(vector<double> spectralParameters,
+                                          vector<Index>& indexTransversal,
+                                          vector<double>& coeffs) {
+    string directory = "Output/SearchResults/" + to_string(d) + "/" + symClass + "/";
     std::stringstream ss;
     ss << std::setprecision(16) << spectralParameters[2];
     string prefix = ss.str() + ".txt";

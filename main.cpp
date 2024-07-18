@@ -72,9 +72,9 @@ int main(int argc, char *argv[]) {
             bms.fineSearchForEigenvalues();
         } else if (mode == "extend") {
 
-        } else if (mode == "sato") {
+        } else if (mode == "test") {
 
-        } else if (mode == "L") {
+        } else if (mode == "Lfunction") {
 
         } else {
             throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" or "fine".)");
