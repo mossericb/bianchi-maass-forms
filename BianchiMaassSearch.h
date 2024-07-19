@@ -36,6 +36,10 @@ public:
     void coarseSearchForEigenvalues(const double leftR, const double rightR);
     void mediumSearchForEigenvalues();
     void fineSearchForEigenvalues();
+    void extendCoefficientComputation();
+    void testForModularity();
+    void testConjectures();
+    void makeLFunctions();
 
 private:
 

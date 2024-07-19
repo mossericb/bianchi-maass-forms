@@ -71,13 +71,41 @@ int main(int argc, char *argv[]) {
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
             bms.fineSearchForEigenvalues();
         } else if (mode == "extend") {
+            if (argc != 4) {
+                throw std::invalid_argument("Extend mode command line arguments should be: extend d symClass");
+            }
+            //Compute more coefficients. Compute a bunch. Up to M(Y) by default and can ask for more perhaps?
+            int d = std::stoi(argv[2]);
+            char symClass = argv[3][0];
 
+            BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
+            bms.extendCoefficientComputation();
         } else if (mode == "test") {
+            if (argc != 4) {
+                throw std::invalid_argument("Test mode command line arguments should be: test d symClass");
+            }
+            //Check modularity
+            //Check Ramanujan
+            //Produce Sato-Tate distribution
+            //Check if the reflection-odd symmetry class is also modular
+            int d = std::stoi(argv[2]);
+            char symClass = argv[3][0];
 
+            BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
+            bms.testForModularity();
+            bms.testConjectures();
         } else if (mode == "Lfunction") {
+            if (argc != 4) {
+                throw std::invalid_argument("Lfunction mode command line arguments should be: Lfunction d");
+            }
+            //Produce the Dirichlet coefficients for all tested even forms
+            int d = std::stoi(argv[2]);
+            char symClass = argv[3][0];
 
+            BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
+            bms.makeLFunctions();
         } else {
-            throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" or "fine".)");
+            throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" "fine" "extend" "test" or "Lfunction".)");
         }
     }
 
