@@ -2094,3 +2094,37 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     truncation = pow(10.0, -D);
 }
 
+void BianchiMaassSearch::extendCoefficientComputation() {
+    //create output directory
+    //read in results from Fine computation
+    //for each eigenvalue
+        //compute a single well-conditioned Y
+        //compute indices m out to M(Y)
+        //compute test points
+        //write down the matrix so that it can be re-evaluated for different m easily
+        //write all the indices to a file
+}
+
+void BianchiMaassSearch::testForModularity() {
+    //read in results from extended computation
+    //for each eigenvalue
+        //evaluate at some points and their reductions
+        //compute some hecke relations
+        //if it passes, record the success
+            //compute the Fourier coefficients for the reflection-odd forms
+            //do the test again for this form
+            //if it passes, record the success
+}
+
+void BianchiMaassSearch::testConjectures() {
+    //read in results from extended computation
+    //for each eigenvalue
+        //check ramanujan conjecture, write answer to a file
+        //generate sato-tate data and write to a file
+}
+
+void BianchiMaassSearch::makeLFunctions() {
+    //read in results from tested modular functions
+    //compute dirichlet coefficnets and write to file (should be very fast)
+}
+
