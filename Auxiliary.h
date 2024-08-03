@@ -16,7 +16,7 @@ public:
     Auxiliary();
     ~Auxiliary();
 
-    static int mod(int x, int modulus);
+    static long mod(long x, long modulus);
     static int next(double x);
     /*static void computeTheta(acb_t theta, int d, int bits);
     static void intervalReduce(arb_struct *answer, const arb_struct *x, const arb_struct *scale, int bits);
@@ -30,9 +30,10 @@ public:
 
     static double imagTheta(int d);
     double multiPrecisionSummation(const std::vector<double>& numbers);
-    double kahanSummation(std::vector<double> &numbers);
-    double kahanSummationUnvectorized(std::vector<double> &numbers);
+    static double kahanSummation(std::vector<double> &numbers);
+    static double kahanSummationUnvectorized(std::vector<double> &numbers);
     static double nextWithinOrderOfMag(double x);
+    static char legendreSymbol(long n, long p);
     //static double pi;
 
     static int SIMD_DOUBLE_WIDTH;

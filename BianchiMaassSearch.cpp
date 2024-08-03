@@ -845,7 +845,11 @@ MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal
             Index n = indexTransversal[j];
             double entry = computeEntry(m, n, K, mTestPointData, Y, ntoIndexOrbitData[n]);
 
-            answer(i,j) = entry;
+            if (m == n) {
+                answer(i,j) = Y * K.exactKBessel(twoPiOverA * m.getAbs(d) * Y) - entry;
+            } else {
+                answer(i,j) = -entry;
+            }
         }
     }
 
@@ -1036,17 +1040,9 @@ BianchiMaassSearch::computeEntry(const Index &m, const Index &n, KBessel &K,
     double answer = Aux.kahanSummation(terms);
 
     if (symClass == 'D' || symClass == 'G' || d == 1) {
-        answer *= -4.0 / pointCount;
-    } else {
         answer *= 4.0 / pointCount;
-    }
-
-    //Add on the kronecker delta term
-    if (m == n) {
-        //deltaTerm = Y * kappa(2*pi/A*|m|*Y)
-        double deltaTerm = Y * K.exactKBessel(twoPiOverA * mAbs * Y);
-
-        answer += deltaTerm;
+    } else {
+        answer *= -4.0 / pointCount;
     }
 
     return answer;
@@ -1678,7 +1674,7 @@ BianchiMaassSearch::computeTwoWellConditionedY(KBessel *leftRK, KBessel *rightRK
 void BianchiMaassSearch::saveSearchResult(vector<double> spectralParameters,
                                           vector<Index>& indexTransversal,
                                           vector<double>& coeffs) {
-    string directory = "Output/SearchResults/" + to_string(d) + "/" + symClass + "/";
+    string directory = "Output/Search/Final/" + to_string(d) + "/" + symClass + "/";
     std::stringstream ss;
     ss << std::setprecision(16) << spectralParameters[2];
     string prefix = ss.str() + ".txt";
@@ -1702,7 +1698,7 @@ void BianchiMaassSearch::saveSearchResult(vector<double> spectralParameters,
 
 void BianchiMaassSearch::setUpOutputLogFiles() {
     if (mode == "coarse") {
-        const std::string directory = "Output/Coarse/";
+        const std::string directory = "Output/Search/Coarse/";
         const std::string prefix = "coarse_"
                                    + to_string(d) + "_"
                                    + symClass;
@@ -1725,7 +1721,7 @@ void BianchiMaassSearch::setUpOutputLogFiles() {
         }
     } else if (mode == "medium") {
 
-        const std::string directoryOut = "Output/Medium/";
+        const std::string directoryOut = "Output/Search/Medium/";
         const std::string prefixOut = "medium_"
                                       + to_string(d) + "_"
                                       + symClass;
@@ -1748,7 +1744,7 @@ void BianchiMaassSearch::setUpOutputLogFiles() {
         }
 
     } else if (mode == "fine") {
-        const std::string directoryOut = "Output/Fine/";
+        const std::string directoryOut = "Output/Search/Fine/";
         const std::string prefixOut = "fine_"
                                       + to_string(d) + "_"
                                       + symClass;
@@ -1775,7 +1771,7 @@ void BianchiMaassSearch::setUpOutputLogFiles() {
 
 vector<pair<double, double>> BianchiMaassSearch::getIntervalsForCoarseSearch(double startR, double endR) {
 
-    const std::string directoryIn = "Output/Coarse/";
+    const std::string directoryIn = "Output/Search/Coarse/";
     const std::string prefixIn = "coarse_"
                                   + to_string(d) + "_"
                                   + symClass;
@@ -1833,7 +1829,7 @@ vector<pair<double, double>> BianchiMaassSearch::getIntervalsForMediumSearch() {
      *
      */
 
-    const std::string directoryOut = "Output/Medium/";
+    const std::string directoryOut = "Output/Search/Medium/";
     const std::string prefixOut = "medium_"
                                   + to_string(d) + "_"
                                   + symClass;
@@ -1868,7 +1864,7 @@ vector<pair<double, double>> BianchiMaassSearch::getIntervalsForMediumSearch() {
      *
      */
 
-    const std::string directoryIn = "Output/Coarse/"; // Change this to the desired directory
+    const std::string directoryIn = "Output/Search/Coarse/"; // Change this to the desired directory
     const std::string prefixIn = "coarse_"
                                  + to_string(d) + "_"
                                  + symClass;
@@ -1914,7 +1910,7 @@ vector<pair<double,double>> BianchiMaassSearch::getIntervalsForFineSearch() {
      * Open the output file and record how far the fine searching has gone
      *
      */
-    const std::string directoryOut = "Output/Fine/";
+    const std::string directoryOut = "Output/Search/Fine/";
     const std::string prefixOut = "fine_"
                                   + to_string(d) + "_"
                                   + symClass;
@@ -1939,7 +1935,7 @@ vector<pair<double,double>> BianchiMaassSearch::getIntervalsForFineSearch() {
      *
      */
 
-    const std::string directoryIn = "Output/Medium/";
+    const std::string directoryIn = "Output/Search/Medium/";
     const std::string prefixIn = "medium_"
                                  + to_string(d) + "_"
                                  + symClass;
@@ -2095,17 +2091,236 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
 }
 
 void BianchiMaassSearch::extendCoefficientComputation() {
-    //create output directory
-    //read in results from Fine computation
-    //for each eigenvalue
+
+    //Check how far the "extend" computations have gone
+    string directory = "Output/Extend/" + to_string(d) + "/" + symClass + "/";
+    createOutputDirectory(directory);
+
+    vector<double> completeSpecParams;
+    vector<double> incompleteSpecParams;
+    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+        if (entry.is_regular_file()) {
+            auto filename = entry.path().filename().string();
+            filename = filename.substr(0, filename.find('.'));
+            completeSpecParams.push_back(stod(filename));
+        }
+    }
+    std::sort(completeSpecParams.begin(), completeSpecParams.end());
+
+
+    //Gather the ones that haven't been done yet
+    string inDirectory = "Output/SearchResults/" + to_string(d) + "/" + symClass + "/";
+    for (const auto& entry : std::filesystem::directory_iterator(inDirectory)) {
+        if (entry.is_regular_file()) {
+            auto filename = entry.path().filename().string();
+            filename = filename.substr(0, filename.find('.'));
+            double specParam = stod(filename);
+            if (std::find(completeSpecParams.begin(),
+                          completeSpecParams.end(),
+                          specParam)
+                            != completeSpecParams.end()) {
+                continue;
+            }
+
+            incompleteSpecParams.push_back(specParam);
+        }
+    }
+    std::sort(incompleteSpecParams.begin(), incompleteSpecParams.end());
+
+    //Iterate through the ones that haven't been done yet
+    for (const auto& specParam : incompleteSpecParams) {
+        std::ifstream inFile(inDirectory + to_string(specParam) + ".txt");
+
+        string line;
+        std::getline(inFile, line); //read info like d = 19, etc.
+        std::getline(inFile, line); //read the eigenvalue interval
+
+        //each line now contains a, b, a_n where index = a + b*theta and a_n is Fourier coefficient
+        vector<Index> indexTransversalM0;
+        vector<double> M0Coeffs;
+        while (std::getline(inFile, line)) {
+            int firstComma = line.find(',');
+            int secondComma = line.find('c', firstComma + 1);
+            string a = line.substr(0, firstComma);
+            string b = line.substr(firstComma + 2, secondComma - firstComma - 2);
+            string coeff = line.substr(secondComma + 2);
+
+            Index n(stoi(a), stoi(b));
+            double an = stod(coeff);
+
+            indexTransversalM0.push_back(n);
+            M0Coeffs.push_back(an);
+        }
         //compute a single well-conditioned Y
+        KBessel* K  = new KBessel(twoPiOverA * 1 * Y0, specParam);
+
+
+        //Magic number, no idea if this is the right move yet!!
+        //The idea is to make a guess, and then find a Y greater than it that is well-conditioned
+        double tempY = 0.5 * Y0;
+
+        double M0 = 0;
+        for (const auto& n : indexTransversalM0) {
+            if (n.getAbs(d) > M0) {
+                M0 = n.getAbs(d);
+            }
+        }
+
+        double tempMY = computeMYGeneral(M0, tempY);
+        vector<Index> tempIndices = Od.indicesUpToM(tempMY);
+        auto transversalAndQuotients = Od.indexOrbitQuotientData(tempIndices, symClass);
+        auto transversalTempMY = transversalAndQuotients.first;
+        auto tempMYIndexTransQuotient = transversalAndQuotients.second;
+
+
+        //Compute the actual data used for the new coefficients
+        double Y = computeWellConditionedY(K, specParam, tempMY, transversalTempMY);
+        double MY = computeMYGeneral(M0, Y);
+        vector<Index> indicesMY = Od.indicesUpToM(MY);
+        auto data = Od.indexOrbitQuotientData(indicesMY, symClass);
+        auto transversalMY = data.first;
+        auto indexOrbitDataMY = data.second;
+
+        vector<double> coeffsMY;
+        coeffsMY.reserve(indicesMY.size());
+
+        for (const auto& coeff : M0Coeffs) {
+            coeffsMY.push_back(coeff);
+        }
+
+        for (int i = indexTransversalM0.size(); i < indicesMY.size(); i++) {
+            Index m = indicesMY[i];
+
+            auto testPoints = getPointPullbackOrbits(m, Y, MY);
+            vector<double> Vnm;
+            for (auto & n : indexTransversalM0) {
+                Vnm.push_back(computeEntry(m,n, *K, testPoints, Y, indexOrbitDataMY[n]));
+            }
+            vector<double> answer(indexTransversalM0.size(), 0);
+            for (int j = 0; j < indexTransversalM0.size(); j++) {
+                answer[i] = Vnm[i] * M0Coeffs[i];
+            }
+            double cm = Auxiliary::kahanSummation(answer);
+            cm /= Y * K->exactKBessel(twoPiOverA * m.getAbs(d) * Y);
+            coeffsMY.push_back(cm);
+        }
+
+
+
+
+
+
+
+
         //compute indices m out to M(Y)
         //compute test points
-        //write down the matrix so that it can be re-evaluated for different m easily
+        //write down the row values so that V_{mn} be re-evaluated for different m easily
         //write all the indices to a file
+
+    }
+
+
 }
 
+//TODO: finish
+//TODO: simplify IO scheme to
+// coarse -> medium -> fine -> test-modularity -> extend --> test-conjectures, l-functions
 void BianchiMaassSearch::testForModularity() {
+
+    string outDirectory = "Output/TestedData/TestedForms/" + to_string(d) + "/" + symClass + "/";
+    createOutputDirectory(outDirectory);
+
+    vector<double> completeSpecParams;
+    vector<double> incompleteSpecParams;
+    for (const auto& entry : std::filesystem::directory_iterator(outDirectory)) {
+        if (entry.is_regular_file()) {
+            auto filename = entry.path().filename().string();
+            filename = filename.substr(0, filename.find('.'));
+            completeSpecParams.push_back(stod(filename));
+        }
+    }
+    std::sort(completeSpecParams.begin(), completeSpecParams.end());
+
+
+    //Gather the ones that haven't been done yet
+    string inDirectory = "Output/Search/Final/" + to_string(d) + "/" + symClass + "/";
+    for (const auto& entry : std::filesystem::directory_iterator(inDirectory)) {
+        if (entry.is_regular_file()) {
+            auto filename = entry.path().filename().string();
+            filename = filename.substr(0, filename.find('.'));
+            double specParam = stod(filename);
+            if (std::find(completeSpecParams.begin(),
+                          completeSpecParams.end(),
+                          specParam)
+                != completeSpecParams.end()) {
+                continue;
+            }
+
+            incompleteSpecParams.push_back(specParam);
+        }
+    }
+    std::sort(incompleteSpecParams.begin(), incompleteSpecParams.end());
+
+
+    for (const auto s : incompleteSpecParams) {
+        std::stringstream ss;
+        ss << "Output/Search/Final/" << to_string(d) << "/" << symClass << "/";
+        ss << std::setprecision(16) << s << ".txt";
+        string inFilename = ss.str();
+        ss.clear();
+
+        std::ifstream inFile(inFilename);
+
+        string line;
+        std::getline(inFile, line); //read info like d = 19, etc.
+        std::getline(inFile, line); //read the eigenvalue interval
+
+        //each line now contains a, b, a_n where index = a + b*theta and a_n is Fourier coefficient
+        vector<Index> indices;
+        vector<double> coeffs;
+        while (std::getline(inFile, line)) {
+            int firstComma = line.find(',');
+            int secondComma = line.find('c', firstComma + 1);
+            string a = line.substr(0, firstComma);
+            string b = line.substr(firstComma + 2, secondComma - firstComma - 2);
+            string coeff = line.substr(secondComma + 2);
+
+            Index n(stoi(a), stoi(b));
+            double an = stod(coeff);
+
+            indices.push_back(n);
+            coeffs.push_back(an);
+        }
+
+        vector<pair<Quaternion, Quaternion>> zAndZStar;
+        while (zAndZStar.size() < 25) {
+
+        }
+
+        KBessel K = KBessel(twoPiOverA * 1 * Y0, s);
+        vector<pair<double, double>> fzAndfZStar;
+        for (const auto& zZStar : zAndZStar) {
+            double fz = evaluate(zZStar.first, K, indices, coeffs);
+            double fZStar = evaluate(zZStar.second, K, indices, coeffs);
+            pair<double,double> fzfZStar = {fz, fZStar};
+            fzAndfZStar.push_back(fzfZStar);
+        }
+
+        double maxDiff = 0;
+        for (const auto& fzFZStar : fzAndfZStar) {
+            double diff = fzFZStar.first - fzFZStar.second;
+            if (maxDiff < abs(diff)) {
+                maxDiff = abs(diff);
+            }
+        }
+
+        if (maxDiff > 0.01) {
+            //not modular?
+        }
+
+
+    }
+
     //read in results from extended computation
     //for each eigenvalue
         //evaluate at some points and their reductions
@@ -2117,14 +2332,155 @@ void BianchiMaassSearch::testForModularity() {
 }
 
 void BianchiMaassSearch::testConjectures() {
-    //read in results from extended computation
-    //for each eigenvalue
-        //check ramanujan conjecture, write answer to a file
-        //generate sato-tate data and write to a file
+
+    //Check how far the "Conjectures" computations have gone
+    string directory = "Output/Conjectures/" + to_string(d) + "/" + symClass + "/";
+    createOutputDirectory(directory);
+
+    vector<double> completeSpecParams;
+    vector<double> incompleteSpecParams;
+    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+        if (entry.is_regular_file()) {
+            auto filename = entry.path().filename().string();
+            filename = filename.substr(0, filename.find('.'));
+            completeSpecParams.push_back(stod(filename));
+        }
+    }
+    std::sort(completeSpecParams.begin(), completeSpecParams.end());
+
+
+    //Gather the ones that haven't been done yet
+    string inDirectory = "Output/Search/Extend/" + to_string(d) + "/" + symClass + "/";
+    for (const auto& entry : std::filesystem::directory_iterator(inDirectory)) {
+        if (entry.is_regular_file()) {
+            auto filename = entry.path().filename().string();
+            filename = filename.substr(0, filename.find('.'));
+            double specParam = stod(filename);
+            if (std::find(completeSpecParams.begin(),
+                          completeSpecParams.end(),
+                          specParam)
+                != completeSpecParams.end()) {
+                continue;
+            }
+
+            incompleteSpecParams.push_back(specParam);
+        }
+    }
+    std::sort(incompleteSpecParams.begin(), incompleteSpecParams.end());
+
+    for (const auto& s : incompleteSpecParams) {
+        std::stringstream ss;
+        ss << inDirectory << std::setprecision(16) << s << ".txt";
+        string filename = ss.str();
+        ss.clear();
+        std::ifstream inFile(filename);
+
+
+        //read in coefficients
+        string line;
+        std::getline(inFile, line); //read info like d = 19, etc.
+        std::getline(inFile, line); //read the eigenvalue interval
+
+        //each line now contains a, b, a_n where index = a + b*theta and a_n is Fourier coefficient
+        vector<Index> indices;
+        vector<double> coeffs;
+        while (std::getline(inFile, line)) {
+            int firstComma = line.find(',');
+            int secondComma = line.find('c', firstComma + 1);
+            string a = line.substr(0, firstComma);
+            string b = line.substr(firstComma + 2, secondComma - firstComma - 2);
+            string coeff = line.substr(secondComma + 2);
+
+            Index n(stoi(a), stoi(b));
+            double an = stod(coeff);
+
+            indices.push_back(n);
+            coeffs.push_back(an);
+        }
+
+        ss << "Output/Conjectures/SatoTate/" << d << "/" << symClass << "/";
+        ss << std::setprecision(16) << s << ".txt";
+        string satoOutFilename = ss.str();
+        ss.clear();
+
+        ss << "Output/Conjectures/Ramanujan/"<< d << "/" << symClass << "/";
+        ss << std::setprecision(16) << s << ".txt";
+        string ramanujanOutFilename = ss.str();
+        ss.clear();
+
+        std::ofstream satoOut(satoOutFilename);
+        std::ofstream ramanujanOut(ramanujanOutFilename);
+
+        satoOut << std::setprecision(16) << "d = " << d << ", symClass = " << symClass << std::endl;
+        satoOut << std::setprecision(16) << s << std::endl;
+
+        ramanujanOut << std::setprecision(16) << "d = " << d << ", symClass = " << symClass << std::endl;
+        ramanujanOut << std::setprecision(16) << s << std::endl;
+        ramanujanOut << "Listed are indices, coefficient that fail the Ramanujan conjecture" << std::endl;
+
+        for (int i = 0; i < indices.size(); i++) {
+            Index index = indices[i];
+            if (!Od.isPrime(index)) {
+                continue;
+            }
+
+            double coeff = coeffs[i];
+
+            if (coeff > 2.0) {
+                ramanujanOut << std::setprecision(16) << index.getA() << ", " << index.getB() << ", " << coeff << std::endl;
+            } else {
+                double sato = acos(coeff/2.0);
+                satoOut << std::setprecision(16) << sato << std::endl;
+            }
+        }
+    }
 }
 
+//TODO: finish
 void BianchiMaassSearch::makeLFunctions() {
     //read in results from tested modular functions
     //compute dirichlet coefficnets and write to file (should be very fast)
+}
+
+double BianchiMaassSearch::evaluate(const Quaternion &z, KBessel &K, const vector<Index> &indexTransversal,
+                                    const vector<double> &coeffs) {
+    auto x = z.getComplex();
+    auto y = z.getJ();
+    vector<double> terms;
+    terms.resize(indexTransversal.size(), 0);
+
+#pragma omp parallel for default(none) shared(indexTransversal, coeffs, x, y, K, terms)
+    for (int i = 0; i < indexTransversal.size(); i++) {
+        Index n = indexTransversal[i];
+        double an = coeffs[i];
+        double term = an * K.exactKBessel(twoPiOverA * n.getAbs(d) * y);
+        auto nComplex = n.getComplex(d);
+
+        double cs = 0;
+        if (symClass == 'D' || symClass == 'G' || d == 1) {
+            cs = cos(pi/A * traceProduct(nComplex, x * I));
+            if (n.getB() != 0 && n.getA() + 0.5 * n.getB() != 0) {
+                if (symClass == 'D' || symClass == 'C') {
+                    cs += cos(pi/A * traceProduct(-conj(nComplex), x * I));
+                } else {
+                    cs -= cos(pi/A * traceProduct(-conj(nComplex), x * I));
+                }
+            }
+        } else {
+            cs = sin(pi/A * traceProduct(nComplex, x * I));
+            if (n.getB() != 0 && n.getA() + 0.5 * n.getB() != 0) {
+                if (symClass == 'D' || symClass == 'C') {
+                    cs += sin(pi/A * traceProduct(-conj(nComplex), x * I));
+                } else {
+                    cs -= sin(pi/A * traceProduct(-conj(nComplex), x * I));
+                }
+            }
+        }
+        term *= cs;
+        terms[i] = term;
+    }
+    double answer = Auxiliary::kahanSummation(terms);
+    answer *= 2.0 * z.getJ();
+    return answer;
 }
 

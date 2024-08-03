@@ -99,6 +99,8 @@ private:
     double traceProduct(complex<double> z, complex<double> w);
     bool areDifferentSign(double a, double b);
 
+    double evaluate(const Quaternion& z, KBessel& K, const vector<Index>& indexTransversal, const vector<double>& coeffs);
+
     Auxiliary Aux;
 
     map<double, KBessel> rToKBess;

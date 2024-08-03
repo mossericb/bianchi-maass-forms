@@ -12,11 +12,17 @@ ImaginaryQuadraticIntegers::ImaginaryQuadraticIntegers(int d) {
     if (Auxiliary::mod(-d, 4) == 1) {
         //theta = 1/2 + I*sqrt(d)/2
         theta = std::complex<double> {1.0/2, sqrt(d)/2};
+        normTheta = (1 + d)/4;
+        twoRealTheta = 1;
+        disc = -d;
     } else if (Auxiliary::mod(-d, 4) == 0) {
         throw std::invalid_argument("d is incorrect");
     } else {
         //theta = I*sqrt(d)
         theta = std::complex<double> {0, sqrt(d)};
+        normTheta = d;
+        twoRealTheta = 0;
+        disc = -4*d;
     }
 
     A = theta.imag();
@@ -230,6 +236,61 @@ double ImaginaryQuadraticIntegers::eigenvalueIntervalRightEndpoint(double leftEn
         return leftEndpoint + maxStep;
     }
     return rightEndpoint;
+}
+
+//TODO: test this function against sagemath
+bool ImaginaryQuadraticIntegers::isPrime(const Index &index) {
+    int a = index.getA();
+    int b = index.getB();
+    long norm = a*a + b*b*normTheta + a*b*twoRealTheta;
+    norm = abs(norm);
+
+    if (isRationalPrime(norm)) {
+        return true;
+    }
+
+    long test = floor(sqrt(norm));
+    long p = -1;
+    if (test * test == norm) {
+        p = test;
+    } else if ((test + 1) * (test+1) == norm) {
+        p = test + 1;
+    }
+
+    if (p == -1) {
+        return false;
+    }
+
+    if (!isRationalPrime(p)) {
+        return false;
+    }
+
+    if (Auxiliary::legendreSymbol(disc, p) == -1) {
+        return true;
+    }
+
+    return false;
+}
+
+bool ImaginaryQuadraticIntegers::isRationalPrime(long n) {
+    n = abs(n);
+    if (n == 2) {
+        return true;
+    }
+    if (n == 0 || n == 1 || n % 2 == 0) {
+        return false;
+    }
+
+    long test = 3;
+    double stop = sqrt(n);
+    while (test <= stop) {
+        if (n % test == 0) {
+            return false;
+        }
+        test += 2;
+    }
+
+    return true;
 }
 
 

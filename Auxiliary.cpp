@@ -40,8 +40,8 @@ Auxiliary::~Auxiliary() {
 
 
 
-int Auxiliary::mod(int x, int modulus) {
-    int answer = x % modulus;
+long Auxiliary::mod(long x, long modulus) {
+    long answer = x % modulus;
     if (answer < 0) {
         return answer + abs(modulus);
     } else {
@@ -349,7 +349,7 @@ double Auxiliary::kahanSummationUnvectorized(std::vector<double> &numbers) {
     std::sort(numbers.begin(), numbers.end(), [] (double left, double right) {
         return abs(left) < abs(right);
     });
-    //The Linux Cluster CPUs support AVX-512, so I want to make this
+
     double sum = 0.0;
     double c = 0.0;
     for (const auto n : numbers) {
@@ -359,6 +359,42 @@ double Auxiliary::kahanSummationUnvectorized(std::vector<double> &numbers) {
         sum = t;
     }
     return sum;
+}
+
+char Auxiliary::legendreSymbol(long n, long p) {
+    n = n % p;
+    if (n < 0) {
+        n += p;
+    }
+    if (n == 0) {
+        return 0;
+    }
+    if (p == 2) {
+        return 1;
+    }
+    if (n == 2) {
+        if (p % 8  == 1 || p % 8 == 7) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+    if (mod(-1, p) == n) {
+        if (p % 4 == 1) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
+    // 1 <= n < p
+    for (int i = 1; i <= floor(p/2); i++) {
+        if (mod(i*i, p) == n) {
+            return 1;
+        }
+    }
+
+    return -1;
 }
 
 

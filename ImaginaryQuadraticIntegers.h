@@ -38,13 +38,19 @@ public:
     double weylLaw(double r);
     double eigenvalueIntervalRightEndpoint(double leftEndpoint, double numEigenvalues);
 
+    bool isPrime(const Index& index);
+    static bool isRationalPrime(long n);
+
     vector<Index> indicesUpToM(const double M);
     pair<vector<Index>, map<Index, vector<pair<Index, int>>>>
     indexOrbitQuotientData(vector<Index> indices, const char symClass);
 
 private:
     int d;
+    int disc;
     std::complex<double> theta;
+    int normTheta;
+    int twoRealTheta;
     double A;
     double Y0;
     double volumeOfFD;

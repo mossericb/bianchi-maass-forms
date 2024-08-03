@@ -80,9 +80,9 @@ int main(int argc, char *argv[]) {
 
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
             bms.extendCoefficientComputation();
-        } else if (mode == "test") {
+        } else if (mode == "test-modularity") {
             if (argc != 4) {
-                throw std::invalid_argument("Test mode command line arguments should be: test d symClass");
+                throw std::invalid_argument("test-modularity mode command line arguments should be: test-modularity d symClass");
             }
             //Check modularity
             //Check Ramanujan
@@ -93,6 +93,14 @@ int main(int argc, char *argv[]) {
 
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
             bms.testForModularity();
+        } else if (mode == "test-conjectures") {
+            if (argc != 4) {
+                throw std::invalid_argument("test-conjectures mode command line arguments should be: test-conjectures d symClass");
+            }
+            int d = std::stoi(argv[2]);
+            char symClass = argv[3][0];
+
+            BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
             bms.testConjectures();
         } else if (mode == "Lfunction") {
             if (argc != 4) {
@@ -105,7 +113,7 @@ int main(int argc, char *argv[]) {
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
             bms.makeLFunctions();
         } else {
-            throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" "fine" "extend" "test" or "Lfunction".)");
+            throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" "fine" "extend" "test-modularity" "test-conjectures" or "Lfunction".)");
         }
     }
 
