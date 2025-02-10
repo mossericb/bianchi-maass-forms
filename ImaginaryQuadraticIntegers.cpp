@@ -129,8 +129,8 @@ ImaginaryQuadraticIntegers::indexOrbitQuotientData(vector<Index> indices, const 
     vector<Index> indexTransversal;
     map<Index, vector<pair<Index,int>>> orbitDataModSign;
 
-    int rotationCoeff = symClass == 'D' || symClass == 'G' ? 1 : -1;
-    int conjCoeff = symClass == 'D' || symClass == 'C' ? 1 : -1;
+    int nonsquareUnitCoeff = symClass == 'D' || symClass == 'G' ? 1 : -1;
+    int reflCoeff = symClass == 'D' || symClass == 'H' ? 1 : -1;
 
 
     while (!indices.empty()) {
@@ -138,38 +138,38 @@ ImaginaryQuadraticIntegers::indexOrbitQuotientData(vector<Index> indices, const 
         vector<pair<Index, int>> orbit = {pair<Index, int>(index, 1)};
 
         Index tempIndex = index.rotate(d);
-        int tempCoeff = 1*rotationCoeff;
+        int tempCoeff = 1 * nonsquareUnitCoeff;
         pair<Index, int> tempPair = {tempIndex, tempCoeff};
         while (tempIndex != index) {
             orbit.push_back(tempPair);
 
             tempIndex = tempIndex.rotate(d);
-            tempCoeff = tempCoeff*rotationCoeff;
+            tempCoeff = tempCoeff * nonsquareUnitCoeff;
             tempPair = {tempIndex, tempCoeff};
         }
 
-        Index conjIndex = index.conj(d);
-        bool conjIsInRotations = false;
+        Index reflIndex = index.reflect(d);
+        bool reflIsInRotations = false;
         for (const auto& tup : orbit) {
-            if (conjIndex == tup.first) {
-                conjIsInRotations = true;
+            if (reflIndex == tup.first) {
+                reflIsInRotations = true;
                 break;
             }
         }
 
-        if (!conjIsInRotations) {
+        if (!reflIsInRotations) {
             /*add in the rotations of the conjugate*/
-            tempPair = {conjIndex, conjCoeff};
+            tempPair = {reflIndex, reflCoeff};
             orbit.push_back(tempPair);
 
-            tempIndex = conjIndex.rotate(d);
-            tempCoeff = conjCoeff*rotationCoeff;
+            tempIndex = reflIndex.rotate(d);
+            tempCoeff = reflCoeff * nonsquareUnitCoeff;
             tempPair = {tempIndex, tempCoeff};
-            while (tempIndex != conjIndex) {
+            while (tempIndex != reflIndex) {
                 orbit.push_back(tempPair);
 
                 tempIndex = tempIndex.rotate(d);
-                tempCoeff = tempCoeff*rotationCoeff;
+                tempCoeff = tempCoeff * nonsquareUnitCoeff;
                 tempPair = {tempIndex, tempCoeff};
             }
 
@@ -238,7 +238,6 @@ double ImaginaryQuadraticIntegers::eigenvalueIntervalRightEndpoint(double leftEn
     return rightEndpoint;
 }
 
-//TODO: test this function against sagemath
 bool ImaginaryQuadraticIntegers::isPrime(const Index &index) {
     int a = index.getA();
     int b = index.getB();

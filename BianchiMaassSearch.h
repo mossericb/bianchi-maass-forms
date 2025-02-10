@@ -36,10 +36,15 @@ public:
     void coarseSearchForEigenvalues(const double leftR, const double rightR);
     void mediumSearchForEigenvalues();
     void fineSearchForEigenvalues();
+    void computeReflectionOddEigenvalues();
     void extendCoefficientComputation();
     void testForModularity();
     void testConjectures();
     void makeLFunctions();
+    void sandbox(const double leftR, const double rightR);
+    void sandbox2(const double r);
+    void sandbox3(const double r);
+    void sandbox4(const double r);
 
 private:
 
@@ -93,6 +98,8 @@ private:
     double computeM0General(double r);
     double computeMYGeneral(double M0, double Y);
 
+    int getIndexOfNormalization(const vector<Index> & indexTransversal);
+
     vector<TestPointOrbitData> getPointPullbackOrbits(const Index &m, double Y, double MY);
     unsigned long long int countPointPullbackOrbits(const Index &m, double Y, double MY);
 
@@ -114,7 +121,8 @@ private:
     vector<pair<double,double>> getIntervalsForCoarseSearch(double startR, double endR);
     vector<pair<double,double>> getIntervalsForMediumSearch();
     vector<pair<double,double>> getIntervalsForFineSearch();
-    void saveSearchResult(vector<double> spectralParameters, vector<Index>& indexTransversal, vector<double>& coeffs);
+    void saveSearchResult(vector<double> spectralParameters, vector<Index> &indexTransversal,
+                          vector<double> &coeffs, double Y);
 
     bool possiblyContainsEigenvalue(double leftR, double rightR, KBessel *leftRK, KBessel *rightRK);
     void medianIllinoisSearch(double leftR, double rightR);

@@ -71,16 +71,16 @@ int main(int argc, char *argv[]) {
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
             bms.fineSearchForEigenvalues();
         } else if (mode == "extend") {
-            if (argc != 4) {
-                throw std::invalid_argument("Extend mode command line arguments should be: extend d symClass");
-            }
-            //Compute more coefficients. Compute a bunch. Up to M(Y) by default and can ask for more perhaps?
-            int d = std::stoi(argv[2]);
-            char symClass = argv[3][0];
+                if (argc != 4) {
+                    throw std::invalid_argument("Extend mode command line arguments should be: extend d symClass");
+                }
+                //Compute more coefficients. Compute a bunch. Up to M(Y) by default and can ask for more perhaps?
+                int d = std::stoi(argv[2]);
+                char symClass = argv[3][0];
 
-            BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
-            bms.extendCoefficientComputation();
-        } else if (mode == "test-modularity") {
+                BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
+                bms.extendCoefficientComputation();
+        } else if (mode == "test-modularity-compute-reflections") {
             if (argc != 4) {
                 throw std::invalid_argument("test-modularity mode command line arguments should be: test-modularity d symClass");
             }
@@ -90,6 +90,10 @@ int main(int argc, char *argv[]) {
             //Check if the reflection-odd symmetry class is also modular
             int d = std::stoi(argv[2]);
             char symClass = argv[3][0];
+
+            if (symClass != 'D' && symClass != 'C') {
+                throw std::invalid_argument("symClass for this mode should be only D or C");
+            }
 
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
             bms.testForModularity();
@@ -112,6 +116,76 @@ int main(int argc, char *argv[]) {
 
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
             bms.makeLFunctions();
+        } else if (mode == "sandbox") {
+            if (argc != 7) {
+                throw std::invalid_argument("sandbox search command line arguments should be: sandbox d symClass D leftEndpoint rightEndpoint");
+            }
+            int d = std::stoi(argv[2]);
+            char symClass = argv[3][0];
+            double D = std::stod(argv[4]);
+            double leftEndpoint = std::stod(argv[5]);
+            double rightEndpoint = std::stod(argv[6]);
+
+            std::cout << "mode = " << mode << '\n';
+            std::cout << "d = " << d << '\n';
+            std::cout << "symClass = " << symClass << '\n';
+            std::cout << "D = " << D << '\n';
+            std::cout << "leftEndpoint = " << leftEndpoint << '\n';
+            std::cout << "rightEndpoint = " << rightEndpoint << '\n';
+
+            BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
+            bms.sandbox(leftEndpoint, rightEndpoint);
+        } else if (mode == "sandbox2") {
+            if (argc != 6) {
+                throw std::invalid_argument("");
+            }
+            int d = std::stoi(argv[2]);
+            char symClass = argv[3][0];
+            double D = std::stod(argv[4]);
+            double r = std::stod(argv[5]);
+
+            std::cout << "mode = " << mode << '\n';
+            std::cout << "d = " << d << '\n';
+            std::cout << "symClass = " << symClass << '\n';
+            std::cout << "D = " << D << '\n';
+            std::cout << std::setprecision(16) << "r = " << r << '\n';
+
+            BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
+            bms.sandbox2(r);
+        } else if (mode == "sandbox3") {
+            if (argc != 6) {
+                throw std::invalid_argument("");
+            }
+            int d = std::stoi(argv[2]);
+            char symClass = argv[3][0];
+            double D = std::stod(argv[4]);
+            double r = std::stod(argv[5]);
+
+            std::cout << "mode = " << mode << '\n';
+            std::cout << "d = " << d << '\n';
+            std::cout << "symClass = " << symClass << '\n';
+            std::cout << "D = " << D << '\n';
+            std::cout << std::setprecision(16) << "r = " << r << '\n';
+
+            BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
+            bms.sandbox3(r);
+        } else if (mode == "sandbox4") {
+            if (argc != 6) {
+                throw std::invalid_argument("");
+            }
+            int d = std::stoi(argv[2]);
+            char symClass = argv[3][0];
+            double D = std::stod(argv[4]);
+            double r = std::stod(argv[5]);
+
+            std::cout << "mode = " << mode << '\n';
+            std::cout << "d = " << d << '\n';
+            std::cout << "symClass = " << symClass << '\n';
+            std::cout << "D = " << D << '\n';
+            std::cout << std::setprecision(16) << "r = " << r << '\n';
+
+            BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
+            bms.sandbox4(r);
         } else {
             throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" "fine" "extend" "test-modularity" "test-conjectures" or "Lfunction".)");
         }

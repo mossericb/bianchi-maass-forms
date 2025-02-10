@@ -34,6 +34,7 @@ public:
     static double kahanSummationUnvectorized(std::vector<double> &numbers);
     static double nextWithinOrderOfMag(double x);
     static char legendreSymbol(long n, long p);
+    static double rand(double a, double b);
     //static double pi;
 
     static int SIMD_DOUBLE_WIDTH;

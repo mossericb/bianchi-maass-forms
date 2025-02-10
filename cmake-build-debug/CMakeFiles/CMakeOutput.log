@@ -1,4 +1,4 @@
-The system is: Darwin - 23.5.0 - arm64
+The system is: Darwin - 24.2.0 - arm64
 Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
 Compiler: /opt/homebrew/Cellar/llvm/18.1.8/bin/clang 
 Build flags: 
@@ -26,37 +26,37 @@ Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" p
 The CXX compiler identification is Clang, found in "/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/3.25.2/CompilerIdCXX/a.out"
 
 Detecting C compiler ABI info compiled with the following output:
-Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ZDqpKy
+Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-5gnAw8
 
-Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_d2b77 && [1/2] Building C object CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o
+Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_e3c14 && [1/2] Building C object CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o
 Homebrew clang version 18.1.8
-Target: arm64-apple-darwin23.5.0
+Target: arm64-apple-darwin24.2.0
 Thread model: posix
 InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin
 clang: warning: -Wl,-v: 'linker' input unused [-Wunused-command-line-argument]
  (in-process)
- "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.5 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ZDqpKy -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ZDqpKy -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o -x c /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCCompilerABI.c
-clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin23.5.0
-ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include"
-ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/Library/Frameworks"
+ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx15.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=15.2 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-5gnAw8 -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-5gnAw8 -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o -x c /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCCompilerABI.c
+clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin24.2.0
+ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include"
+ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/Library/Frameworks"
 #include "..." search starts here:
 #include <...> search starts here:
  /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include
- /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include
- /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/System/Library/Frameworks (framework directory)
+ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include
+ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks (framework directory)
 End of search list.
-[2/2] Linking C executable cmTC_d2b77
+[2/2] Linking C executable cmTC_e3c14
 Homebrew clang version 18.1.8
-Target: arm64-apple-darwin23.5.0
+Target: arm64-apple-darwin24.2.0
 Thread model: posix
 InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin
- "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.5 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_d2b77 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a
-@(#)PROGRAM:ld PROJECT:ld-1053.12
-BUILD 10:15:51 Mar 29 2024
+ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 15.0.0 15.2 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_e3c14 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a
+@(#)PROGRAM:ld PROJECT:ld-1115.7.3
+BUILD 23:52:02 Dec  5 2024
 configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em
-will use ld-classic for: armv6 armv7 armv7s arm64_32 i386 armv6m armv7k armv7m armv7em
+will use ld-classic for: armv6 armv7 armv7s i386 armv6m armv7k armv7m armv7em
 LTO support using: LLVM version 18.1.8 (static support for 29, runtime is 29)
-TAPI support using: Apple TAPI version 15.0.0 (tapi-1500.3.2.2)
+TAPI support using: Apple TAPI version 16.0.0 (tapi-1600.0.11.9)
 Library search paths:
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift
@@ -69,40 +69,40 @@ Parsed C implicit include dir info from above output: rv=done
   found start of include info
   found start of implicit include info
     add: [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include]
-    add: [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include]
+    add: [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include]
   end of search list found
   collapse include dir [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include] ==> [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include]
-  collapse include dir [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include] ==> [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include]
-  implicit include dirs: [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include;/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include]
+  collapse include dir [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include] ==> [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include]
+  implicit include dirs: [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include;/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include]
 
 
 Parsed C implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
-  ignore line: [Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ZDqpKy]
+  ignore line: [Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-5gnAw8]
   ignore line: []
-  ignore line: [Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_d2b77 && [1/2] Building C object CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o]
+  ignore line: [Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_e3c14 && [1/2] Building C object CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o]
   ignore line: [Homebrew clang version 18.1.8]
-  ignore line: [Target: arm64-apple-darwin23.5.0]
+  ignore line: [Target: arm64-apple-darwin24.2.0]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin]
   ignore line: [clang: warning: -Wl -v: 'linker' input unused [-Wunused-command-line-argument]]
   ignore line: [ (in-process)]
-  ignore line: [ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.5 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ZDqpKy -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-ZDqpKy -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o -x c /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCCompilerABI.c]
-  ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin23.5.0]
-  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include"]
-  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/Library/Frameworks"]
+  ignore line: [ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx15.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=15.2 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-5gnAw8 -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-5gnAw8 -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o -x c /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCCompilerABI.c]
+  ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin24.2.0]
+  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include"]
+  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/Library/Frameworks"]
   ignore line: [#include "..." search starts here:]
   ignore line: [#include <...> search starts here:]
   ignore line: [ /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include]
-  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include]
-  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/System/Library/Frameworks (framework directory)]
+  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include]
+  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks (framework directory)]
   ignore line: [End of search list.]
-  ignore line: [[2/2] Linking C executable cmTC_d2b77]
+  ignore line: [[2/2] Linking C executable cmTC_e3c14]
   ignore line: [Homebrew clang version 18.1.8]
-  ignore line: [Target: arm64-apple-darwin23.5.0]
+  ignore line: [Target: arm64-apple-darwin24.2.0]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin]
-  link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.5 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_d2b77 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a]
+  link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 15.0.0 15.2 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_e3c14 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a]
     arg [/usr/bin/ld] ==> ignore
     arg [-demangle] ==> ignore
     arg [-lto_library] ==> ignore, skip following value
@@ -112,18 +112,18 @@ Parsed C implicit link information from above output:
     arg [arm64] ==> ignore
     arg [-platform_version] ==> ignore
     arg [macos] ==> ignore
-    arg [14.0.0] ==> ignore
-    arg [14.5] ==> ignore
+    arg [15.0.0] ==> ignore
+    arg [15.2] ==> ignore
     arg [-syslibroot] ==> ignore
     arg [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk] ==> ignore
     arg [-mllvm] ==> ignore
     arg [-enable-linkonceodr-outlining] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_d2b77] ==> ignore
+    arg [cmTC_e3c14] ==> ignore
     arg [-search_paths_first] ==> ignore
     arg [-headerpad_max_install_names] ==> ignore
     arg [-v] ==> ignore
-    arg [CMakeFiles/cmTC_d2b77.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [CMakeFiles/cmTC_e3c14.dir/CMakeCCompilerABI.c.o] ==> ignore
     arg [-lSystem] ==> lib [System]
     arg [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a] ==> lib [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a]
   Library search paths: [;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift]
@@ -140,38 +140,38 @@ Parsed C implicit link information from above output:
 
 
 Detecting CXX compiler ABI info compiled with the following output:
-Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-jDC9Gc
+Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-Wu3Xca
 
-Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_4af89 && [1/2] Building CXX object CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o
+Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_aa778 && [1/2] Building CXX object CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o
 Homebrew clang version 18.1.8
-Target: arm64-apple-darwin23.5.0
+Target: arm64-apple-darwin24.2.0
 Thread model: posix
 InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin
 clang++: warning: -Wl,-v: 'linker' input unused [-Wunused-command-line-argument]
  (in-process)
- "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.5 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debug-info-kind=standalone -dwarf-version=4 -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-jDC9Gc -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-jDC9Gc -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include -O0 -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o -x c++ /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCXXCompilerABI.cpp
-clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin23.5.0
-ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include"
-ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/Library/Frameworks"
+ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx15.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=15.2 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debug-info-kind=standalone -dwarf-version=4 -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-Wu3Xca -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-Wu3Xca -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include -O0 -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o -x c++ /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCXXCompilerABI.cpp
+clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin24.2.0
+ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include"
+ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/Library/Frameworks"
 #include "..." search starts here:
 #include <...> search starts here:
  /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1
  /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include
- /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include
- /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/System/Library/Frameworks (framework directory)
+ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include
+ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks (framework directory)
 End of search list.
-[2/2] Linking CXX executable cmTC_4af89
+[2/2] Linking CXX executable cmTC_aa778
 Homebrew clang version 18.1.8
-Target: arm64-apple-darwin23.5.0
+Target: arm64-apple-darwin24.2.0
 Thread model: posix
 InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin
- "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -no_deduplicate -dynamic -arch arm64 -platform_version macos 14.0.0 14.5 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_4af89 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a
-@(#)PROGRAM:ld PROJECT:ld-1053.12
-BUILD 10:15:51 Mar 29 2024
+ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -no_deduplicate -dynamic -arch arm64 -platform_version macos 15.0.0 15.2 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_aa778 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a
+@(#)PROGRAM:ld PROJECT:ld-1115.7.3
+BUILD 23:52:02 Dec  5 2024
 configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em
-will use ld-classic for: armv6 armv7 armv7s arm64_32 i386 armv6m armv7k armv7m armv7em
+will use ld-classic for: armv6 armv7 armv7s i386 armv6m armv7k armv7m armv7em
 LTO support using: LLVM version 18.1.8 (static support for 29, runtime is 29)
-TAPI support using: Apple TAPI version 15.0.0 (tapi-1500.3.2.2)
+TAPI support using: Apple TAPI version 16.0.0 (tapi-1600.0.11.9)
 Library search paths:
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift
@@ -185,42 +185,42 @@ Parsed CXX implicit include dir info from above output: rv=done
   found start of implicit include info
     add: [/opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1]
     add: [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include]
-    add: [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include]
+    add: [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include]
   end of search list found
   collapse include dir [/opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1] ==> [/opt/homebrew/Cellar/llvm/18.1.8/include/c++/v1]
   collapse include dir [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include] ==> [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include]
-  collapse include dir [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include] ==> [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include]
-  implicit include dirs: [/opt/homebrew/Cellar/llvm/18.1.8/include/c++/v1;/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include;/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include]
+  collapse include dir [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include] ==> [/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include]
+  implicit include dirs: [/opt/homebrew/Cellar/llvm/18.1.8/include/c++/v1;/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include;/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include]
 
 
 Parsed CXX implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
-  ignore line: [Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-jDC9Gc]
+  ignore line: [Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-Wu3Xca]
   ignore line: []
-  ignore line: [Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_4af89 && [1/2] Building CXX object CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_aa778 && [1/2] Building CXX object CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o]
   ignore line: [Homebrew clang version 18.1.8]
-  ignore line: [Target: arm64-apple-darwin23.5.0]
+  ignore line: [Target: arm64-apple-darwin24.2.0]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin]
   ignore line: [clang++: warning: -Wl -v: 'linker' input unused [-Wunused-command-line-argument]]
   ignore line: [ (in-process)]
-  ignore line: [ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.5 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debug-info-kind=standalone -dwarf-version=4 -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-jDC9Gc -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-jDC9Gc -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include -O0 -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o -x c++ /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCXXCompilerABI.cpp]
-  ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin23.5.0]
-  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include"]
-  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/Library/Frameworks"]
+  ignore line: [ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx15.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=15.2 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debug-info-kind=standalone -dwarf-version=4 -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-Wu3Xca -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-Wu3Xca -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include -O0 -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o -x c++ /Applications/CLion.app/Contents/bin/cmake/mac/share/cmake-3.25/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin24.2.0]
+  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include"]
+  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/Library/Frameworks"]
   ignore line: [#include "..." search starts here:]
   ignore line: [#include <...> search starts here:]
   ignore line: [ /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1]
   ignore line: [ /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include]
-  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include]
-  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/System/Library/Frameworks (framework directory)]
+  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include]
+  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks (framework directory)]
   ignore line: [End of search list.]
-  ignore line: [[2/2] Linking CXX executable cmTC_4af89]
+  ignore line: [[2/2] Linking CXX executable cmTC_aa778]
   ignore line: [Homebrew clang version 18.1.8]
-  ignore line: [Target: arm64-apple-darwin23.5.0]
+  ignore line: [Target: arm64-apple-darwin24.2.0]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin]
-  link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -no_deduplicate -dynamic -arch arm64 -platform_version macos 14.0.0 14.5 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_4af89 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a]
+  link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -no_deduplicate -dynamic -arch arm64 -platform_version macos 15.0.0 15.2 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_aa778 -search_paths_first -headerpad_max_install_names -v CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a]
     arg [/usr/bin/ld] ==> ignore
     arg [-demangle] ==> ignore
     arg [-lto_library] ==> ignore, skip following value
@@ -231,18 +231,18 @@ Parsed CXX implicit link information from above output:
     arg [arm64] ==> ignore
     arg [-platform_version] ==> ignore
     arg [macos] ==> ignore
-    arg [14.0.0] ==> ignore
-    arg [14.5] ==> ignore
+    arg [15.0.0] ==> ignore
+    arg [15.2] ==> ignore
     arg [-syslibroot] ==> ignore
     arg [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk] ==> ignore
     arg [-mllvm] ==> ignore
     arg [-enable-linkonceodr-outlining] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_4af89] ==> ignore
+    arg [cmTC_aa778] ==> ignore
     arg [-search_paths_first] ==> ignore
     arg [-headerpad_max_install_names] ==> ignore
     arg [-v] ==> ignore
-    arg [CMakeFiles/cmTC_4af89.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [CMakeFiles/cmTC_aa778.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
     arg [-lc++] ==> lib [c++]
     arg [-lSystem] ==> lib [System]
     arg [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a] ==> lib [/opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a]
@@ -260,36 +260,36 @@ Parsed CXX implicit link information from above output:
 
 
 Detecting C OpenMP compiler ABI info compiled with the following output:
-Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-i9jfJk
+Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-eMGXuy
 
-Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_d2f4a && [1/2] Building C object CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o
+Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_275c4 && [1/2] Building C object CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o
 Homebrew clang version 18.1.8
-Target: arm64-apple-darwin23.5.0
+Target: arm64-apple-darwin24.2.0
 Thread model: posix
 InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin
  (in-process)
- "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name OpenMPTryFlag.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.5 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-i9jfJk -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-i9jfJk -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o.d -MT CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include -ferror-limit 19 -fopenmp -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o -x c /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-i9jfJk/OpenMPTryFlag.c
-clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin23.5.0
-ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include"
-ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/Library/Frameworks"
+ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx15.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name OpenMPTryFlag.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=15.2 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-eMGXuy -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-eMGXuy -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o.d -MT CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include -ferror-limit 19 -fopenmp -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o -x c /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-eMGXuy/OpenMPTryFlag.c
+clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin24.2.0
+ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include"
+ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/Library/Frameworks"
 #include "..." search starts here:
 #include <...> search starts here:
  /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include
- /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include
- /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/System/Library/Frameworks (framework directory)
+ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include
+ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks (framework directory)
 End of search list.
-[2/2] Linking C executable cmTC_d2f4a
+[2/2] Linking C executable cmTC_275c4
 Homebrew clang version 18.1.8
-Target: arm64-apple-darwin23.5.0
+Target: arm64-apple-darwin24.2.0
 Thread model: posix
 InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin
- "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.5 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_d2f4a -search_paths_first -headerpad_max_install_names CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o -v -lomp -L/opt/homebrew/Cellar/llvm/18.1.8/lib -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a
-@(#)PROGRAM:ld PROJECT:ld-1053.12
-BUILD 10:15:51 Mar 29 2024
+ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 15.0.0 15.2 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_275c4 -search_paths_first -headerpad_max_install_names CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o -v -lomp -L/opt/homebrew/Cellar/llvm/18.1.8/lib -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a
+@(#)PROGRAM:ld PROJECT:ld-1115.7.3
+BUILD 23:52:02 Dec  5 2024
 configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em
-will use ld-classic for: armv6 armv7 armv7s arm64_32 i386 armv6m armv7k armv7m armv7em
+will use ld-classic for: armv6 armv7 armv7s i386 armv6m armv7k armv7m armv7em
 LTO support using: LLVM version 18.1.8 (static support for 29, runtime is 29)
-TAPI support using: Apple TAPI version 15.0.0 (tapi-1500.3.2.2)
+TAPI support using: Apple TAPI version 16.0.0 (tapi-1600.0.11.9)
 Library search paths:
 	/opt/homebrew/Cellar/llvm/18.1.8/lib
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib
@@ -302,30 +302,30 @@ ld: warning: reexported library with install name '/opt/homebrew/opt/llvm/lib/li
 
 Parsed C OpenMP implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
-  ignore line: [Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-i9jfJk]
+  ignore line: [Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-eMGXuy]
   ignore line: []
-  ignore line: [Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_d2f4a && [1/2] Building C object CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o]
+  ignore line: [Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_275c4 && [1/2] Building C object CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o]
   ignore line: [Homebrew clang version 18.1.8]
-  ignore line: [Target: arm64-apple-darwin23.5.0]
+  ignore line: [Target: arm64-apple-darwin24.2.0]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin]
   ignore line: [ (in-process)]
-  ignore line: [ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name OpenMPTryFlag.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.5 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-i9jfJk -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-i9jfJk -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o.d -MT CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include -ferror-limit 19 -fopenmp -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o -x c /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-i9jfJk/OpenMPTryFlag.c]
-  ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin23.5.0]
-  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include"]
-  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/Library/Frameworks"]
+  ignore line: [ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx15.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name OpenMPTryFlag.c -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=15.2 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-eMGXuy -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-eMGXuy -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o.d -MT CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include -ferror-limit 19 -fopenmp -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o -x c /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-eMGXuy/OpenMPTryFlag.c]
+  ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin24.2.0]
+  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include"]
+  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/Library/Frameworks"]
   ignore line: [#include "..." search starts here:]
   ignore line: [#include <...> search starts here:]
   ignore line: [ /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include]
-  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include]
-  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/System/Library/Frameworks (framework directory)]
+  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include]
+  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks (framework directory)]
   ignore line: [End of search list.]
-  ignore line: [[2/2] Linking C executable cmTC_d2f4a]
+  ignore line: [[2/2] Linking C executable cmTC_275c4]
   ignore line: [Homebrew clang version 18.1.8]
-  ignore line: [Target: arm64-apple-darwin23.5.0]
+  ignore line: [Target: arm64-apple-darwin24.2.0]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin]
-  link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.5 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_d2f4a -search_paths_first -headerpad_max_install_names CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o -v -lomp -L/opt/homebrew/Cellar/llvm/18.1.8/lib -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a]
+  link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 15.0.0 15.2 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_275c4 -search_paths_first -headerpad_max_install_names CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o -v -lomp -L/opt/homebrew/Cellar/llvm/18.1.8/lib -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a]
     arg [/usr/bin/ld] ==> ignore
     arg [-demangle] ==> ignore
     arg [-lto_library] ==> ignore, skip following value
@@ -335,17 +335,17 @@ Parsed C OpenMP implicit link information from above output:
     arg [arm64] ==> ignore
     arg [-platform_version] ==> ignore
     arg [macos] ==> ignore
-    arg [14.0.0] ==> ignore
-    arg [14.5] ==> ignore
+    arg [15.0.0] ==> ignore
+    arg [15.2] ==> ignore
     arg [-syslibroot] ==> ignore
     arg [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk] ==> ignore
     arg [-mllvm] ==> ignore
     arg [-enable-linkonceodr-outlining] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_d2f4a] ==> ignore
+    arg [cmTC_275c4] ==> ignore
     arg [-search_paths_first] ==> ignore
     arg [-headerpad_max_install_names] ==> ignore
-    arg [CMakeFiles/cmTC_d2f4a.dir/OpenMPTryFlag.c.o] ==> ignore
+    arg [CMakeFiles/cmTC_275c4.dir/OpenMPTryFlag.c.o] ==> ignore
     arg [-v] ==> ignore
     arg [-lomp] ==> lib [omp]
     arg [-L/opt/homebrew/Cellar/llvm/18.1.8/lib] ==> dir [/opt/homebrew/Cellar/llvm/18.1.8/lib]
@@ -367,37 +367,37 @@ Parsed C OpenMP implicit link information from above output:
 
 
 Detecting CXX OpenMP compiler ABI info compiled with the following output:
-Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-YXjWb5
+Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DO33W9
 
-Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_02939 && [1/2] Building CXX object CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o
+Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_16b00 && [1/2] Building CXX object CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o
 Homebrew clang version 18.1.8
-Target: arm64-apple-darwin23.5.0
+Target: arm64-apple-darwin24.2.0
 Thread model: posix
 InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin
  (in-process)
- "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name OpenMPTryFlag.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.5 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debug-info-kind=standalone -dwarf-version=4 -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-YXjWb5 -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-YXjWb5 -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o.d -MT CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include -O0 -std=gnu++20 -fdeprecated-macro -ferror-limit 19 -fopenmp -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fno-implicit-modules -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o -x c++ /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-YXjWb5/OpenMPTryFlag.cpp
-clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin23.5.0
-ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include"
-ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/Library/Frameworks"
+ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx15.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name OpenMPTryFlag.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=15.2 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debug-info-kind=standalone -dwarf-version=4 -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DO33W9 -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DO33W9 -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o.d -MT CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include -O0 -std=gnu++20 -fdeprecated-macro -ferror-limit 19 -fopenmp -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fno-implicit-modules -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o -x c++ /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DO33W9/OpenMPTryFlag.cpp
+clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin24.2.0
+ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include"
+ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/Library/Frameworks"
 #include "..." search starts here:
 #include <...> search starts here:
  /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1
  /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include
- /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include
- /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/System/Library/Frameworks (framework directory)
+ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include
+ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks (framework directory)
 End of search list.
-[2/2] Linking CXX executable cmTC_02939
+[2/2] Linking CXX executable cmTC_16b00
 Homebrew clang version 18.1.8
-Target: arm64-apple-darwin23.5.0
+Target: arm64-apple-darwin24.2.0
 Thread model: posix
 InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin
- "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -no_deduplicate -dynamic -arch arm64 -platform_version macos 14.0.0 14.5 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_02939 -search_paths_first -headerpad_max_install_names CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o -v -lomp -L/opt/homebrew/Cellar/llvm/18.1.8/lib -lc++ -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a
-@(#)PROGRAM:ld PROJECT:ld-1053.12
-BUILD 10:15:51 Mar 29 2024
+ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -no_deduplicate -dynamic -arch arm64 -platform_version macos 15.0.0 15.2 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_16b00 -search_paths_first -headerpad_max_install_names CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o -v -lomp -L/opt/homebrew/Cellar/llvm/18.1.8/lib -lc++ -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a
+@(#)PROGRAM:ld PROJECT:ld-1115.7.3
+BUILD 23:52:02 Dec  5 2024
 configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em
-will use ld-classic for: armv6 armv7 armv7s arm64_32 i386 armv6m armv7k armv7m armv7em
+will use ld-classic for: armv6 armv7 armv7s i386 armv6m armv7k armv7m armv7em
 LTO support using: LLVM version 18.1.8 (static support for 29, runtime is 29)
-TAPI support using: Apple TAPI version 15.0.0 (tapi-1500.3.2.2)
+TAPI support using: Apple TAPI version 16.0.0 (tapi-1600.0.11.9)
 Library search paths:
 	/opt/homebrew/Cellar/llvm/18.1.8/lib
 	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib
@@ -410,31 +410,31 @@ ld: warning: reexported library with install name '/opt/homebrew/opt/llvm/lib/li
 
 Parsed CXX OpenMP implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
-  ignore line: [Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-YXjWb5]
+  ignore line: [Change Dir: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DO33W9]
   ignore line: []
-  ignore line: [Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_02939 && [1/2] Building CXX object CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o]
+  ignore line: [Run Build Command(s):/Applications/CLion.app/Contents/bin/ninja/mac/ninja cmTC_16b00 && [1/2] Building CXX object CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o]
   ignore line: [Homebrew clang version 18.1.8]
-  ignore line: [Target: arm64-apple-darwin23.5.0]
+  ignore line: [Target: arm64-apple-darwin24.2.0]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin]
   ignore line: [ (in-process)]
-  ignore line: [ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name OpenMPTryFlag.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.5 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debug-info-kind=standalone -dwarf-version=4 -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-YXjWb5 -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-YXjWb5 -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o.d -MT CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include -O0 -std=gnu++20 -fdeprecated-macro -ferror-limit 19 -fopenmp -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fno-implicit-modules -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o -x c++ /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-YXjWb5/OpenMPTryFlag.cpp]
-  ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin23.5.0]
-  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/local/include"]
-  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/Library/Frameworks"]
+  ignore line: [ "/opt/homebrew/Cellar/llvm/18.1.8/bin/clang-18" -cc1 -triple arm64-apple-macosx15.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name OpenMPTryFlag.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=15.2 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -target-cpu apple-m1 -target-feature +zcm -target-feature +zcz -target-feature +v8.5a -target-feature +aes -target-feature +crc -target-feature +dotprod -target-feature +complxnum -target-feature +fp-armv8 -target-feature +fullfp16 -target-feature +fp16fml -target-feature +jsconv -target-feature +lse -target-feature +pauth -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sha2 -target-feature +sha3 -target-feature +neon -target-abi darwinpcs -debug-info-kind=standalone -dwarf-version=4 -debugger-tuning=lldb -fdebug-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DO33W9 -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DO33W9 -resource-dir /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18 -dependency-file CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o.d -MT CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o -sys-header-deps -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1 -internal-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include -internal-externc-isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include -O0 -std=gnu++20 -fdeprecated-macro -ferror-limit 19 -fopenmp -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fno-implicit-modules -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -fcolor-diagnostics -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o -x c++ /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-debug/CMakeFiles/CMakeScratch/TryCompile-DO33W9/OpenMPTryFlag.cpp]
+  ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target arm64-apple-darwin24.2.0]
+  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/local/include"]
+  ignore line: [ignoring nonexistent directory "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/Library/Frameworks"]
   ignore line: [#include "..." search starts here:]
   ignore line: [#include <...> search starts here:]
   ignore line: [ /opt/homebrew/Cellar/llvm/18.1.8/bin/../include/c++/v1]
   ignore line: [ /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/include]
-  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/usr/include]
-  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.sdk/System/Library/Frameworks (framework directory)]
+  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include]
+  ignore line: [ /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/System/Library/Frameworks (framework directory)]
   ignore line: [End of search list.]
-  ignore line: [[2/2] Linking CXX executable cmTC_02939]
+  ignore line: [[2/2] Linking CXX executable cmTC_16b00]
   ignore line: [Homebrew clang version 18.1.8]
-  ignore line: [Target: arm64-apple-darwin23.5.0]
+  ignore line: [Target: arm64-apple-darwin24.2.0]
   ignore line: [Thread model: posix]
   ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/18.1.8/bin]
-  link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -no_deduplicate -dynamic -arch arm64 -platform_version macos 14.0.0 14.5 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_02939 -search_paths_first -headerpad_max_install_names CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o -v -lomp -L/opt/homebrew/Cellar/llvm/18.1.8/lib -lc++ -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a]
+  link line: [ "/usr/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/18.1.8/lib/libLTO.dylib -no_deduplicate -dynamic -arch arm64 -platform_version macos 15.0.0 15.2 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_16b00 -search_paths_first -headerpad_max_install_names CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o -v -lomp -L/opt/homebrew/Cellar/llvm/18.1.8/lib -lc++ -lSystem /opt/homebrew/Cellar/llvm/18.1.8/lib/clang/18/lib/darwin/libclang_rt.osx.a]
     arg [/usr/bin/ld] ==> ignore
     arg [-demangle] ==> ignore
     arg [-lto_library] ==> ignore, skip following value
@@ -445,17 +445,17 @@ Parsed CXX OpenMP implicit link information from above output:
     arg [arm64] ==> ignore
     arg [-platform_version] ==> ignore
     arg [macos] ==> ignore
-    arg [14.0.0] ==> ignore
-    arg [14.5] ==> ignore
+    arg [15.0.0] ==> ignore
+    arg [15.2] ==> ignore
     arg [-syslibroot] ==> ignore
     arg [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk] ==> ignore
     arg [-mllvm] ==> ignore
     arg [-enable-linkonceodr-outlining] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_02939] ==> ignore
+    arg [cmTC_16b00] ==> ignore
     arg [-search_paths_first] ==> ignore
     arg [-headerpad_max_install_names] ==> ignore
-    arg [CMakeFiles/cmTC_02939.dir/OpenMPTryFlag.cpp.o] ==> ignore
+    arg [CMakeFiles/cmTC_16b00.dir/OpenMPTryFlag.cpp.o] ==> ignore
     arg [-v] ==> ignore
     arg [-lomp] ==> lib [omp]
     arg [-L/opt/homebrew/Cellar/llvm/18.1.8/lib] ==> dir [/opt/homebrew/Cellar/llvm/18.1.8/lib]

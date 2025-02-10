@@ -823,21 +823,21 @@ void BianchiMaassPointwise::computeIndexData() {
     vector<Index> tempIndices;
     copy(indicesMY.begin(), indicesMY.end(), back_inserter(tempIndices));
 
-    int rotationCoeff = symClass == 'D' || symClass == 'G' ? 1 : -1;
-    int conjCoeff = symClass == 'D' || symClass == 'C' ? 1 : -1;
+    int nonSquareUnitCoeff = symClass == 'D' || symClass == 'G' ? 1 : -1;
+    int reflCoeff = symClass == 'D' || symClass == 'H' ? 1 : -1;
 
     while (!tempIndices.empty()) {
         Index index = tempIndices.front();
         vector<pair<Index, int>> orbit = {pair<Index, int>(index, 1)};
 
         Index tempIndex = index.rotate(d);
-        int tempCoeff = 1*rotationCoeff;
+        int tempCoeff = 1 * nonSquareUnitCoeff;
         pair<Index, int> tempTuple = {tempIndex, tempCoeff};
         while (tempIndex != index) {
             orbit.push_back(tempTuple);
 
             tempIndex = tempIndex.rotate(d);
-            tempCoeff = tempCoeff*rotationCoeff;
+            tempCoeff = tempCoeff * nonSquareUnitCoeff;
             tempTuple = {tempIndex, tempCoeff};
         }
 
@@ -852,17 +852,17 @@ void BianchiMaassPointwise::computeIndexData() {
 
         if (!conjIsInRotations) {
             /*add in the rotations of the conjugate*/
-            tempTuple = {conjIndex, conjCoeff};
+            tempTuple = {conjIndex, reflCoeff};
             orbit.push_back(tempTuple);
 
             tempIndex = conjIndex.rotate(d);
-            tempCoeff = conjCoeff*rotationCoeff;
+            tempCoeff = reflCoeff * nonSquareUnitCoeff;
             tempTuple = {tempIndex, tempCoeff};
             while (tempIndex != conjIndex) {
                 orbit.push_back(tempTuple);
 
                 tempIndex = tempIndex.rotate(d);
-                tempCoeff = tempCoeff*rotationCoeff;
+                tempCoeff = tempCoeff * nonSquareUnitCoeff;
                 tempTuple = {tempIndex, tempCoeff};
             }
 

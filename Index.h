@@ -21,6 +21,7 @@ public:
 
     [[nodiscard]] Index rotate(int d) const;
     [[nodiscard]] Index conj(int d) const;
+    [[nodiscard]] Index reflect(int d ) const;
     std::string to_string() const;
 
     Index mul(const Index& index, int d) const;

@@ -12,6 +12,8 @@
 #include "omp.h"
 
 #include <algorithm>
+#include <chrono>
+#include <random>
 
 int Auxiliary::SIMD_DOUBLE_WIDTH = 2;
 
@@ -395,6 +397,15 @@ char Auxiliary::legendreSymbol(long n, long p) {
     }
 
     return -1;
+}
+
+double Auxiliary::rand(double a, double b) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    std::uniform_real_distribution<double> dis(a, b);
+
+    return dis(gen);
 }
 
 

@@ -39,6 +39,14 @@ Index Index::conj(int d) const {
     }
 }
 
+Index Index::reflect(int d) const {
+    if (Auxiliary::mod(-d, 4) == 1) {
+        return {-a - b, b};
+    } else {
+        return {-a, b};
+    }
+}
+
 bool operator==(const Index &index1, const Index &index2) {
     return (index1.a == index2.a) && (index1.b == index2.b);
 }
