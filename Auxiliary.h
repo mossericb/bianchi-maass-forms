@@ -10,6 +10,9 @@
 #include "Index.h"
 #include "mpfr.h"
 #include <boost/align/aligned_allocator.hpp>
+#include <string>
+
+using std::string;
 
 class Auxiliary {
 public:
@@ -38,6 +41,8 @@ public:
     //static double pi;
 
     static int SIMD_DOUBLE_WIDTH;
+    static string commonRound(string & s1, string & s2);
+    static double roundN(const double r, int n);
 
 private:
     std::vector<__mpfr_struct> sums;

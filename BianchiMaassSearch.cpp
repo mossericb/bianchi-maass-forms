@@ -60,20 +60,6 @@ BianchiMaassSearch::BianchiMaassSearch(string mode, int d, double D, char symCla
     }
     this->symClass = symClass;
 
-    /*
-     * These are values that determine what precision the calculation runs at.
-     * Determined experimentally to achieve as good results as possible within
-     * reasonable computation time spans.
-     */
-    dToDMap[1] = {6,6,8,16};
-    dToDMap[2] = {6,6,8,16};
-    dToDMap[3] = {6,6,8,16};
-    dToDMap[7] = {6,6,8,16};
-    dToDMap[11] = {6,6,8,16};
-    dToDMap[19] = {5,6,8,16};
-    dToDMap[43] = {4,4,4,6};
-    dToDMap[67] = {3,3,3,4};
-    dToDMap[163] = {2,2,2,3};
 
     this->D = D;
     if (D == 0) {
@@ -158,21 +144,6 @@ void BianchiMaassSearch::coarseSearchForEigenvalues(const double leftR, const do
 }
 
 void BianchiMaassSearch::mediumSearchForEigenvalues() {
-    /*
-     * The coarse log looks like
-     *
-     * Complete up to 6.000000
-     * [6.5, 6.75]
-     * Complete up to 7.0000
-     *
-     * So the medium log should also look like
-     *
-     * Complete up to 6.75
-     * [6.845454545, 6.84545455]
-     * Complete up to 7.0000
-     *
-     * Then the fine log will comb through this and grab the [inter, vals]
-     */
 
 
     auto intervalsFromFile = getIntervalsForMediumSearch();
@@ -221,8 +192,6 @@ void BianchiMaassSearch::mediumSearchForEigenvalues() {
             //Cutoff interval should be not wider than 0.001
             weylRightEndpoint = min(weylRightEndpoint, interval.first + 0.001);
 
-            //Cutoff interval should be not narrower than 0.00000001
-            //weylRightEndpoint = max(weylRightEndpoint, interval.first + 0.00000001);
             if (interval.second <= weylRightEndpoint) {
                 mediumOutputFile << std::setprecision(16) << "[" << interval.first << ", " << interval.second << "]" << std::endl;
                 cout << "Likely eigenvalue " << std::setprecision(16) << "[" << interval.first << ", " << interval.second << "]" << std::endl;
@@ -303,10 +272,6 @@ void BianchiMaassSearch::fineSearchForEigenvalues() {
         medianIllinoisSearch(interval.first, interval.second);
         fineOutputFile << "Complete up to " << std::setprecision(16) << interval.second << std::endl;
     }
-}
-
-void BianchiMaassSearch::computeReflectionOddEigenvalues() {
-    //Read in completed eigenvalues
 }
 
 void BianchiMaassSearch::medianIllinoisSearch(double leftR, double rightR) {
@@ -417,26 +382,26 @@ void BianchiMaassSearch::medianIllinoisSearch(double leftR, double rightR) {
 
     double cutoff = pow(10.0, -15);
     while (abs((1 - b/a)) > cutoff) {
-        //std::cout << "here1" << std::endl;
+
         vector<double> c_vec;
         for (int i = 0; i < indexTransversal.size(); i++) {
-            //std::cout << coeffDiffa[i] << ", " << coeffDiffb[i] << std::endl;
+
             if (areDifferentSign(coeffDiffa[i], coeffDiffb[i])) {
                 double c_here = (coeffDiffa[i] * b - coeffDiffb[i] * a) / (coeffDiffa[i] - coeffDiffb[i]);
                 c_vec.push_back(c_here);
             }
         }
-        //std::cout << "here1.5" << std::endl;
 
-        //std::cout << "here1.75" << std::endl;
+
+
         std::sort(c_vec.begin(), c_vec.end());
-        //std::cout << "here1.875" << std::endl;
+
         //this is the median
         if (c_vec.size() == 0) {
-            //std::cout << "here12" << std::endl;
+
             vector<double> coeffs;
             for (int i = 0; i < indexTransversal.size(); i++) {
-                //std::cout << "here12" << " " << i << std::endl;
+
                 double coeff = solAndCondY1NextR.first(i);
                 coeffs.push_back(coeff);
             }
@@ -447,34 +412,34 @@ void BianchiMaassSearch::medianIllinoisSearch(double leftR, double rightR) {
             saveSearchResult({a, b, c}, indexTransversal, coeffs, NAN);
             break;
         } else if (c_vec.size() % 2 == 1) {
-            //std::cout << "here13" << std::endl;
+
             c = c_vec[(c_vec.size() - 1)/2];
         } else {
-            //std::cout << "here14" << std::endl;
+
             c = (c_vec[c_vec.size()/2 - 1] + c_vec[c_vec.size()/2])/2.0;
         }
 
-        //std::cout << "here2" << std::endl;
+
         KBessel* nextRK = new KBessel(twoPiOverA * 1 * Y0, c);
-        //std::cout << "here3" << std::endl;
+
         nextRK->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-        //std::cout << "here4" << std::endl;
+
         matrixY1 = produceMatrix(indexTransversal, mToY1TestPointOrbits, indexOrbitDataModSign, Y1, *nextRK);
-        //std::cout << "here5" << std::endl;
+
         matrixY2 = produceMatrix(indexTransversal, mToY2TestPointOrbits, indexOrbitDataModSign, Y2, *nextRK);
-        //std::cout << "here6" << std::endl;
+
         delete nextRK;
-        //std::cout << "here7" << std::endl;
+
         solAndCondY1NextR = solveMatrix(matrixY1, indexTransversal, indexOfNormalization);
-        //std::cout << "here8" << std::endl;
+
         auto solAndCondY2NextR = solveMatrix(matrixY2, indexTransversal, indexOfNormalization);
-        //std::cout << "here9" << std::endl;
+
         vector<double> coeffDiffc(indexTransversal.size(), NAN);
-        //std::cout << "here10" << std::endl;
+
         for (int i = 0; i < indexTransversal.size(); i++) {
             coeffDiffc[i] = solAndCondY1NextR.first(i) - solAndCondY2NextR.first(i);
         }
-        //std::cout << "here11" << std::endl;
+
         std::cout << std::setprecision(16) << c << std::endl;
 
         int leftSignChanges = countSignChanges(coeffDiffa, coeffDiffc);
@@ -523,7 +488,7 @@ void BianchiMaassSearch::medianIllinoisSearch(double leftR, double rightR) {
             break;
         }
     }
-    //std::cout << "here15" << std::endl;
+
     if (abs((1 - b/a)) <= cutoff) {
         std::cout << "Reached final precision, stopping." << std::endl;
         fineOutputFile << std::setprecision(16) << "[" << a << ", " << b << "], " << c << std::endl;
@@ -540,11 +505,7 @@ void BianchiMaassSearch::medianIllinoisSearch(double leftR, double rightR) {
 
 
 bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const double rightR, KBessel *leftRK, KBessel *rightRK) {
-    //Assume that I will have to recompute everything multiple times here, so don't bother checking otherwise
 
-    //First time through, compute the condition number everywhere to get an idea of how low you can go
-    //In subsequent calls, start with Y1 and Y2 at the top end of the range and adjust a few times until
-    //the condition number is close to the computed ballpark
 
     std::cout << std::setprecision(16)
               << "[" << leftR << ", " << rightR << "]" << std::endl;
@@ -616,14 +577,6 @@ bool BianchiMaassSearch::possiblyContainsEigenvalue(const double leftR, const do
 
     std::cout << solAndCondY1R1.second << " " << solAndCondY2R1.second << " ";
     std::cout << solAndCondY1R2.second << " " << solAndCondY2R2.second << std::endl;
-
-    /*
-     * When you have to start over, for whatever reason, this means that condition numbers
-     * blow up in that interval. The method resets the condition number search goal, but I
-     * don't want this goal to stay artificially high. So whenever the algorithm has to start over,
-     * it sets this flag to signal that next time it should re-restart over to make the condition
-     * search goal lower again.
-     */
 
     vector<double> coeffDiffR1(indexTransversal.size(),NAN);
     vector<double> coeffDiffR2(indexTransversal.size(),NAN);
@@ -920,27 +873,6 @@ MatrixXd BianchiMaassSearch::produceMatrix(const vector<Index> &indexTransversal
     nanosecondsPerTerm = ((double)duration.count())/((double)terms);
 
     //watch(nanosecondsPerTerm);
-    /*
-    std::ofstream outMatrix;
-    createOutputDirectory("Output/Misc");
-    std::stringstream ss;
-    ss << std::setprecision(16) << "Output/Misc/matrix_" << to_string(d) << "_" << symClass << "_" << K.getR() << ".txt";
-    string filename = ss.str();
-    outMatrix.open(filename, std::ofstream::out | std::ofstream::app);
-
-    for (int i = 0; i < indexTransversal.size(); i++) {
-        for (int j = 0; j < indexTransversal.size(); j++) {
-            outMatrix << std::setprecision(16) << answer(i,j);
-            if (j < indexTransversal.size() - 1) {
-                outMatrix << ", ";
-            }
-        }
-        if (i < indexTransversal.size() - 1) {
-            outMatrix << "\n";
-        }
-    }
-    outMatrix.close();
-     */
     return answer;
 }
 
@@ -1122,35 +1054,6 @@ int BianchiMaassSearch::countSignChanges(const vector<double> &v1, const vector<
     return answer;
 }
 
-/**
- * If (x0, y0) and (x1, y1) are two distinct points then there is a unique line passing through them.
- * This function returns the unique zero of this line. Of course, if y0=y1 then there is no zero, and
- * the formula will return infinity if you do that.
- *
- * @param x0
- * @param y0
- * @param x1
- * @param y1
- * @return The (x-coordinate of the) zero of the line passing through (x0, y0) and (x1, y1).
- */
-double BianchiMaassSearch::findZeroOfLinearInterpolation(double x0, double y0, double x1, double y1) {
-    return (x0 * y1 - y0 * x1)/(y1 - y0);
-}
-
-double BianchiMaassSearch::heckeCheck(map<Index, double>& coeffMap) {
-    double coeff0 = coeffMap.at(dToPrimes.at(d)[0]);
-    double coeff1 = coeffMap.at(dToPrimes.at(d)[1]);
-    double coeff2 = coeffMap.at(dToPrimes.at(d)[2]);
-
-    Index prod01 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[1], d);
-    Index prod02 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[2], d);
-
-    double hecke1 = coeff0 * coeff1 - coeffMap.at(prod01);
-    double hecke2 = coeff0 * coeff2 - coeffMap.at(prod02);
-
-    return abs(hecke1) + abs(hecke2);
-}
-
 double BianchiMaassSearch::minBess(KBessel *K, const vector<Index> &indexTransversal, double Y) {
     double min = +INFINITY;
 
@@ -1173,32 +1076,6 @@ double BianchiMaassSearch::minBess(KBessel *K, const vector<Index> &indexTransve
     return min;
 }
 
-
-
-
-int BianchiMaassSearch::findMaxFileNumber(const string &directory, const string &prefix) {
-    int maxNumber = 0;
-
-    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
-        if (entry.is_regular_file()) {
-            std::string filename = entry.path().filename().stem().string();
-
-            if (filename.find(prefix) == 0) {
-                // Extract the number after prefix
-                std::string numberStr = filename.substr(prefix.length());
-                try {
-                    int number = std::stoi(numberStr);
-                    maxNumber = std::max(maxNumber, number);
-                } catch (const std::invalid_argument& e) {
-                    // Ignore files with invalid numbers in the filename
-                }
-            }
-        }
-    }
-
-    return maxNumber;
-}
-
 void BianchiMaassSearch::createOutputDirectory(const std::string& directory) {
     if (!std::filesystem::exists(directory)) {
         std::filesystem::create_directories(directory);
@@ -1207,249 +1084,6 @@ void BianchiMaassSearch::createOutputDirectory(const std::string& directory) {
 
 bool BianchiMaassSearch::isFileEmpty(const string &filename) {
     return std::filesystem::is_empty(filename);
-}
-
-
-tuple<vector<pair<double,double>>, double, double> BianchiMaassSearch::fineSecantMethod(double leftR, double rightR) {
-    std::cout << "Starting final refinement." << std::endl;
-    std::cout << std::setprecision(16) << "[" << leftR << ", " << rightR << "]" << std::endl;
-
-    double M0 = computeM0General(rightR);
-
-    KBessel* leftRK = new KBessel(2 * pi / A /*usual factor*/
-                        * 1 /*smallest magnitude of an index*/
-                        * Y0 /*smallest height of a pullback*/
-            , leftR);
-
-    KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, rightR);
-
-    vector<Index> indicesM0 = Od.indicesUpToM(M0);
-    auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
-    vector<Index> indexTransversal = get<0>(data);
-    map<Index, vector<pair<Index, int>>> indexOrbitDataModSign = get<1>(data);
-
-    int indexOfNormalization = getIndexOfNormalization(indexTransversal);
-
-    double Y = computeWellConditionedY(leftRK, rightRK, leftR, rightR, M0, indexTransversal);
-
-    double MY = computeMYGeneral(M0, Y);
-
-    double maxYStar = 0;
-
-    map<Index, vector<TestPointOrbitData>> mToYTestPointOrbits;
-
-#pragma omp parallel for schedule(dynamic) default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
-    for (int i = 0; i < indexTransversal.size(); i++) {
-        Index m = indexTransversal[i];
-        auto orbitsY = getPointPullbackOrbits(m, Y, MY);
-#pragma omp critical
-        {
-            mToYTestPointOrbits[m] = orbitsY;
-        }
-    }
-
-    for (const auto& m : indexTransversal) {
-        for (const auto& itr : mToYTestPointOrbits[m]) {
-            if (maxYStar < itr.representativePullback.getJ()) {
-                maxYStar = itr.representativePullback.getJ();
-            }
-        }
-    }
-
-    leftRK->setRAndPrecompute(leftR, 2 * pi / A * M0 * maxYStar);
-    MatrixXd matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, (*leftRK));
-    auto solAndCondYR1 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
-
-    rightRK->setRAndPrecompute(rightR, 2 * pi / A * M0 * maxYStar);
-    matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, (*rightRK));
-    auto solAndCondYR2 = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
-
-    std::cout << solAndCondYR1.second << " " << solAndCondYR2.second << std::endl;
-
-
-    map<Index, double> coeffMapR1, coeffMapR2;
-
-    for (int i = 0; i < indexTransversal.size(); i++) {
-        Index index = indexTransversal[i];
-        coeffMapR1[index] = solAndCondYR1.first(i);
-        coeffMapR2[index] = solAndCondYR2.first(i);
-    }
-
-    //We have the solutions from everything, now we cook up the phi function
-
-    double coeff0R1 = coeffMapR1.at(dToPrimes.at(d)[0]);
-    double coeff1R1 = coeffMapR1.at(dToPrimes.at(d)[1]);
-    double coeff2R1 = coeffMapR1.at(dToPrimes.at(d)[2]);
-
-    double coeff0R2 = coeffMapR2.at(dToPrimes.at(d)[0]);
-    double coeff1R2 = coeffMapR2.at(dToPrimes.at(d)[1]);
-    double coeff2R2 = coeffMapR2.at(dToPrimes.at(d)[2]);
-
-    Index prod01 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[1], d);
-    Index prod02 = dToPrimes.at(d)[0].mul(dToPrimes.at(d)[2], d);
-
-    double hecke1R1 = coeff0R1 * coeff1R1 - coeffMapR1.at(prod01);
-    double hecke2R1 = coeff0R1 * coeff2R1 - coeffMapR1.at(prod02);
-    hecke1R1 = abs(hecke1R1);
-    hecke2R1 = abs(hecke2R1);
-
-    double hecke1R2 = coeff0R2 * coeff1R2 - coeffMapR2.at(prod01);
-    double hecke2R2 = coeff0R2 * coeff2R2 - coeffMapR2.at(prod02);
-    hecke1R2 = abs(hecke1R2);
-    hecke2R2 = abs(hecke2R2);
-
-
-    double phi1;
-    double phi2;
-    double eps1;
-    double eps2;
-    bool signChange = false;
-    int n = 1;
-    while (!signChange) {
-        vector<double> epsilon;
-        for (int i = -n; i <= n; i++) {
-            if (i == 0) {
-                continue;
-            }
-            epsilon.push_back(i);
-        }
-
-        for (auto epsItr1 : epsilon) {
-            for (auto epsItr2 : epsilon) {
-                phi1 = epsItr1*hecke1R1 + epsItr2*hecke2R1;
-                phi2 = epsItr1*hecke1R2 + epsItr2*hecke2R2;
-                if (areDifferentSign(phi1, phi2)) {
-                    signChange = true;
-                    eps1 = epsItr1;
-                    eps2 = epsItr2;
-                    break;
-                }
-            }
-            if (signChange) {
-                break;
-            }
-        }
-        n++;
-    }
-
-    double rN = leftR;
-    double phiN = phi1;
-    double rNPlus1 = rightR;
-    double phiNPlus1 = phi2;
-
-    std::cout << std::setprecision(16) << "r = " << leftR << ", " << heckeCheck(coeffMapR1) << std::endl;
-    std::cout << std::setprecision(16) << "r = " << rightR << ", " << heckeCheck(coeffMapR2) << std::endl;
-
-    vector<pair<double, double>> heckeValues;
-    heckeValues.emplace_back(rN, heckeCheck(coeffMapR1));
-    heckeValues.emplace_back(rNPlus1, heckeCheck(coeffMapR2));
-
-    int minIterations = 4;
-    int maxIterations = 30;
-    int iterations = 0;
-
-    while (true) {
-        iterations++;
-
-        double nextR = findZeroOfLinearInterpolation(rN, phiN, rNPlus1, phiNPlus1);
-
-        KBessel K = KBessel(twoPiOverA * 1 * Y0, nextR);
-        K.extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-        matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, K);
-        auto solAndCondYNextR = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
-
-        std::cout << solAndCondYNextR.second << " " << solAndCondYNextR.second << std::endl;
-
-        map<Index, double> coeffMapNextR;
-        for (int i = 0; i < indexTransversal.size(); i++) {
-            Index index = indexTransversal[i];
-            coeffMapNextR[index] = solAndCondYNextR.first(i);
-        }
-
-        double hecke = heckeCheck(coeffMapNextR);
-        heckeValues.emplace_back(nextR, hecke);
-        std::cout << std::setprecision(16) << "r = " << nextR << ", " << hecke << std::endl;
-
-        //We have the solutions from everything, now we cook up the phi function
-
-        double coeff0NextR = coeffMapNextR.at(dToPrimes.at(d)[0]);
-        double coeff1NextR = coeffMapNextR.at(dToPrimes.at(d)[1]);
-        double coeff2NextR = coeffMapNextR.at(dToPrimes.at(d)[2]);
-
-        double hecke1NextR = coeff0NextR * coeff1NextR - coeffMapNextR.at(prod01);
-        double hecke2NextR = coeff0NextR * coeff2NextR - coeffMapNextR.at(prod02);
-        hecke1NextR = abs(hecke1NextR);
-        hecke2NextR = abs(hecke2NextR);
-
-        double nextPhi = eps1 * hecke1NextR + eps2 * hecke2NextR;
-
-        /*
-         * This is the Anderson-Bjorck bracketed root finding algorithm
-         */
-        if (areDifferentSign(phiNPlus1, nextPhi)) {
-            rN = rNPlus1;
-            phiN = phiNPlus1;
-
-            rNPlus1 = nextR;
-            phiNPlus1 = nextPhi;
-        } else {
-            double m = 1 - nextPhi/phiNPlus1;
-            if (m <= 0) {
-                m = 0.5;
-            }
-            phiN *= m;
-
-            rNPlus1 = nextR;
-            phiNPlus1 = nextPhi;
-        }
-
-        if (iterations < minIterations) {
-            continue;
-        }
-        if (hecke > 1 //not modular
-            || heckeHasConverged(heckeValues) //computation succeeded and is complete
-            || iterations > maxIterations //computation not converging as expected
-            || phiN == phiNPlus1 //numerical error incoming, could just be very good convergence
-            || rN == rNPlus1) {
-            watch(hecke);
-            watch(heckeHasConverged(heckeValues));
-            watch(iterations > maxIterations);
-            watch(phiN == phiNPlus1);
-            watch(rN == rNPlus1);
-
-            for (auto const& itr : coeffMapNextR) {
-                std::cout << std::setprecision(16) << itr.first << ", " << itr.second << "\n";
-            }
-            std::cout << std::flush;
-            delete leftRK;
-            delete rightRK;
-            return {heckeValues, rN, rNPlus1};
-
-        }
-    }
-}
-
-bool BianchiMaassSearch::heckeHasConverged(const vector<pair<double, double>> &heckeValues) {
-    int size = heckeValues.size();
-    if (size < 4) {
-        return false;
-    }
-
-    vector<double> values;
-    for (int i = size - 1; i >= size - 4; i--) {
-        values.push_back(heckeValues[i].second);
-    }
-
-    double max = *std::max_element(values.begin(), values.end());
-    double min = *std::min_element(values.begin(), values.end());
-
-    double ratio = max/min;
-
-    if (ratio < 10) {
-        return true;
-    } else {
-        return false;
-    }
 }
 
 double BianchiMaassSearch::computeWellConditionedY(KBessel *K, double r, double M0, vector<Index> &indexTransversal) {
@@ -2142,143 +1776,10 @@ void BianchiMaassSearch::computeMaximumD(double r, int timeLimitSeconds) {
     truncation = pow(10.0, -D);
 }
 
-void BianchiMaassSearch::extendCoefficientComputation() {
-    /*
-    //Check how far the "extend" computations have gone
-    string directory = "Output/Extend/" + to_string(d) + "/" + symClass + "/";
-    createOutputDirectory(directory);
-
-    vector<double> completeSpecParams;
-    vector<double> incompleteSpecParams;
-    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
-        if (entry.is_regular_file()) {
-            auto filename = entry.path().filename().string();
-            filename = filename.substr(0, filename.find('.'));
-            completeSpecParams.push_back(stod(filename));
-        }
-    }
-    std::sort(completeSpecParams.begin(), completeSpecParams.end());
-
-
-    //Gather the ones that haven't been done yet
-    string inDirectory = "Output/SearchResults/" + to_string(d) + "/" + symClass + "/";
-    for (const auto& entry : std::filesystem::directory_iterator(inDirectory)) {
-        if (entry.is_regular_file()) {
-            auto filename = entry.path().filename().string();
-            filename = filename.substr(0, filename.find('.'));
-            double specParam = stod(filename);
-            if (std::find(completeSpecParams.begin(),
-                          completeSpecParams.end(),
-                          specParam)
-                            != completeSpecParams.end()) {
-                continue;
-            }
-
-            incompleteSpecParams.push_back(specParam);
-        }
-    }
-    std::sort(incompleteSpecParams.begin(), incompleteSpecParams.end());
-
-    //Iterate through the ones that haven't been done yet
-    for (const auto& specParam : incompleteSpecParams) {
-        std::ifstream inFile(inDirectory + to_string(specParam) + ".txt");
-
-        string line;
-        std::getline(inFile, line); //read info like d = 19, etc.
-        std::getline(inFile, line); //read the eigenvalue interval
-
-        //each line now contains a, b, a_n where index = a + b*theta and a_n is Fourier coefficient
-        vector<Index> indexTransversalM0;
-        vector<double> M0Coeffs;
-        while (std::getline(inFile, line)) {
-            int firstComma = line.find(',');
-            int secondComma = line.find('c', firstComma + 1);
-            string a = line.substr(0, firstComma);
-            string b = line.substr(firstComma + 2, secondComma - firstComma - 2);
-            string coeff = line.substr(secondComma + 2);
-
-            Index n(stoi(a), stoi(b));
-            double an = stod(coeff);
-
-            indexTransversalM0.push_back(n);
-            M0Coeffs.push_back(an);
-        }
-        //compute a single well-conditioned Y
-        KBessel* K  = new KBessel(twoPiOverA * 1 * Y0, specParam);
-
-
-        //Magic number, no idea if this is the right move yet!!
-        //The idea is to make a guess, and then find a Y greater than it that is well-conditioned
-        double tempY = 0.5 * Y0;
-
-        double M0 = 0;
-        for (const auto& n : indexTransversalM0) {
-            if (n.getAbs(d) > M0) {
-                M0 = n.getAbs(d);
-            }
-        }
-
-        double tempMY = computeMYGeneral(M0, tempY);
-        vector<Index> tempIndices = Od.indicesUpToM(tempMY);
-        auto transversalAndQuotients = Od.indexOrbitQuotientData(tempIndices, symClass);
-        auto transversalTempMY = transversalAndQuotients.first;
-        auto tempMYIndexTransQuotient = transversalAndQuotients.second;
-
-
-        //Compute the actual data used for the new coefficients
-        double Y = computeWellConditionedY(K, specParam, tempMY, transversalTempMY);
-        double MY = computeMYGeneral(M0, Y);
-        vector<Index> indicesMY = Od.indicesUpToM(MY);
-        auto data = Od.indexOrbitQuotientData(indicesMY, symClass);
-        auto transversalMY = data.first;
-        auto indexOrbitDataMY = data.second;
-
-        vector<double> coeffsMY;
-        coeffsMY.reserve(indicesMY.size());
-
-        for (const auto& coeff : M0Coeffs) {
-            coeffsMY.push_back(coeff);
-        }
-
-        for (int i = indexTransversalM0.size(); i < indicesMY.size(); i++) {
-            Index m = indicesMY[i];
-
-            auto testPoints = getPointPullbackOrbits(m, Y, MY);
-            vector<double> Vnm;
-            for (auto & n : indexTransversalM0) {
-                Vnm.push_back(computeEntry(m,n, *K, testPoints, Y, indexOrbitDataMY[n]));
-            }
-            vector<double> answer(indexTransversalM0.size(), 0);
-            for (int j = 0; j < indexTransversalM0.size(); j++) {
-                answer[i] = Vnm[i] * M0Coeffs[i];
-            }
-            double cm = Auxiliary::kahanSummation(answer);
-            cm /= Y * K->exactKBessel(twoPiOverA * m.getAbs(d) * Y);
-            coeffsMY.push_back(cm);
-        }
-
-
-
-
-
-
-
-
-        //compute indices m out to M(Y)
-        //compute test points
-        //write down the row values so that V_{mn} be re-evaluated for different m easily
-        //write all the indices to a file
-
-    }
-
-    */
-}
-
 void BianchiMaassSearch::testForModularity() {
 
     //The symClass has been verified to by one of D or C
     //The first step is to test the forms in symClass for modularity
-
     //Gather which ones have already been verified modular
     string outDirectory = "Output/TestedData/TestedForms/" + to_string(d) + "/" + symClass + "/";
     createOutputDirectory(outDirectory);
@@ -2311,6 +1812,7 @@ void BianchiMaassSearch::testForModularity() {
     }
 
 
+
     //Read in the coefficients for each incompleteSpecParam and evaluate at points to check modularity
     //If it is modular.................
     for (const auto s : incompleteSpecParams) {
@@ -2322,27 +1824,77 @@ void BianchiMaassSearch::testForModularity() {
 
         double r = stod(s);
 
-        std::ifstream inFile(inFilename);
+        std::ifstream inFile(inDirectory + s + ".txt");
+        string stringD;
+        getline(inFile, stringD); //this line has D = .... in it
+        int startD = stringD.find("D = ") + 4;
+        int nextComma = stringD.find(",", startD);
+        if (nextComma != string::npos) {
+            stringD = stringD.substr(stringD.find("D = ") + 4, nextComma - startD);
+        } else {
+            stringD = stringD.substr(stringD.find("D = ") + 4, stringD.length() - startD);
+        }
+
+        double DForThisForm = std::stod(stringD);
 
         string line;
-        std::getline(inFile, line); //read info like d = 19, etc.
-        std::getline(inFile, line); //read the eigenvalue interval
+        getline(inFile, line); //this line has the interval in it
+        int leftBracket = 0;
+        int firstComma = line.find(",", 0);
+        string leftEndpoint = line.substr(leftBracket + 1, firstComma - leftBracket - 1);
+        int rightBracket = line.find("]", 0);
+        string rightEndpoint = line.substr(firstComma + 2, rightBracket - (firstComma + 2));
+        string confidentR = Auxiliary::commonRound(leftEndpoint, rightEndpoint);
 
-        //each line now contains a, b, a_n where index = a + b*theta and a_n is Fourier coefficient
-        vector<Index> indices;
+
+        D = DForThisForm;
+        truncation = pow(10,-(this->D));
+
+        KBessel* Kb = new KBessel(twoPiOverA * 1 * Y0, r);
+
+        double M0 = computeM0General(r);
+
+        vector<Index> indicesM0 = Od.indicesUpToM(M0);
+        auto data = Od.indexOrbitQuotientData(indicesM0, symClass);
+        vector<Index> indexTransversal = get<0>(data);
+        map<Index, vector<pair<Index, int>>> indexOrbitDataModSign = get<1>(data);
+
+        int indexOfNormalization = getIndexOfNormalization(indexTransversal);
+
+        double Y = computeWellConditionedY(Kb, r, M0, indexTransversal);
+
+        double MY = computeMYGeneral(M0, Y);
+
+        double maxYStar = 0;
+
+        map<Index, vector<TestPointOrbitData>> mToYTestPointOrbits;
+
+#pragma omp parallel for default(none) shared(indexTransversal, mToYTestPointOrbits, Y, MY)
+        for (int i = 0; i < indexTransversal.size(); i++) {
+            Index m = indexTransversal[i];
+            auto orbitsY = getPointPullbackOrbits(m, Y, MY);
+#pragma omp critical
+            {
+                mToYTestPointOrbits[m] = orbitsY;
+            }
+        }
+
+        for (const auto& m : indexTransversal) {
+            for (const auto& itr : mToYTestPointOrbits[m]) {
+                if (maxYStar < itr.representativePullback.getJ()) {
+                    maxYStar = itr.representativePullback.getJ();
+                }
+            }
+        }
+
+        Kb->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
+        MatrixXd matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, *Kb);
+
+        auto solAndCondY = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
+
         vector<double> coeffs;
-        while (std::getline(inFile, line)) {
-            int firstComma = line.find(',');
-            int secondComma = line.find(',', firstComma + 1);
-            string a = line.substr(0, firstComma);
-            string b = line.substr(firstComma + 2, secondComma - firstComma - 2);
-            string coeff = line.substr(secondComma + 2);
-
-            Index n(stoi(a), stoi(b));
-            double an = stod(coeff);
-
-            indices.push_back(n);
-            coeffs.push_back(an);
+        for (int i = 0; i < indexTransversal.size(); i++) {
+            coeffs.push_back(solAndCondY.first(i));
         }
 
         vector<pair<Quaternion, Quaternion>> zAndZStar;
@@ -2360,8 +1912,8 @@ void BianchiMaassSearch::testForModularity() {
         KBessel K = KBessel(twoPiOverA * 1 * Y0, r);
         vector<pair<double, double>> fzAndfZStar;
         for (const auto& zZStar : zAndZStar) {
-            double fz = evaluate(zZStar.first, K, indices, coeffs);
-            double fZStar = evaluate(zZStar.second, K, indices, coeffs);
+            double fz = evaluate(zZStar.first, K, indexTransversal, coeffs);
+            double fZStar = evaluate(zZStar.second, K, indexTransversal, coeffs);
             pair<double,double> fzfZStar = {fz, fZStar};
             fzAndfZStar.push_back(fzfZStar);
         }
@@ -2375,34 +1927,62 @@ void BianchiMaassSearch::testForModularity() {
         }
 
         if (maxDiff < 0.01) {
-            std::cout << std::setprecision(16) << s << " is modular for symClass " << symClass;
+            std::cout << std::setprecision(16) << s << " is modular for symClass " << symClass << std::endl;
             //It's modular!
 
-            auto index0 = std::find(indices.begin(), indices.end(),dToPrimes[d][0]) - indices.begin();
-            auto index1 = std::find(indices.begin(), indices.end(),dToPrimes[d][1]) - indices.begin();
-            auto index2 = std::find(indices.begin(), indices.end(),dToPrimes[d][2]) - indices.begin();
-
-            auto index01 = std::find(indices.begin(), indices.end(), dToPrimes[d][0].mul(dToPrimes[d][1],d)) - indices.begin();
-            auto index02 = std::find(indices.begin(), indices.end(), dToPrimes[d][0].mul(dToPrimes[d][2],d)) - indices.begin();
-
-            double hecke01 = coeffs[index0]*coeffs[index1] - coeffs[index01];
-            double hecke02 = coeffs[index0]*coeffs[index2] - coeffs[index02];
-
-            std::cout << std::setprecision(16) << ", hecke " << hecke01 << ", " << hecke02 << std::endl;
-
-            string source = "Output/Search/Final/" + to_string(d) + "/" + symClass + "/" + s + ".txt";
             string destination = "Output/TestedData/TestedForms/" + to_string(d) + "/" + symClass + "/" + s + ".txt";
-            std::ifstream src(source, std::ios::binary);
             std::ofstream dest(destination, std::ios::binary);
 
-            dest << "max of |f(z) - f(z^*)| for " << to_string(numPointsToCheck) << " points = " << std::setprecision(16) << maxDiff << "; ";
-            dest << std::setprecision(16) << "first two hecke relations: " << hecke01 << ", " << hecke02;
-            string line = "";
-            while(getline(src,line)) {
-                dest <<'\n' << line;
+            dest << std::setprecision(16) << "d = " << d << ", symClass = " << symClass << ", r = " << r << ", D = " << D << ", Y = " << Y;
+
+            dest << "\nmax of |f(z) - f(z^*)| for " << to_string(numPointsToCheck) << " points = " << std::setprecision(16) << maxDiff << "; ";
+
+            /*
+             *
+             * Hecke
+             */
+
+            auto index0 = std::find(indexTransversal.begin(), indexTransversal.end(),dToPrimes[d][0]) - indexTransversal.begin();
+            auto index1 = std::find(indexTransversal.begin(), indexTransversal.end(),dToPrimes[d][1]) - indexTransversal.begin();
+            auto index2 = std::find(indexTransversal.begin(), indexTransversal.end(),dToPrimes[d][2]) - indexTransversal.begin();
+
+            auto indexProd01 = dToPrimes[d][0].mul(dToPrimes[d][1],d);
+            auto indexProd12 = dToPrimes[d][1].mul(dToPrimes[d][2],d);
+            auto indexProd02 = dToPrimes[d][0].mul(dToPrimes[d][2],d);
+
+            auto indexItr = find(indexTransversal.begin(), indexTransversal.end(), indexProd01);
+            if (indexItr != indexTransversal.end()) {
+                auto index = indexItr - indexTransversal.begin();
+                double heckeRelation = coeffs[index0] * coeffs[index1] - coeffs[index];
+                dest << std::setprecision(16) << "a(" << dToPrimes[d][0] << ")*a(" << dToPrimes[d][1] <<") - a(" << indexProd01 << ") = " << heckeRelation << ", ";
             }
 
-            src.close();
+            indexItr = find(indexTransversal.begin(), indexTransversal.end(), indexProd02);
+            if (indexItr != indexTransversal.end()) {
+                auto index = indexItr - indexTransversal.begin();
+                double heckeRelation = coeffs[index0] * coeffs[index2] - coeffs[index];
+                dest << std::setprecision(16) << "a(" << dToPrimes[d][0] << ")*a(" << dToPrimes[d][2] <<") - a(" << indexProd02 << ") = " << heckeRelation << ", ";
+            }
+
+            indexItr = find(indexTransversal.begin(), indexTransversal.end(), indexProd12);
+            if (indexItr != indexTransversal.end()) {
+                auto index = indexItr - indexTransversal.begin();
+                double heckeRelation = coeffs[index1] * coeffs[index2] - coeffs[index];
+                dest << std::setprecision(16) << "a(" << dToPrimes[d][1] << ")*a(" << dToPrimes[d][2] <<") - a(" << indexProd12 << ") = " << heckeRelation << ", ";
+            }
+
+            /*
+             *
+             *
+             * end Hecke
+             */
+
+            dest << "\nconfident_r = " << std::setprecision(16) << confidentR;
+
+            for (int i = 0; i < indexTransversal.size(); i++) {
+                dest << "\n" << std::setprecision(16) << indexTransversal[i].getA() << ", " << indexTransversal[i].getB() << ", " << coeffs[i];
+            }
+
             dest.close();
         } else {
             std::cout << std::setprecision(16) << s << " is NOT modular for symClass " << symClass << std::endl;
@@ -2451,13 +2031,28 @@ void BianchiMaassSearch::testForModularity() {
     for (auto s : testedSpecParams) {
         double r = std::stod(s);
 
-        std::ifstream inFile(testedDirectory + s + ".txt");
+        std::ifstream inFile(inDirectory + s + ".txt");
         string stringD;
-        getline(inFile, stringD); //Burn the first line which reports the test results
-        getline(inFile, stringD); //this line has the D value
+        getline(inFile, stringD); //this line has D = .... in it
+        int startD = stringD.find("D = ") + 4;
+        int nextComma = stringD.find(",", startD);
+        if (nextComma != string::npos) {
+            stringD = stringD.substr(stringD.find("D = ") + 4, nextComma - startD);
+        } else {
+            stringD = stringD.substr(stringD.find("D = ") + 4, stringD.length() - startD);
+        }
 
-        stringD = stringD.substr(stringD.find("D = ") + 4);
         double DForThisForm = std::stod(stringD);
+
+        string line;
+        getline(inFile, line); //this line has the interval in it
+        int leftBracket = 0;
+        int firstComma = line.find(",", 0);
+        string leftEndpoint = line.substr(leftBracket + 1, firstComma - leftBracket - 1);
+        int rightBracket = line.find("]", 0);
+        string rightEndpoint = line.substr(firstComma + 2, rightBracket - (firstComma + 2));
+        string confidentR = Auxiliary::commonRound(leftEndpoint, rightEndpoint);
+
 
         D = DForThisForm;
         truncation = pow(10,-(this->D));
@@ -2556,10 +2151,11 @@ void BianchiMaassSearch::testForModularity() {
 
             string filename = directory + s + ".txt";
             ofstream outputFile;
-            outputFile.open(filename, std::ofstream::out | std::ofstream::app);
+            outputFile.open(filename, std::ofstream::out);
 
-            outputFile << std::setprecision(16) << "d = " << to_string(d) << ", symClass = " << symClass << ", D = " << D << "\n";
-            outputFile << std::setprecision(16) << r;
+            outputFile << std::setprecision(16) << "d = " << d << ", symClass = " << symClass << ", r = " << r << ", D = " << D << ", Y = " << Y << std::endl;
+            outputFile << "max of |f(z) - f(z^*)| for " << to_string(numPointsToCheck) << " points = " << std::setprecision(16) << maxDiff;
+            outputFile << "\nconfident_r = " << std::setprecision(16) << confidentR;
 
             for (int i = 0; i < indexTransversal.size(); i++) {
                 auto index = indexTransversal[i];
@@ -2576,19 +2172,6 @@ void BianchiMaassSearch::testForModularity() {
 }
 
 void BianchiMaassSearch::testConjectures() {
-
-   /* //Check how far the "Conjectures" computations have gone
-    string directory = "Output/Conjectures/" + to_string(d) + "/" + symClass + "/";
-    createOutputDirectory(directory);
-
-    vector<double> completeSpecParams;
-    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
-        if (entry.is_regular_file()) {
-            auto filename = entry.path().filename().string();
-            filename = filename.substr(0, filename.find(".txt"));
-            completeSpecParams.push_back(stod(filename));
-        }
-    }*/
 
 
     //Gather the ones that haven't been done yet
@@ -2675,12 +2258,6 @@ void BianchiMaassSearch::testConjectures() {
     }
 }
 
-//TODO: finish
-void BianchiMaassSearch::makeLFunctions() {
-    //read in results from tested modular functions
-    //compute dirichlet coefficnets and write to file (should be very fast)
-}
-
 double BianchiMaassSearch::evaluate(const Quaternion &z, KBessel &K, const vector<Index> &indexTransversal,
                                     const vector<double> &coeffs) {
     auto x = z.getComplex();
@@ -2728,16 +2305,17 @@ double BianchiMaassSearch::evaluate(const Quaternion &z, KBessel &K, const vecto
     return answer;
 }
 
+/***
+ * Computes condition numbers of many matrices V_m,n.
+ * For demonstration purposes only.
+ * @param leftR
+ * @param rightR
+ */
 void BianchiMaassSearch::sandbox(const double leftR, const double rightR) {
 
     KBessel* leftRK = new KBessel(twoPiOverA * 1 * Y0, leftR);
     KBessel* rightRK = new KBessel(twoPiOverA * 1 * Y0, rightR);
 
-    //Assume that I will have to recompute everything multiple times here, so don't bother checking otherwise
-
-    //First time through, compute the condition number everywhere to get an idea of how low you can go
-    //In subsequent calls, start with Y1 and Y2 at the top end of the range and adjust a few times until
-    //the condition number is close to the computed ballpark
 
     ofstream outFile;
     string filename = "Output/Misc";
@@ -2808,6 +2386,11 @@ void BianchiMaassSearch::sandbox(const double leftR, const double rightR) {
     }
 }
 
+/***
+ * Computes the size of some pieces of data in an example computation.
+ * For demonstration purposes only.
+ * @param r
+ */
 void BianchiMaassSearch::sandbox2(double r) {
 
     std::ofstream outFile;
@@ -2830,17 +2413,6 @@ void BianchiMaassSearch::sandbox2(double r) {
     watch(MY);
     double maxYStar = 0;
 
-    /*
-    Kb->extendPrecomputedRange(2 * pi / A * M0 * maxYStar);
-    MatrixXd matrixY = produceMatrix(indexTransversal, mToYTestPointOrbits, indexOrbitDataModSign, Y, *Kb);
-
-    auto solAndCondY = solveMatrix(matrixY, indexTransversal, indexOfNormalization);
-
-    vector<double> coeffs;
-    for (int i = 0; i < indexTransversal.size(); i++) {
-        coeffs.push_back(solAndCondY.first(i));
-    }
-    */
     std::cout << "Matrix ix " << indexTransversal.size() << "x" << indexTransversal.size() << std::endl;
 
     unsigned long long int totalTerms = 0;
@@ -2867,6 +2439,11 @@ void BianchiMaassSearch::sandbox2(double r) {
 
 }
 
+/***
+ * This method times a single instance of computing the matrix V_m,n.
+ * For demonstration purposes only.
+ * @param r
+ */
 void BianchiMaassSearch::sandbox3(double r) {
 
     /**
@@ -2971,6 +2548,11 @@ void BianchiMaassSearch::sandbox3(double r) {
     std::cout << "Solve matrix " << duration.count() << " ms" << std::endl;
 }
 
+/***
+ * This method computes many values of the function which we maximize for heuristic conditioning.
+ * For demonstration purposes only.
+ * @param r
+ */
 void BianchiMaassSearch::sandbox4(double r) {
 
     KBessel* Kb = new KBessel(twoPiOverA * 1 * Y0, r);

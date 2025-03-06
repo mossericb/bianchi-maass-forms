@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <chrono>
 #include <random>
+#include <sstream>
+#include <iomanip>
 
 int Auxiliary::SIMD_DOUBLE_WIDTH = 2;
 
@@ -406,6 +408,42 @@ double Auxiliary::rand(double a, double b) {
     std::uniform_real_distribution<double> dis(a, b);
 
     return dis(gen);
+}
+
+string Auxiliary::commonRound(string & s1, string & s2) {
+
+    if (s1 == s2) {
+        return s1;
+    }
+
+    double r1 = std::stod(s1);
+    double r2 = std::stod(s2);
+    if (r1 == r2) {
+        std::stringstream ss;
+        ss << std::setprecision(16) << r1;
+        return ss.str();
+    }
+
+
+    double last = roundN(r1,0);
+    int n = 1;
+    while (true) {
+        double round1 = roundN(r1, n);
+        double round2 = roundN(r2, n);
+        if (round1 == round2) {
+            last = round1;
+        } else {
+            std::stringstream ss;
+            ss << std::setprecision(16) << last;
+            return ss.str();
+        }
+        n++;
+    }
+}
+
+double Auxiliary::roundN(const double r, int n) {
+    double multiplier = std::pow(10, n);
+    return std::round(r * multiplier) / multiplier;
 }
 
 

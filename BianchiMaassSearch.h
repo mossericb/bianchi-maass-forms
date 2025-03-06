@@ -36,11 +36,8 @@ public:
     void coarseSearchForEigenvalues(const double leftR, const double rightR);
     void mediumSearchForEigenvalues();
     void fineSearchForEigenvalues();
-    void computeReflectionOddEigenvalues();
-    void extendCoefficientComputation();
     void testForModularity();
     void testConjectures();
-    void makeLFunctions();
     void sandbox(const double leftR, const double rightR);
     void sandbox2(const double r);
     void sandbox3(const double r);
@@ -110,11 +107,9 @@ private:
 
     Auxiliary Aux;
 
-    map<double, KBessel> rToKBess;
     map<int, vector<Index>> dToPrimes;
 
     void setUpOutputLogFiles();
-    static int findMaxFileNumber(const string &directory, const string &prefix);
     static void createOutputDirectory(const std::string& directory);
     static bool isFileEmpty(const string& filename);
 
@@ -126,8 +121,6 @@ private:
 
     bool possiblyContainsEigenvalue(double leftR, double rightR, KBessel *leftRK, KBessel *rightRK);
     void medianIllinoisSearch(double leftR, double rightR);
-    tuple<vector<pair<double,double>>, double, double> fineSecantMethod(double leftR, double rightR);
-    static bool heckeHasConverged(const vector<pair<double, double>>& heckeValues);
 
     double minBess(KBessel *K, const vector<Index> &indexTransversal, double Y);
     double computeWellConditionedY(KBessel *K, double r, double M0, vector<Index> &indexTransversal);
@@ -147,11 +140,6 @@ private:
                         const vector<pair<Index, int>> &nIndexOrbitDataModSign);
 
     int countSignChanges(const vector<double> &v1, const vector<double> &v2);
-
-    static double findZeroOfLinearInterpolation(double x0, double y0, double x1, double y1);
-    static double andersonBjorck(double x0, double y0, double x1, double y1);
-
-    double heckeCheck(map<Index, double>& coeffMap);
 };
 
 

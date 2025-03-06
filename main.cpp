@@ -70,16 +70,6 @@ int main(int argc, char *argv[]) {
 
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
             bms.fineSearchForEigenvalues();
-        } else if (mode == "extend") {
-                if (argc != 4) {
-                    throw std::invalid_argument("Extend mode command line arguments should be: extend d symClass");
-                }
-                //Compute more coefficients. Compute a bunch. Up to M(Y) by default and can ask for more perhaps?
-                int d = std::stoi(argv[2]);
-                char symClass = argv[3][0];
-
-                BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
-                bms.extendCoefficientComputation();
         } else if (mode == "test-modularity-compute-reflections") {
             if (argc != 4) {
                 throw std::invalid_argument("test-modularity mode command line arguments should be: test-modularity d symClass");
@@ -106,16 +96,6 @@ int main(int argc, char *argv[]) {
 
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
             bms.testConjectures();
-        } else if (mode == "Lfunction") {
-            if (argc != 4) {
-                throw std::invalid_argument("Lfunction mode command line arguments should be: Lfunction d");
-            }
-            //Produce the Dirichlet coefficients for all tested even forms
-            int d = std::stoi(argv[2]);
-            char symClass = argv[3][0];
-
-            BianchiMaassSearch bms = BianchiMaassSearch(mode, d, 0, symClass);
-            bms.makeLFunctions();
         } else if (mode == "sandbox") {
             if (argc != 7) {
                 throw std::invalid_argument("sandbox search command line arguments should be: sandbox d symClass D leftEndpoint rightEndpoint");
@@ -187,7 +167,7 @@ int main(int argc, char *argv[]) {
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
             bms.sandbox4(r);
         } else {
-            throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" "fine" "extend" "test-modularity" "test-conjectures" or "Lfunction".)");
+            throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" "fine" "test-modularity" "test-conjectures".)");
         }
     }
 

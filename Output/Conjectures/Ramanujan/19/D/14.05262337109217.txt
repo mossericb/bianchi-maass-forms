@@ -1,0 +1,3 @@
+d = 19, symClass = D
+14.05262337109217
+Listed are indices, coefficient that fail the Ramanujan conjecture
