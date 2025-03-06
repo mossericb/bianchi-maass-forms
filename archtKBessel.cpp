@@ -1,8 +1,6 @@
 #include "archtKBessel.h"
 #include "archt/kbessel.c"
 
-#include <iostream>
-#include "stdio.h"
 
 archtKBessel::archtKBessel(double r) {
     mpfr_init_set_d(acc, 1.0e-16, MPFR_RNDN);

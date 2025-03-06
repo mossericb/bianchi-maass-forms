@@ -1,16 +1,5 @@
-/*TODO
-     * Make include guards have the right project name.
-     *
-     * Optimize reduction for d=3
-     *
-     * Fix secant method where r1 = r2 leading to nan error
-     * */
-
 #include <iostream>
-#include "BianchiMaassPointwise.h"
 #include "BianchiMaassSearch.h"
-#include <chrono>
-#include <acb_hypgeom.h>
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl << std::flush
 using namespace std::chrono;

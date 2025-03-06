@@ -1,26 +1,9 @@
-//
-// Created by Eric Moss on 8/9/23.
-//
-
 #include "KBessel.h"
-#include <flint/flint.h>
 #include <sstream>
-#include <iomanip>
-#include <iostream>
-#include <cassert>
 #include <boost/math/differentiation/finite_difference.hpp>
 #include "omp.h"
-#include "Auxiliary.h"
 
 #define watch(x) std::cout << (#x) << " is " << (x) << std::endl
-/*
- * Idea: Instead of dividing the range into two parts: coarse and fine, separate it into many more spacings
- * Could be like, 10 different levels of fineness, the finest being a point every 2^-19, and the coarsest being 2^-9
- * Could be something even more than that, something more continuous.
- * Either way, it should be something dynamic, so that once I start using large spectral parameters, it still works.
- *
- *
- */
 
 KBessel::KBessel(double precomputeLowerBound, double r) {
     precomputedRegionLeftBound = precomputeLowerBound;

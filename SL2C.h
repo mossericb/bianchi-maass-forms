@@ -1,9 +1,4 @@
-//
-// Created by Eric Moss on 9/27/23.
-//
-
-#ifndef EUCLIDEAN_BIANCHI_MAASS_FORMS_SL2C_H
-#define EUCLIDEAN_BIANCHI_MAASS_FORMS_SL2C_H
+#pragma once
 
 #include <complex>
 #include <iostream>
@@ -34,5 +29,3 @@ template<typename T>
 void SL2C::set(T &n, std::complex<double> &entry) {
     entry = {(double)n, 0.0};
 }
-
-#endif //EUCLIDEAN_BIANCHI_MAASS_FORMS_SL2C_H

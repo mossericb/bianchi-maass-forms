@@ -1,7 +1,3 @@
-//
-// Created by Eric Moss on 2/3/24.
-//
-
 #include "BianchiMaassSearch.h"
 
 #include <cmath>
@@ -12,16 +8,11 @@
 #include <map>
 #include <iostream>
 #include <iomanip>
-#include <random>
-#include <chrono>
 #include <filesystem>
 #include <eigen3/Eigen/SVD>
 #include <fstream>
 #include <boost/align/aligned_allocator.hpp>
 #include <sstream>
-//#include "Plotter.h"
-//#include "PlotWindow.h"
-//#include "FunctionToEvaluate.h"
 
 
 //Containers
@@ -2588,4 +2579,3 @@ void BianchiMaassSearch::sandbox4(double r) {
         outFile << std::setprecision(16) << "(" << my_pair.first << ", " << my_pair.second << ")\n";
     }
 }
-

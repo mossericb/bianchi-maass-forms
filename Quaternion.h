@@ -1,9 +1,4 @@
-//
-// Created by Eric Moss on 6/26/23.
-//
-
-#ifndef EUCLIDEAN_BIANCHI_MAASS_FORMS_QUATERNION_H
-#define EUCLIDEAN_BIANCHI_MAASS_FORMS_QUATERNION_H
+#pragma once
 
 #include <iostream>
 #include <complex>
@@ -78,15 +73,5 @@ private:
     const static vector<SL2C> d163MAlphas;
     const static vector<complex<double>> d163Translators;
 
-    /*[[nodiscard]] bool isInUnitsFundamentalDomain(int d) const;
-    [[nodiscard]] bool isInParabolicFundamentalDomain(int d) const;*/
     [[nodiscard]] bool isInInversionFundamentalDomain() const;
-    /*[[nodiscard]] bool eisensteinIsInNEDomain() const;
-    [[nodiscard]] bool eisensteinIsInNWDomain() const;
-    [[nodiscard]] bool eisensteinIsInSEDomain() const;
-    [[nodiscard]] bool eisensteinIsInSWDomain() const;*/
 };
-
-
-
-#endif //EUCLIDEAN_BIANCHI_MAASS_FORMS_QUATERNION_H

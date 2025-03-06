@@ -1,9 +1,5 @@
-//
-// Created by Eric Moss on 6/22/24.
-//
+#pragma once
 
-#ifndef BIANCHI_MAASS_FORMS_KBESSELREAL_H
-#define BIANCHI_MAASS_FORMS_KBESSELREAL_H
 #include "arb.h"
 
 class KBesselReal {
@@ -27,6 +23,3 @@ private:
     arb_struct order;
     arb_struct answer;
 };
-
-
-#endif //BIANCHI_MAASS_FORMS_KBESSELREAL_H

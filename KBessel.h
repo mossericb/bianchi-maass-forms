@@ -1,9 +1,5 @@
-//
-// Created by Eric Moss on 8/9/23.
-//
+#pragma once
 
-#ifndef COMPUTINGKBESSEL_KBESSELAPPROXIMATOR_H
-#define COMPUTINGKBESSEL_KBESSELAPPROXIMATOR_H
 #include <map>
 #include <string>
 #include <chrono>
@@ -72,5 +68,3 @@ private:
     static constexpr double E = 2.7182818284590452353602874713526624977572470936999595749669676277;
 };
 
-
-#endif //COMPUTINGKBESSEL_KBESSELAPPROXIMATOR_H

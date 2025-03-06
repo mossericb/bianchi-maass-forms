@@ -1,7 +1,3 @@
-//
-// Created by Eric Moss on 6/26/23.
-//
-
 #include "Index.h"
 #include <complex>
 #include <cmath>

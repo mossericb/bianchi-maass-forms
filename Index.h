@@ -1,9 +1,4 @@
-//
-// Created by Eric Moss on 6/26/23.
-//
-
-#ifndef EUCLIDEAN_BIANCHI_MAASS_FORMS_INDEX_H
-#define EUCLIDEAN_BIANCHI_MAASS_FORMS_INDEX_H
+#pragma once
 
 #include <complex>
 #include <sstream>
@@ -56,5 +51,3 @@ struct std::hash<Index>
         return hashA ^ (hashB * prime1);
     }
 };
-
-#endif //EUCLIDEAN_BIANCHI_MAASS_FORMS_INDEX_H

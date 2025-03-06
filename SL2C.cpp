@@ -1,9 +1,4 @@
-//
-// Created by Eric Moss on 9/27/23.
-//
-
 #include "SL2C.h"
-#include <typeinfo>
 
 void SL2C::set(double &x, std::complex<double> &entry) {
     entry = {x, 0.0};

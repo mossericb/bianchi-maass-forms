@@ -1,9 +1,5 @@
-//
-// Created by Eric Moss on 2/3/24.
-//
+#pragma once
 
-#ifndef BIANCHI_MAASS_FORMS_IMAGINARYQUADRATICINTEGERS_H
-#define BIANCHI_MAASS_FORMS_IMAGINARYQUADRATICINTEGERS_H
 #include <complex>
 #include "Index.h"
 #include <vector>
@@ -55,6 +51,3 @@ private:
     double Y0;
     double volumeOfFD;
 };
-
-
-#endif //BIANCHI_MAASS_FORMS_IMAGINARYQUADRATICINTEGERS_H

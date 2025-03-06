@@ -1,5 +1,4 @@
-#ifndef BIANCHI_MAASS_FORMS_BIANCHIMAASSSEARCH_H
-#define BIANCHI_MAASS_FORMS_BIANCHIMAASSSEARCH_H
+#pragma once
 
 #include <iostream>
 #include <complex>
@@ -141,6 +140,3 @@ private:
 
     int countSignChanges(const vector<double> &v1, const vector<double> &v2);
 };
-
-
-#endif //BIANCHI_MAASS_FORMS_BIANCHIMAASSSEARCH_H

@@ -1,7 +1,3 @@
-//
-// Created by Eric Moss on 6/26/23.
-//
-
 #include "Quaternion.h"
 #include <string>
 #include <sstream>
@@ -460,7 +456,6 @@ bool Quaternion::reduceModInversion(int d) {
             auto minDistance = (double)+INFINITY;
             complex<double> toTranslate;
 
-            //TODO: Should be possible to calculate this directly. Is it faster than the loop?
             for (auto n : dTranslators) {
                 double dist = std::abs((tempComplex - n) - alpha);
                 if (dist < minDistance) {

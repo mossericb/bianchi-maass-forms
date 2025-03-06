@@ -1,7 +1,3 @@
-//
-// Created by Eric Moss on 2/3/24.
-//
-
 #include "ImaginaryQuadraticIntegers.h"
 #include "Auxiliary.h"
 #include <algorithm>

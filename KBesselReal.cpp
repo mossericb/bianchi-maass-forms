@@ -1,13 +1,5 @@
-//
-// Created by Eric Moss on 6/22/24.
-//
-
 #include "KBesselReal.h"
 #include "arb_hypgeom.h"
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <iomanip>
 
 KBesselReal::KBesselReal(double r) {
     this->r = r;

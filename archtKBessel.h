@@ -1,5 +1,4 @@
-#ifndef ARCHTKBESSEL_LIBRARY_H
-#define ARCHTKBESSEL_LIBRARY_H
+#pragma once
 
 #include <mpfr.h>
 #include <mpfi.h>
@@ -26,5 +25,3 @@ private:
     std::vector<__mpfi_struct> vec_mpfi_r;
     std::vector<__mpfi_struct> vec_mpfi_x;
 };
-
-#endif //ARCHTKBESSEL_LIBRARY_H
