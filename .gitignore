@@ -65,7 +65,7 @@
 ehthumbs.db
 Thumbs.db
 
-/cmake-build-release
-/cmake-build-debug
-/cmake-build-debug-asan
-/archt
+/cmake-build-debug/
+/cmake-build-debug-asan/
+/cmake-build-release/
+/archt/

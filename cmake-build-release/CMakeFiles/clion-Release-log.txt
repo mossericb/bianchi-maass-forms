@@ -1,8 +1,0 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -DCMAKE_C_COMPILER=/opt/homebrew/Cellar/llvm/18.1.8/bin/clang -DCMAKE_CXX_COMPILER=/opt/homebrew/Cellar/llvm/18.1.8/bin/clang++ -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-O2 -G Ninja -S /Users/ericmoss/CLionProjects/bianchi-maass-forms -B /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-release
--- FFTW_LIBRARY="/opt/homebrew/lib/libfftw3.dylib"
--- OpenMP=""
--- CMAKE_CXX_FLAGS="-O2 -fopenmp=libomp -march=native -Rpass=loop-vectorize"
--- CMAKE_C_FLAGS=""
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/ericmoss/CLionProjects/bianchi-maass-forms/cmake-build-release
