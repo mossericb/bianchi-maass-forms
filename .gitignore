@@ -68,5 +68,5 @@ Thumbs.db
 /cmake-build-debug/
 /cmake-build-debug-asan/
 /cmake-build-release/
-/archt/
+/include/archt/
 /.idea/

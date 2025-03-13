@@ -10,7 +10,6 @@ include_directories(/opt/homebrew/include)
 include_directories(/opt/homebrew/lib)
 include_directories(/opt/homebrew/Cellar/libomp/16.0.6/lib)
 include_directories(/opt/homebrew/Cellar/libomp/16.0.6/include)
-include_directories(/Users/ericmoss/opt/anaconda3/pkgs/python-3.9.13-hdfd78df_1/lib)
 
 find_library(FLINT_LIBRARY flint REQUIRED)
 find_library(ARB_LIBRARY arb REQUIRED)
@@ -26,40 +25,34 @@ if(OPENMP_FOUND)
 endif()
 
 add_executable(${PROJECT_NAME}
-        main.cpp
-        Index.cpp
-        Index.h
-        Quaternion.cpp
-        Quaternion.h
-        Auxiliary.cpp
-        Auxiliary.h
-        KBessel.cpp
-        KBessel.h
-        SL2C.cpp
-        SL2C.h
-        BianchiMaassSearch.cpp
-        BianchiMaassSearch.h
-        ImaginaryQuadraticIntegers.cpp
-        ImaginaryQuadraticIntegers.h
-        archtKBessel.h
-        archtKBessel.cpp
-        KBesselReal.cpp
-        KBesselReal.h)
+        src/main.cpp
+        src/Index.cpp
+        include/Index.h
+        src/Quaternion.cpp
+        include/Quaternion.h
+        src/Auxiliary.cpp
+        include/Auxiliary.h
+        src/KBessel.cpp
+        include/KBessel.h
+        src/SL2C.cpp
+        include/SL2C.h
+        src/BianchiMaassSearch.cpp
+        include/BianchiMaassSearch.h
+        src/ImaginaryQuadraticIntegers.cpp
+        include/ImaginaryQuadraticIntegers.h
+        include/archtKBessel.h
+        src/archtKBessel.cpp
+        src/KBesselReal.cpp
+        include/KBesselReal.h)
 
 target_link_libraries(${PROJECT_NAME} ${FLINT_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${ARB_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${MPFR_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${GMP_LIBRARY})
 target_link_libraries(${PROJECT_NAME} ${MPFI_LIBRARY})
-target_link_libraries(${PROJECT_NAME} ${MPI_LIBRARY})
-target_link_libraries(${PROJECT_NAME} ${FFTW_LIBRARY})
-target_link_libraries(${PROJECT_NAME} ${PARI_LIBRARY})
 
 target_link_libraries(${PROJECT_NAME} ${OpenMP})
 target_link_libraries(${PROJECT_NAME} ${Boost})
-
-cmake_print_variables(FFTW_LIBRARY)
-cmake_print_variables(OpenMP)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Rpass=loop-vectorize")
