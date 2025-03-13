@@ -1,0 +1,92 @@
+/mmfs1/data/mossea/Documents/bianchi-maass-forms/cmake-build-release
+c104
+Wed Feb 26 15:50:21 EST 2025
+5.720216672149288 is NOT modular for symClass D
+5.480589000408856 is NOT modular for symClass D
+3.877541169892784 is NOT modular for symClass D
+3.661805715480199 is NOT modular for symClass D
+3.264307438408941 is modular for symClass D
+5.538023738860223 is NOT modular for symClass D
+4.092093446139859 is NOT modular for symClass D
+3.877027721397085 is NOT modular for symClass D
+5.607996732499584 is NOT modular for symClass D
+5.538055233626224 is NOT modular for symClass D
+4.979064073219422 is modular for symClass D
+5.607984630431112 is NOT modular for symClass D
+1.768162118918088 is modular for symClass D
+3.315279449510167 is NOT modular for symClass D
+3.264304413300591 is modular for symClass D
+4.926331118571007 is NOT modular for symClass D
+3.8331983965739 is NOT modular for symClass D
+5.342364176579506 is NOT modular for symClass D
+2.063439662880026 is NOT modular for symClass D
+3.314925695179948 is NOT modular for symClass D
+Going to test these spectral parameters for modularity in the corresponding symmetry class of reflection-odd forms
+3.264307438408941
+4.979064073219422
+1.768162118918088
+3.264304413300591
+maxDiff is 0.004292011341020974
+3.264307438408941 is modular for symClass G
+maxDiff is 0.008988529688339852
+4.979064073219422 is modular for symClass G
+maxDiff is 1.821912886221825
+1.768162118918088 is NOT modular for symClass G
+maxDiff is 0.005102841345534515
+3.264304413300591 is modular for symClass G
+memory leak= { 15401 -43022 0 0 295048 3894398 }
+4.28909432624795 is NOT modular for symClass C
+4.885454899296686 is NOT modular for symClass C
+3.14502001154539 is modular for symClass C
+4.851964861704461 is NOT modular for symClass C
+5.306845100417572 is NOT modular for symClass C
+4.699194621241639 is NOT modular for symClass C
+2.600828083830749 is NOT modular for symClass C
+5.867850928632436 is NOT modular for symClass C
+5.014168901363012 is NOT modular for symClass C
+3.464110746977388 is NOT modular for symClass C
+4.699212733843173 is NOT modular for symClass C
+4.581261534031503 is NOT modular for symClass C
+5.409998998698734 is NOT modular for symClass C
+2.44357500784005 is modular for symClass C
+4.670643162586918 is NOT modular for symClass C
+2.443620257022089 is modular for symClass C
+4.63932493889819 is NOT modular for symClass C
+3.668087664970853 is NOT modular for symClass C
+4.969722501545786 is NOT modular for symClass C
+4.967644943686238 is NOT modular for symClass C
+3.213645490779557 is modular for symClass C
+4.967657297666626 is NOT modular for symClass C
+4.885472037234115 is NOT modular for symClass C
+4.557457943824023 is NOT modular for symClass C
+4.616223495532271 is NOT modular for symClass C
+5.014177872953903 is NOT modular for symClass C
+2.701273090849039 is modular for symClass C
+5.011862758838201 is NOT modular for symClass C
+5.707768989696961 is NOT modular for symClass C
+5.014215026511598 is NOT modular for symClass C
+4.477564143260058 is modular for symClass C
+5.828055713898233 is NOT modular for symClass C
+5.409985131633574 is NOT modular for symClass C
+4.411893075042783 is NOT modular for symClass C
+4.410103703952508 is NOT modular for symClass C
+Going to test these spectral parameters for modularity in the corresponding symmetry class of reflection-odd forms
+3.14502001154539
+2.44357500784005
+2.443620257022089
+3.213645490779557
+2.701273090849039
+4.477564143260058
+maxDiff is 0.3207293367026868
+3.14502001154539 is NOT modular for symClass H
+maxDiff is 0.01502776626776026
+2.44357500784005 is NOT modular for symClass H
+maxDiff is 0.006676451240759829
+2.443620257022089 is modular for symClass H
+maxDiff is 0.004359241040097661
+3.213645490779557 is modular for symClass H
+maxDiff is 20.68037192233576
+2.701273090849039 is NOT modular for symClass H
+maxDiff is 2.092229729440327
+4.477564143260058 is NOT modular for symClass H
+memory leak= { 29026 10068 0 0 725425 6556548 }

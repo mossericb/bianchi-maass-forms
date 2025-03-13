@@ -1,0 +1,404 @@
+/mmfs1/data/mossea/Documents/bianchi-maass-forms/cmake-build-release
+c122
+Wed Feb 12 13:28:26 EST 2025
+6.320038216365869 is modular for symClass D
+8.645879085645419 is NOT modular for symClass D
+7.091443402480305 is modular for symClass D
+8.195006039515995 is NOT modular for symClass D
+5.761891940764971 is NOT modular for symClass D
+6.436436978958811 is modular for symClass D
+6.725398551550034 is NOT modular for symClass D
+9.122484278698714 is NOT modular for symClass D
+2.699082461160213 is modular for symClass D
+6.84450750641308 is modular for symClass D
+7.078088053917185 is modular for symClass D
+8.209700015723211 is NOT modular for symClass D
+8.585062034006818 is modular for symClass D
+7.695011519346073 is modular for symClass D
+5.464633931517042 is modular for symClass D
+5.914730975425897 is modular for symClass D
+8.933237303487358 is NOT modular for symClass D
+5.686212815082762 is modular for symClass D
+7.318058372643576 is modular for symClass D
+6.241866824687046 is modular for symClass D
+9.849085953188295 is modular for symClass D
+9.758752098668682 is NOT modular for symClass D
+8.868606148476468 is modular for symClass D
+8.804789976126933 is NOT modular for symClass D
+7.412433014980277 is modular for symClass D
+8.392407191453813 is modular for symClass D
+3.945395206221208 is modular for symClass D
+6.81240469596964 is modular for symClass D
+8.69147202804999 is NOT modular for symClass D
+8.75578477763173 is modular for symClass D
+8.645846648903795 is NOT modular for symClass D
+7.647982609980101 is modular for symClass D
+4.882067406082266 is modular for symClass D
+3.332515866380787 is modular for symClass D
+7.412444087646856 is modular for symClass D
+8.808632856842475 is modular for symClass D
+4.290883119909738 is modular for symClass D
+8.933218257625533 is NOT modular for symClass D
+9.682437446186801 is modular for symClass D
+9.724065870054833 is NOT modular for symClass D
+8.071689343983028 is NOT modular for symClass D
+9.761738408128867 is NOT modular for symClass D
+9.047304316970008 is modular for symClass D
+4.601022169301677 is modular for symClass D
+2.078285411339643 is modular for symClass D
+5.429392160456396 is modular for symClass D
+8.790013543550179 is NOT modular for symClass D
+4.695986410716513 is modular for symClass D
+5.636574303943851 is modular for symClass D
+8.741296571109705 is modular for symClass D
+8.160584090205431 is modular for symClass D
+9.122444679921999 is modular for symClass D
+6.706023824424068 is modular for symClass D
+6.725413966395909 is modular for symClass D
+9.122460249588634 is modular for symClass D
+9.622345024708645 is modular for symClass D
+8.209730767447645 is NOT modular for symClass D
+1.335137870165817 is modular for symClass D
+8.108661106948555 is NOT modular for symClass D
+9.651133085078424 is modular for symClass D
+8.035037103765021 is modular for symClass D
+8.207325663946342 is NOT modular for symClass D
+2.539526736398138 is modular for symClass D
+7.535451797618999 is modular for symClass D
+8.755781657422862 is modular for symClass D
+Going to test these spectral parameters for modularity in the corresponding symmetry class of reflection-odd forms
+6.320038216365869
+7.091443402480305
+6.436436978958811
+2.699082461160213
+6.84450750641308
+7.078088053917185
+8.585062034006818
+7.695011519346073
+5.464633931517042
+5.914730975425897
+5.686212815082762
+7.318058372643576
+6.241866824687046
+9.849085953188295
+8.868606148476468
+7.412433014980277
+8.392407191453813
+3.945395206221208
+6.81240469596964
+8.75578477763173
+7.647982609980101
+4.882067406082266
+3.332515866380787
+7.412444087646856
+8.808632856842475
+4.290883119909738
+9.682437446186801
+9.047304316970008
+4.601022169301677
+2.078285411339643
+5.429392160456396
+4.695986410716513
+5.636574303943851
+8.741296571109705
+8.160584090205431
+9.122444679921999
+6.706023824424068
+6.725413966395909
+9.122460249588634
+9.622345024708645
+1.335137870165817
+9.651133085078424
+8.035037103765021
+2.539526736398138
+7.535451797618999
+8.755781657422862
+maxDiff is 4.967679512274392e-06
+6.320038216365869 is modular for symClass G
+maxDiff is 3.885650798896023e-07
+7.091443402480305 is modular for symClass G
+maxDiff is 23.44071930106069
+6.436436978958811 is NOT modular for symClass G
+maxDiff is 33.65077461244002
+2.699082461160213 is NOT modular for symClass G
+warning coeffavg is 101.8858449428331
+maxDiff is 609.8083978764015
+6.84450750641308 is NOT modular for symClass G
+maxDiff is 0.999419834785402
+7.078088053917185 is NOT modular for symClass G
+maxDiff is 1.541581229957956e-05
+8.585062034006818 is modular for symClass G
+maxDiff is 10.92544416245496
+7.695011519346073 is NOT modular for symClass G
+maxDiff is 28.07917395245412
+5.464633931517042 is NOT modular for symClass G
+maxDiff is 0.001039174290856648
+5.914730975425897 is modular for symClass G
+maxDiff is 3.103030778261238
+5.686212815082762 is NOT modular for symClass G
+maxDiff is 10.41554966610564
+7.318058372643576 is NOT modular for symClass G
+maxDiff is 26.06602663399892
+6.241866824687046 is NOT modular for symClass G
+maxDiff is 17.15332672362561
+9.849085953188295 is NOT modular for symClass G
+maxDiff is 0.0234266949723434
+8.868606148476468 is NOT modular for symClass G
+maxDiff is 11.65648318093984
+7.412433014980277 is NOT modular for symClass G
+maxDiff is 9.898600415247255
+8.392407191453813 is NOT modular for symClass G
+maxDiff is 6.479900589533115
+3.945395206221208 is NOT modular for symClass G
+maxDiff is 27.34334275960535
+6.81240469596964 is NOT modular for symClass G
+maxDiff is 14.01997848025714
+8.75578477763173 is NOT modular for symClass G
+warning coeffavg is 43.05853239578635
+maxDiff is 460.4837860777184
+7.647982609980101 is NOT modular for symClass G
+maxDiff is 14.15953926200597
+4.882067406082266 is NOT modular for symClass G
+maxDiff is 1.682034191089776
+3.332515866380787 is NOT modular for symClass G
+maxDiff is 9.7888142359227
+7.412444087646856 is NOT modular for symClass G
+maxDiff is 2.768617485715552e-06
+8.808632856842475 is modular for symClass G
+maxDiff is 1.784973702179116e-08
+4.290883119909738 is modular for symClass G
+maxDiff is 2.255353805669102e-05
+9.682437446186801 is modular for symClass G
+maxDiff is 13.03117906134897
+9.047304316970008 is NOT modular for symClass G
+maxDiff is 19.66619897171988
+4.601022169301677 is NOT modular for symClass G
+maxDiff is 1.290674390100681
+2.078285411339643 is NOT modular for symClass G
+maxDiff is 7.957211735305194
+5.429392160456396 is NOT modular for symClass G
+maxDiff is 5.171809749746626
+4.695986410716513 is NOT modular for symClass G
+maxDiff is 4.254526235451452
+5.636574303943851 is NOT modular for symClass G
+maxDiff is 1.553196528170098e-06
+8.741296571109705 is modular for symClass G
+maxDiff is 6.67326804876892
+8.160584090205431 is NOT modular for symClass G
+maxDiff is 13.52234936291281
+9.122444679921999 is NOT modular for symClass G
+maxDiff is 8.149583603511701e-07
+6.706023824424068 is modular for symClass G
+maxDiff is 4.925810055400603e-07
+6.725413966395909 is modular for symClass G
+maxDiff is 12.550351756673
+9.122460249588634 is NOT modular for symClass G
+maxDiff is 7.824283431145385
+9.622345024708645 is NOT modular for symClass G
+maxDiff is 0.902299603466311
+1.335137870165817 is NOT modular for symClass G
+maxDiff is 10.56852907184521
+9.651133085078424 is NOT modular for symClass G
+maxDiff is 5.903536037799029e-06
+8.035037103765021 is modular for symClass G
+maxDiff is 2.650954327802431
+2.539526736398138 is NOT modular for symClass G
+maxDiff is 1.269140237125654e-06
+7.535451797618999 is modular for symClass G
+maxDiff is 12.70009114314686
+8.755781657422862 is NOT modular for symClass G
+memory leak= { 78602 -68030 0 0 1891900 17052959 }
+8.850876292642241 is modular for symClass C
+6.89025665186213 is modular for symClass C
+6.340496376906342 is modular for symClass C
+8.4726998523637 is NOT modular for symClass C
+2.918812944520778 is modular for symClass C
+6.569164553074207 is modular for symClass C
+5.167796011555898 is modular for symClass C
+7.796969758489462 is modular for symClass C
+9.344120100504767 is NOT modular for symClass C
+9.168035731580183 is modular for symClass C
+7.309801359436292 is modular for symClass C
+7.083099894342472 is modular for symClass C
+4.275726315548042 is modular for symClass C
+9.447257161771731 is modular for symClass C
+2.276817752423744 is modular for symClass C
+8.121587456238617 is NOT modular for symClass C
+8.87986573008447 is modular for symClass C
+4.541868509008835 is modular for symClass C
+8.426032521385515 is NOT modular for symClass C
+5.94160012256434 is modular for symClass C
+9.555079731881055 is modular for symClass C
+9.962075827458417 is NOT modular for symClass C
+5.743988957625369 is NOT modular for symClass C
+7.387811992348063 is modular for symClass C
+5.941598304805304 is modular for symClass C
+4.141782360109838 is modular for symClass C
+5.23263432586973 is modular for symClass C
+5.083731614013701 is modular for symClass C
+8.261569596601145 is modular for symClass C
+7.43332759469512 is modular for symClass C
+8.715721801864859 is modular for symClass C
+1.432483398563483 is modular for symClass C
+8.850875077822936 is modular for symClass C
+6.426726401605489 is modular for symClass C
+6.6012155270199 is modular for symClass C
+8.242444085130071 is NOT modular for symClass C
+9.261742170436651 is modular for symClass C
+5.113916367926565 is modular for symClass C
+9.438395014583365 is modular for symClass C
+6.138312585922553 is modular for symClass C
+8.946522532928901 is NOT modular for symClass C
+8.57750646241602 is modular for symClass C
+7.575482799711633 is modular for symClass C
+3.842499789387001 is modular for symClass C
+4.586562813729763 is modular for symClass C
+9.11857632383467 is NOT modular for symClass C
+8.691137947233125 is NOT modular for symClass C
+5.7530215145938 is modular for symClass C
+8.250855722801793 is modular for symClass C
+7.105691913463347 is modular for symClass C
+9.962092092591504 is NOT modular for symClass C
+3.548842884600195 is modular for symClass C
+6.052848972924773 is modular for symClass C
+5.443518529087212 is modular for symClass C
+2.574513336165147 is NOT modular for symClass C
+9.351731741886397 is modular for symClass C
+Going to test these spectral parameters for modularity in the corresponding symmetry class of reflection-odd forms
+8.850876292642241
+6.89025665186213
+6.340496376906342
+2.918812944520778
+6.569164553074207
+5.167796011555898
+7.796969758489462
+9.168035731580183
+7.309801359436292
+7.083099894342472
+4.275726315548042
+9.447257161771731
+2.276817752423744
+8.87986573008447
+4.541868509008835
+5.94160012256434
+9.555079731881055
+7.387811992348063
+5.941598304805304
+4.141782360109838
+5.23263432586973
+5.083731614013701
+8.261569596601145
+7.43332759469512
+8.715721801864859
+1.432483398563483
+8.850875077822936
+6.426726401605489
+6.6012155270199
+9.261742170436651
+5.113916367926565
+9.438395014583365
+6.138312585922553
+8.57750646241602
+7.575482799711633
+3.842499789387001
+4.586562813729763
+5.7530215145938
+8.250855722801793
+7.105691913463347
+3.548842884600195
+6.052848972924773
+5.443518529087212
+9.351731741886397
+maxDiff is 0.0007350867411057838
+8.850876292642241 is modular for symClass H
+maxDiff is 1.087575492775272e-06
+6.89025665186213 is modular for symClass H
+maxDiff is 20.71927411590005
+6.340496376906342 is NOT modular for symClass H
+maxDiff is 1.220224792180878
+2.918812944520778 is NOT modular for symClass H
+maxDiff is 2.523534472081979e-07
+6.569164553074207 is modular for symClass H
+maxDiff is 1.990691568922818
+5.167796011555898 is NOT modular for symClass H
+maxDiff is 22.37590606137744
+7.796969758489462 is NOT modular for symClass H
+maxDiff is 5.112805479563887
+9.168035731580183 is NOT modular for symClass H
+maxDiff is 11.17901707097637
+7.309801359436292 is NOT modular for symClass H
+maxDiff is 9.465379809176733
+7.083099894342472 is NOT modular for symClass H
+maxDiff is 6.283116265536965
+4.275726315548042 is NOT modular for symClass H
+warning coeffavg is 25.93621437025875
+maxDiff is 0.2692523864828047
+9.447257161771731 is NOT modular for symClass H
+maxDiff is 1.904226751618554
+2.276817752423744 is NOT modular for symClass H
+maxDiff is 5.595217180250243
+8.87986573008447 is NOT modular for symClass H
+maxDiff is 3.529776601720521
+4.541868509008835 is NOT modular for symClass H
+maxDiff is 1.25107060711116e-06
+5.94160012256434 is modular for symClass H
+maxDiff is 1.431076460306491e-05
+9.555079731881055 is modular for symClass H
+maxDiff is 5.466691050948214e-07
+7.387811992348063 is modular for symClass H
+maxDiff is 0.00186829806200528
+5.941598304805304 is modular for symClass H
+maxDiff is 2.68899960906273
+4.141782360109838 is NOT modular for symClass H
+warning coeffavg is 49.08162546393766
+maxDiff is 411.6540741225943
+5.23263432586973 is NOT modular for symClass H
+maxDiff is 1.877281321499495
+5.083731614013701 is NOT modular for symClass H
+maxDiff is 16.31430608108988
+8.261569596601145 is NOT modular for symClass H
+maxDiff is 8.57102459136793
+7.43332759469512 is NOT modular for symClass H
+maxDiff is 6.356064617725488
+8.715721801864859 is NOT modular for symClass H
+maxDiff is 1.422021714030208
+1.432483398563483 is NOT modular for symClass H
+maxDiff is 2.698283730229178e-06
+8.850875077822936 is modular for symClass H
+warning coeffavg is 39.83071861774742
+maxDiff is 1.213076144779279e-05
+6.426726401605489 is modular for symClass H
+warning coeffavg is 23.35989055197239
+maxDiff is 124.5458459189267
+6.6012155270199 is NOT modular for symClass H
+maxDiff is 9.403798293441231
+9.261742170436651 is NOT modular for symClass H
+maxDiff is 37.87538787130075
+5.113916367926565 is NOT modular for symClass H
+maxDiff is 4.942200631095453
+9.438395014583365 is NOT modular for symClass H
+maxDiff is 5.203391409265253
+6.138312585922553 is NOT modular for symClass H
+maxDiff is 10.84393457364839
+8.57750646241602 is NOT modular for symClass H
+maxDiff is 1.54357476382927e-05
+7.575482799711633 is modular for symClass H
+maxDiff is 1.586085086338479
+3.842499789387001 is NOT modular for symClass H
+maxDiff is 8.19406763198797
+4.586562813729763 is NOT modular for symClass H
+maxDiff is 10.072186037999
+5.7530215145938 is NOT modular for symClass H
+maxDiff is 24.05003111086427
+8.250855722801793 is NOT modular for symClass H
+maxDiff is 13.06588045010174
+7.105691913463347 is NOT modular for symClass H
+maxDiff is 1.490330520084389
+3.548842884600195 is NOT modular for symClass H
+maxDiff is 5.181174475183647
+6.052848972924773 is NOT modular for symClass H
+maxDiff is 2.222980803878727e-07
+5.443518529087212 is modular for symClass H
+maxDiff is 3.381161297166813e-06
+9.351731741886397 is modular for symClass H
+memory leak= { 64985 -178921 0 0 2961937 17470247 }
