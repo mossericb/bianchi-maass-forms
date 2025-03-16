@@ -11,7 +11,7 @@ These methods build on John Cremona's `bianchi-progs` (https://github.com/JohnCr
 The C++ code depends on
 * Eigen (https://eigen.tuxfamily.org)
 * Boost (https://www.boost.org)
-* archt (https://github.com/BBDJSH-LuCaNT-2023/verification-code.git) which relies on...
+* archt (https://github.com/BBDJSH-LuCaNT-2023/verification-code/tree/main/phase2/archt) which relies on...
   * MPFI (https://gitlab.inria.fr/mpfi/mpfi)
   * MPFR (https://www.mpfr.org)
   * GMP (https://gmplib.org)
