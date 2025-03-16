@@ -3,20 +3,22 @@
 
 
 archtKBessel::archtKBessel(double r) {
+    this->r = r;
     mpfr_init_set_d(acc, 1.0e-16, MPFR_RNDN);
 
     mpfi_ptr bess = init_kbessel(BEGINNING_BITS);
     vec_f.push_back(bess);
 
-    mpfi_t mpfi_r;
+    mpfi_ptr mpfi_r = (mpfi_ptr) malloc(sizeof(__mpfi_struct));
     mpfi_init2(mpfi_r, BEGINNING_BITS);
-    vec_mpfi_r.push_back(*mpfi_r);
+    vec_mpfi_r.push_back(mpfi_r);
+    mpfi_init_set_d(vec_mpfi_r[0], r);
 
-    mpfi_t mpfi_x;
+    mpfi_ptr mpfi_x = (mpfi_ptr) malloc(sizeof(__mpfi_struct));
     mpfi_init2(mpfi_x, BEGINNING_BITS);
-    vec_mpfi_x.push_back(*mpfi_x);
+    vec_mpfi_x.push_back(mpfi_x);
 
-    setR(r);
+    zeroCutoff = (1136 + PI*r/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
 }
 
 archtKBessel::~archtKBessel() {
@@ -26,12 +28,14 @@ archtKBessel::~archtKBessel() {
     vec_f.clear();
 
     for (auto mp_r : vec_mpfi_r) {
-        mpfi_clear(&mp_r);
+        mpfi_clear(mp_r);
+        free(mp_r);
     }
     vec_mpfi_r.clear();
 
     for (auto mp_x : vec_mpfi_x) {
-        mpfi_clear(&mp_x);
+        mpfi_clear(mp_x);
+        free(mp_x);
     }
     vec_mpfi_x.clear();
 
@@ -41,7 +45,7 @@ archtKBessel::~archtKBessel() {
 void archtKBessel::setR(double r) {
     this->r = r;
     for (int i = 0; i < vec_mpfi_r.size(); i++) {
-        mpfi_init_set_d(&(vec_mpfi_r[i]), r);
+        mpfi_set_d(vec_mpfi_r[i], r);
     }
     zeroCutoff = (1136 + PI*r/2.0*log2(E) - 0.5*log2(E) + 0.5*log2(PI/2))/log2(E);
 }
@@ -54,9 +58,9 @@ double archtKBessel::evaluate(double x) {
         int indexGuess = std::max(0, (int)std::ceil(log2(((double)bitsGuess)/BEGINNING_BITS)));
         indexGuess = std::min(indexGuess, (int)vec_f.size() - 1);
         for (int i = indexGuess; i < vec_f.size(); i++) {
-            mpfi_set_d(&(vec_mpfi_x[i]), x);
+            mpfi_set_d(vec_mpfi_x[i], x);
 
-            kbessel(vec_f[i], &vec_mpfi_r[i], &vec_mpfi_x[i]);
+            kbessel(vec_f[i], vec_mpfi_r[i], vec_mpfi_x[i]);
 
             double ans1 = mpfr_get_d(&(vec_f[i]->left), MPFR_RNDN);
             double ans2 = mpfr_get_d(&(vec_f[i]->right), MPFR_RNDN);
@@ -73,17 +77,17 @@ double archtKBessel::evaluate(double x) {
             mpfi_ptr bess = init_kbessel(pow(2,i) * BEGINNING_BITS);
             vec_f.push_back(bess);
 
-            mpfi_t mpfi_r;
+            mpfi_ptr mpfi_r = (mpfi_ptr) malloc(sizeof(__mpfi_struct));
             mpfi_init2(mpfi_r, pow(2,i) * BEGINNING_BITS);
-            vec_mpfi_r.push_back(*mpfi_r);
-            mpfi_set_d(&vec_mpfi_r[i], r);
+            vec_mpfi_r.push_back(mpfi_r);
+            mpfi_set_d(vec_mpfi_r[i], r);
 
-            mpfi_t mpfi_x;
+            mpfi_ptr mpfi_x = (mpfi_ptr) malloc(sizeof(__mpfi_struct));
             mpfi_init2(mpfi_x, pow(2,i) * BEGINNING_BITS);
-            vec_mpfi_x.push_back(*mpfi_x);
-            mpfi_set_d(&vec_mpfi_x[i], x);
+            vec_mpfi_x.push_back(mpfi_x);
+            mpfi_set_d(vec_mpfi_x[i], x);
 
-            kbessel(vec_f[i], &vec_mpfi_r[i], &vec_mpfi_x[i]);
+            kbessel(vec_f[i], vec_mpfi_r[i], vec_mpfi_x[i]);
 
             double ans1 = mpfr_get_d(&(vec_f[i]->left), MPFR_RNDN);
             double ans2 = mpfr_get_d(&(vec_f[i]->right), MPFR_RNDN);

@@ -2590,7 +2590,7 @@ void BianchiMaassSearch::sandbox5() {
         A = O.getA();
         for (double thisD : vector<double>{4.0, 8.0, 16.0, 20.0}) {
             truncation = pow(10.0,-thisD);
-            for (double r : vector<double>{10.0, 2*10.0, pow(2,2)*10.0, pow(2,3)*10.0, pow(2,4)*10.0, pow(2,5)*10.0}) {
+            for (double r : vector<double>{10.0, 2*10.0, pow(2,2)*10.0, pow(2,3)*10.0}) {
                 double M0 = computeM0General(r);
                 KBessel* Kb = new KBessel(2*pi/A * 1 * thisY0, r);
 
@@ -2601,7 +2601,6 @@ void BianchiMaassSearch::sandbox5() {
                 auto bestY = computeWellConditionedY(Kb, r, M0, indexTransversal);
 
                 std::cout << std::setprecision(16) << thisd << ", " << thisD << ", " << r << ", " << M0 << ", " << bestY << std::endl;
-                delete Kb;
             }
         }
     }
