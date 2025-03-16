@@ -21,8 +21,8 @@ The C++ code depends on
 I used CMake as my build system. I have included my `CMakeLists.txt` as an example.
 
 Some commentary about the directories in this repository:
-* **Output** - This contains the log files for the Coarse, Medium, and Final searches, as well as the Final Check step. 
-The subdirectory "Tested, Hand Checked, and Final" contains manually post-processed data (for example, a couple eigenvalues were found twice, but they were logged as being different and separated by some extremely tiny amount). 
+* **Output** - This contains data from the Coarse, Medium, and Final searches, as well as the Final Check step. 
+The subdirectory "Tested, Hand Checked, and Final" contains manually post-processed data. 
 All final data included in the Thesis comes from this subdirectory.
 * **Computation Logs** - This contains terminal output from when the computations were run on the Andromeda Linux Cluster at Boston College. These are extremely verbose and long. This folder has its own README.
 * **Plotting** - This contains SageMath code files and a Jupyter Notebook with example code usage. There are also some animated GIFs of plots of Bianchi-Maass forms in this directory.
