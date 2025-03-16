@@ -28,11 +28,6 @@ using std::cout, std::string, std::endl, std::flush, std::setprecision, std::to_
 
 BianchiMaassSearch::BianchiMaassSearch(string mode, int d, double D, char symClass) {
 
-    //Check that mode is valid
-    vector<string> modes = {"coarse", "medium", "fine", "extend", "test-modularity-compute-reflections","test-conjectures","Lfunction","sandbox","sandbox2","sandbox3","sandbox4"};
-    if (std::find(modes.begin(), modes.end(), mode) == modes.end()) {
-        throw std::invalid_argument("mode should be coarse, medium, or fine");
-    }
     this->mode = mode;
 
     //Check that d is valid
@@ -2331,10 +2326,12 @@ void BianchiMaassSearch::sandbox(const double leftR, const double rightR) {
     outFile << Y0 << std::endl;
     outFile << "estimated best Y is " << std::setprecision(16) << bestY << std::endl;
 
+    double val = 0.06790910071637833;
+    double shift = 0.005;
 
     vector<double> bruteY = {};
     bruteY.push_back(bestY);
-    for (double Y = Y0; Y > 0.005; Y -= (Y0 - 0.005)/1000.0) {
+    for (double Y = val + shift; Y > val - shift; Y -= (2.0*shift)/2000.0) {
         bruteY.push_back(Y);
     }
     bruteY.push_back(0.005);
@@ -2579,3 +2576,34 @@ void BianchiMaassSearch::sandbox4(double r) {
         outFile << std::setprecision(16) << "(" << my_pair.first << ", " << my_pair.second << ")\n";
     }
 }
+
+/***
+ * This method computes many values of the function which we maximize for heuristic conditioning.
+ * For demonstration purposes only.
+ * @param r
+ */
+void BianchiMaassSearch::sandbox5() {
+
+    for (int thisd : vector<int>{19, 43, 67, 163}) {
+        ImaginaryQuadraticIntegers O = ImaginaryQuadraticIntegers(thisd);
+        double thisY0 = sqrt(2.0/thisd);
+        A = O.getA();
+        for (double thisD : vector<double>{4.0, 8.0, 16.0, 20.0}) {
+            truncation = pow(10.0,-thisD);
+            for (double r : vector<double>{10.0, 2*10.0, pow(2,2)*10.0, pow(2,3)*10.0, pow(2,4)*10.0, pow(2,5)*10.0}) {
+                double M0 = computeM0General(r);
+                KBessel* Kb = new KBessel(2*pi/A * 1 * thisY0, r);
+
+                vector<Index> indicesM0 = O.indicesUpToM(M0);
+                auto data = Od.indexOrbitQuotientData(indicesM0, 'D');
+                vector<Index> indexTransversal = get<0>(data);
+
+                auto bestY = computeWellConditionedY(Kb, r, M0, indexTransversal);
+
+                std::cout << std::setprecision(16) << thisd << ", " << thisD << ", " << r << ", " << M0 << ", " << bestY << std::endl;
+                delete Kb;
+            }
+        }
+    }
+}
+

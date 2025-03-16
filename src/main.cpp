@@ -155,6 +155,15 @@ int main(int argc, char *argv[]) {
 
             BianchiMaassSearch bms = BianchiMaassSearch(mode, d, D, symClass);
             bms.sandbox4(r);
+        } else if (mode == "sandbox5") {
+            if (argc != 2) {
+                throw std::invalid_argument("");
+            }
+
+            std::cout << "mode = " << mode << '\n';
+
+            BianchiMaassSearch bms = BianchiMaassSearch(mode, 19, 16.0, 'D');
+            bms.sandbox5();
         } else {
             throw std::invalid_argument(R"(First command line argument should be "coarse" "medium" "fine" "test-modularity" "test-conjectures".)");
         }

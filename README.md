@@ -1,12 +1,28 @@
 # bianchi-maass-forms
-This program is part of my PhD thesis work.
+This repository is part of my PhD Thesis "Computing Bianchi-Maass Forms for Class Number 1 Non-Euclidean Rings" supervised by Solomon Friedberg at Boston College.
 
-It computes Bianchi-Maass cusp forms for class number 1 rings of integers, including the non-Euclidean rings (the fields Q(sqrt(-d)) for d = 1, 2, 3, 7, 11, 19, 43, 67, 163).
+It computes Maass cusp forms for the Bianchi groups $`\Gamma_d = \textup{PSL}_2(\mathcal{O}_{\mathbb{Q}(\sqrt{-d})})`$ where $`d = 19, 43, 67, 163`$.
+I generalized Hejhal's method to these groups, and it serves as the core method of the computation.
+This repository contains C++ code for locating probable Laplace eigenvalues and providing evidence that they are genuine via a modularity check.
+It also contains SageMath code for plotting the resulting forms.
+I wrote these SageMath methods in order to make what I believe is the first free to use, open source, high-resolution plots of Bianchi polyhedra.
+These methods build on John Cremona's `bianchi-progs` (https://github.com/JohnCremona/bianchi-progs) which contains code that implement's Swan's algorithm.
 
-Please excuse the cobwebs; I'm in the stage of converging on the final version of the program and dumping large commented blocks, unused methods, etc. 
+The C++ code depends on
+* Eigen (https://eigen.tuxfamily.org)
+* Boost (https://www.boost.org)
+* archt (https://github.com/BBDJSH-LuCaNT-2023/verification-code.git) which relies on...
+  * MPFI (https://gitlab.inria.fr/mpfi/mpfi)
+  * MPFR (https://www.mpfr.org)
+  * GMP (https://gmplib.org)
+* Arb which is contained in FLINT (https://flintlib.org, it also depends on MPFR and GMP)
+* OpenMP (probably already part of your compiler)
 
-This contains methods for locating probable eigenvalues, running heuristic checks on the results, evaluating, and plotting the resulting Bianchi-Maass forms. Functionality for verifying various conjectures such as Ramanujan-Petersson and Sato-Tate is coming soon.
+I used CMake as my build system. I have included my `CMakeLists.txt` as an example.
 
-This program relies on the libraries Eigen, OpenMP, and OpenCV (for plot generation, can be safely removed otherwise). It also relies on archt from https://github.com/BBDJSH-LuCaNT-2023/verification-code.git (and its dependencies mpfi, mpfr, gmp). While archt computes rigorous bounding intervals for K-Bessel values, my program does not use interval arithmetic, but the archt methods are sufficiently fast and come with an accuracy guarantee which is still useful for operating in double precision.
-
-The SageMath version of this computation is correct and functional but far too slow to compute Maass forms for fields larger than the first few. In particular, the non-Euclidean cases all have discriminant high enough that a highly-parallel C++ version is required.
+Some commentary about the directories in this repository:
+* **Output** - This contains the log files for the Coarse, Medium, and Final searches, as well as the Final Check step. 
+The subdirectory "Tested, Hand Checked, and Final" contains manually post-processed data (for example, a couple eigenvalues were found twice, but they were logged as being different and separated by some extremely tiny amount). 
+All final data included in the Thesis comes from this subdirectory.
+* **Computation Logs** - This contains terminal output from when the computations were run on the Andromeda Linux Cluster at Boston College. These are extremely verbose and long. This folder has its own README.
+* **Plotting** - This contains SageMath code files and a Jupyter Notebook with example code usage. There are also some animated GIFs of plots of Bianchi-Maass forms in this directory.
