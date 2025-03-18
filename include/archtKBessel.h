@@ -22,6 +22,6 @@ private:
     double r;
 
     std::vector<mpfi_ptr> vec_f;
-    std::vector<mpfi_ptr> vec_mpfi_r;
-    std::vector<mpfi_ptr> vec_mpfi_x;
+    std::vector<__mpfi_struct> vec_mpfi_r;
+    std::vector<__mpfi_struct> vec_mpfi_x;
 };
