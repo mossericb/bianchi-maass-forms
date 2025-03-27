@@ -26,3 +26,5 @@ The subdirectory "Tested, Hand Checked, and Final" contains manually post-proces
 All final data included in the Thesis comes from this subdirectory.
 * **Computation Logs** - This contains terminal output from when the computations were run on the Andromeda Linux Cluster at Boston College. These are extremely verbose and long. This folder has its own README.
 * **Plotting** - This contains SageMath code files and a Jupyter Notebook with example code usage. There are also some animated GIFs of plots of Bianchi-Maass forms in this directory.
+
+If you wish to view the truly final data from this project, navigate to "Output/Tested, Hand Checked, and Final".
